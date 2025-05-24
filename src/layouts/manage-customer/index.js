@@ -1,39 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Chip,
-} from "@mui/material";
+import { Card, CardContent, CardActions, Typography, Box, Grid, Button } from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
 import Icon from "@mui/material/Icon";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import { useMaterialUIController } from "context";
@@ -97,6 +69,93 @@ const ManageCustomer = () => {
   const churnReasonOptions = ["Price", "Service", "Features", "Other", "None"];
   const featureOptions = ["Core", "Advanced", "Integrations"];
 
+  // Common styles adapted from provided App.css
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "80vh", // Limit form height to 80% of viewport height
+    overflowY: "auto", // Enable vertical scrolling
+    textAlign: "center",
+    margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
+  };
+
+  const formInputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "6px", // Reduced padding for compactness
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px", // Reduced margin
+  };
+
+  const formSelectStyle = {
+    ...formInputStyle,
+    padding: "8px",
+    borderRadius: "5px",
+    height: "32px", // Fixed height to ensure dropdown visibility
+  };
+
+  const formCheckboxStyle = {
+    display: "inline",
+    width: "auto", // Adjusted for better alignment
+    marginRight: "5px",
+  };
+
+  const formLabelStyle = {
+    fontSize: "14px", // Slightly smaller font
+    display: "block",
+    width: "100%",
+    marginTop: "6px", // Reduced margin
+    marginBottom: "4px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const formButtonStyle = {
+    padding: "10px", // Smaller buttons
+    borderRadius: "10px",
+    margin: "10px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "14px",
+  };
+
+  const formTextareaStyle = {
+    resize: "none",
+    width: "98%",
+    minHeight: "80px", // Reduced height
+    maxHeight: "120px",
+    padding: "6px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px",
+  };
+
+  const formHeadingStyle = {
+    fontSize: "large", // Smaller heading
+    textAlign: "center",
+    color: "#327c35",
+    margin: "10px 0",
+  };
+
   useEffect(() => {
     const fetchUserRoles = async () => {
       const user = auth.currentUser;
@@ -105,8 +164,7 @@ const ManageCustomer = () => {
           const q = query(collection(db, "users"), where("email", "==", user.email));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0].data();
-            setUserRoles(userDoc.roles || []);
+            setUserRoles(querySnapshot.docs[0].data().roles || []);
           }
         } catch (error) {
           console.error("Error fetching user roles:", error);
@@ -120,34 +178,36 @@ const ManageCustomer = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const fetchCustomersAndMetrics = async () => {
+    const fetchData = async () => {
       try {
-        const customerSnapshot = await getDocs(collection(db, "customers"));
+        const [customerSnapshot, metricsSnapshot, projectSnapshot] = await Promise.all([
+          getDocs(collection(db, "customers")),
+          getDocs(collection(db, "customerMetrics")),
+          getDocs(collection(db, "projects")),
+        ]);
+
         const customersData = customerSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate
-            ? doc.data().createdAt.toDate()
-            : new Date(doc.data().createdAt),
-          signUpDate: doc.data().signUpDate?.toDate
-            ? doc.data().signUpDate.toDate()
-            : null,
+          createdAt: doc.data().createdAt?.toDate() || new Date(doc.data().createdAt),
+          signUpDate: doc.data().signUpDate?.toDate() || null,
         }));
 
-        const metricsSnapshot = await getDocs(collection(db, "customerMetrics"));
         const metricsData = metricsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          metricDate: doc.data().metricDate?.toDate
-            ? doc.data().metricDate.toDate()
-            : new Date(doc.data().metricDate),
+          metricDate: doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
+        }));
+
+        const projectsData = projectSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          projectId: doc.data().projectId,
+          name: doc.data().name || "Unnamed Project",
         }));
 
         const latestMetricsData = {};
         customersData.forEach((customer) => {
-          const customerMetrics = metricsData.filter(
-            (metric) => metric.customerId === customer.customerId
-          );
+          const customerMetrics = metricsData.filter((metric) => metric.customerId === customer.customerId);
           const latestNps = customerMetrics
             .filter((m) => m.metricType === "nps")
             .sort((a, b) => b.metricDate - a.metricDate)[0];
@@ -168,34 +228,17 @@ const ManageCustomer = () => {
           setCustomers(customersData);
           setFilteredCustomers(customersData);
           setLatestMetrics(latestMetricsData);
+          setProjects(projectsData);
         }
       } catch (error) {
-        console.error("Error fetching customers or metrics:", error);
+        console.error("Error fetching data:", error);
       }
     };
 
-    fetchCustomersAndMetrics();
+    fetchData();
     return () => {
       isMounted = false;
     };
-  }, []);
-
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "projects"));
-        const projectsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          projectId: doc.data().projectId,
-          name: doc.data().name || "Unnamed Project",
-        }));
-        setProjects(projectsData);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      }
-    };
-
-    fetchProjects();
   }, []);
 
   useEffect(() => {
@@ -353,7 +396,7 @@ const ManageCustomer = () => {
     setChsDate(null);
   };
 
-  const handleEdit = async (customer) => {
+  const handleEdit = (customer) => {
     setEditingCustomer(customer);
     setCustomerName(customer.customerName || "");
     setEmail(customer.email || "");
@@ -374,20 +417,21 @@ const ManageCustomer = () => {
     setOpen(true);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     if (!customerName || !email || !status || !subscriptionTier || !feature) {
       alert("Customer Name, Email, Status, Subscription Tier, and Feature are required.");
       return;
     }
-    if ((nps && !npsDate) || (!nps && npsDate)) {
+    if ((nps && !npsDate) || (npsDate && !nps)) {
       alert("Both NPS value and NPS Date are required if one is provided.");
       return;
     }
-    if ((csat && !csatDate) || (!csat && csatDate)) {
+    if ((csat && !csatDate) || (csatDate && !csat)) {
       alert("Both CSAT value and CSAT Date are required if one is provided.");
       return;
     }
-    if ((chs && !chsDate) || (!chs && chsDate)) {
+    if ((chs && !chsDate) || (chsDate && !chs)) {
       alert("Both CHS value and CHS Date are required if one is provided.");
       return;
     }
@@ -420,9 +464,9 @@ const ManageCustomer = () => {
         setCustomers([...customers, { id: docRef.id, ...newCustomer }]);
       }
 
-      // Save metrics to customerMetrics collection
+      const metricsToSave = [];
       if (nps && npsDate && Number(nps) >= 0 && Number(nps) <= 100) {
-        await addDoc(collection(db, "customerMetrics"), {
+        metricsToSave.push({
           customerId: newCustomer.customerId,
           metricType: "nps",
           value: Number(nps),
@@ -431,7 +475,7 @@ const ManageCustomer = () => {
         });
       }
       if (csat && csatDate && Number(csat) >= 0 && Number(csat) <= 100) {
-        await addDoc(collection(db, "customerMetrics"), {
+        metricsToSave.push({
           customerId: newCustomer.customerId,
           metricType: "csat",
           value: Number(csat),
@@ -440,7 +484,7 @@ const ManageCustomer = () => {
         });
       }
       if (chs && chsDate) {
-        await addDoc(collection(db, "customerMetrics"), {
+        metricsToSave.push({
           customerId: newCustomer.customerId,
           metricType: "chs",
           value: Number(chs),
@@ -449,45 +493,48 @@ const ManageCustomer = () => {
         });
       }
 
-      // Refresh metrics after saving
-      const metricsSnapshot = await getDocs(collection(db, "customerMetrics"));
-      const metricsData = metricsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        metricDate: doc.data().metricDate?.toDate
-          ? doc.data().metricDate.toDate()
-          : new Date(doc.data().metricDate),
-      }));
+      if (metricsToSave.length > 0) {
+        await Promise.all(metricsToSave.map((metric) => addDoc(collection(db, "customerMetrics"), metric)));
+      }
 
-      const latestMetricsData = {};
-      customers.forEach((customer) => {
-        const customerMetrics = metricsData.filter(
-          (metric) => metric.customerId === customer.customerId
-        );
-        const latestNps = customerMetrics
-          .filter((m) => m.metricType === "nps")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestCsat = customerMetrics
-          .filter((m) => m.metricType === "csat")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestChs = customerMetrics
-          .filter((m) => m.metricType === "chs")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        latestMetricsData[customer.customerId] = {
-          nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
-          csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
-          chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
-        };
-      });
-      setLatestMetrics(latestMetricsData);
-
+      await refreshMetrics();
       handleClose();
     } catch (error) {
       console.error("Error saving customer:", error);
     }
   };
 
-  const handleNpsUpdateSubmit = async () => {
+  const refreshMetrics = async () => {
+    const metricsSnapshot = await getDocs(collection(db, "customerMetrics"));
+    const metricsData = metricsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      metricDate: doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
+    }));
+
+    const latestMetricsData = {};
+    customers.forEach((customer) => {
+      const customerMetrics = metricsData.filter((metric) => metric.customerId === customer.customerId);
+      const latestNps = customerMetrics
+        .filter((m) => m.metricType === "nps")
+        .sort((a, b) => b.metricDate - a.metricDate)[0];
+      const latestCsat = customerMetrics
+        .filter((m) => m.metricType === "csat")
+        .sort((a, b) => b.metricDate - a.metricDate)[0];
+      const latestChs = customerMetrics
+        .filter((m) => m.metricType === "chs")
+        .sort((a, b) => b.metricDate - a.metricDate)[0];
+      latestMetricsData[customer.customerId] = {
+        nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
+        csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
+        chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
+      };
+    });
+    setLatestMetrics(latestMetricsData);
+  };
+
+  const handleNpsUpdateSubmit = async (e) => {
+    e.preventDefault();
     if (!nps || !npsDate) {
       alert("Both NPS value and NPS Date are required.");
       return;
@@ -509,46 +556,15 @@ const ManageCustomer = () => {
         metricDate: npsDate,
         createdAt: new Date(),
       });
-
-      // Refresh metrics
-      const metricsSnapshot = await getDocs(collection(db, "customerMetrics"));
-      const metricsData = metricsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        metricDate: doc.data().metricDate?.toDate
-          ? doc.data().metricDate.toDate()
-          : new Date(doc.data().metricDate),
-      }));
-
-      const latestMetricsData = {};
-      customers.forEach((customer) => {
-        const customerMetrics = metricsData.filter(
-          (metric) => metric.customerId === customer.customerId
-        );
-        const latestNps = customerMetrics
-          .filter((m) => m.metricType === "nps")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestCsat = customerMetrics
-          .filter((m) => m.metricType === "csat")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestChs = customerMetrics
-          .filter((m) => m.metricType === "chs")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        latestMetricsData[customer.customerId] = {
-          nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
-          csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
-          chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
-        };
-      });
-      setLatestMetrics(latestMetricsData);
-
+      await refreshMetrics();
       handleNpsUpdateClose();
     } catch (error) {
       console.error("Error saving NPS:", error);
     }
   };
 
-  const handleCsatUpdateSubmit = async () => {
+  const handleCsatUpdateSubmit = async (e) => {
+    e.preventDefault();
     if (!csat || !csatDate) {
       alert("Both CSAT value and CSAT Date are required.");
       return;
@@ -570,46 +586,15 @@ const ManageCustomer = () => {
         metricDate: csatDate,
         createdAt: new Date(),
       });
-
-      // Refresh metrics
-      const metricsSnapshot = await getDocs(collection(db, "customerMetrics"));
-      const metricsData = metricsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        metricDate: doc.data().metricDate?.toDate
-          ? doc.data().metricDate.toDate()
-          : new Date(doc.data().metricDate),
-      }));
-
-      const latestMetricsData = {};
-      customers.forEach((customer) => {
-        const customerMetrics = metricsData.filter(
-          (metric) => metric.customerId === customer.customerId
-        );
-        const latestNps = customerMetrics
-          .filter((m) => m.metricType === "nps")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestCsat = customerMetrics
-          .filter((m) => m.metricType === "csat")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestChs = customerMetrics
-          .filter((m) => m.metricType === "chs")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        latestMetricsData[customer.customerId] = {
-          nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
-          csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
-          chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
-        };
-      });
-      setLatestMetrics(latestMetricsData);
-
+      await refreshMetrics();
       handleCsatUpdateClose();
     } catch (error) {
       console.error("Error saving CSAT:", error);
     }
   };
 
-  const handleChsUpdateSubmit = async () => {
+  const handleChsUpdateSubmit = async (e) => {
+    e.preventDefault();
     if (!chs || !chsDate) {
       alert("Both CHS value and CHS Date are required.");
       return;
@@ -627,46 +612,15 @@ const ManageCustomer = () => {
         metricDate: chsDate,
         createdAt: new Date(),
       });
-
-      // Refresh metrics
-      const metricsSnapshot = await getDocs(collection(db, "customerMetrics"));
-      const metricsData = metricsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        metricDate: doc.data().metricDate?.toDate
-          ? doc.data().metricDate.toDate()
-          : new Date(doc.data().metricDate),
-      }));
-
-      const latestMetricsData = {};
-      customers.forEach((customer) => {
-        const customerMetrics = metricsData.filter(
-          (metric) => metric.customerId === customer.customerId
-        );
-        const latestNps = customerMetrics
-          .filter((m) => m.metricType === "nps")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestCsat = customerMetrics
-          .filter((m) => m.metricType === "csat")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        const latestChs = customerMetrics
-          .filter((m) => m.metricType === "chs")
-          .sort((a, b) => b.metricDate - a.metricDate)[0];
-        latestMetricsData[customer.customerId] = {
-          nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
-          csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
-          chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
-        };
-      });
-      setLatestMetrics(latestMetricsData);
-
+      await refreshMetrics();
       handleChsUpdateClose();
     } catch (error) {
       console.error("Error saving CHS:", error);
     }
   };
 
-  const handleSupportSubmit = async () => {
+  const handleSupportSubmit = async (e) => {
+    e.preventDefault();
     if (!supportProjectIds.length || !issueDescription || !numberOfIssues || !complaintDate) {
       alert("Project IDs, Issue Description, Number of Issues, and Complaint Date are required.");
       return;
@@ -676,26 +630,25 @@ const ManageCustomer = () => {
       return;
     }
 
-    const supportTicket = {
-      customerId: supportCustomer.customerId,
-      projectIds: supportProjectIds,
-      issueDescription,
-      numberOfIssues: Number(numberOfIssues),
-      complaintDate,
-      resolvedDate,
-      responseChannel: responseChannel.length > 0 ? responseChannel : ["None"],
-      createdAt: new Date(),
-    };
-
     try {
-      await addDoc(collection(db, "supportTickets"), supportTicket);
+      await addDoc(collection(db, "supportTickets"), {
+        customerId: supportCustomer.customerId,
+        projectIds: supportProjectIds,
+        issueDescription,
+        numberOfIssues: Number(numberOfIssues),
+        complaintDate,
+        resolvedDate,
+        responseChannel: responseChannel.length > 0 ? responseChannel : ["None"],
+        createdAt: new Date(),
+      });
       handleSupportClose();
     } catch (error) {
       console.error("Error saving support ticket:", error);
     }
   };
 
-  const handleUpgradeSubmit = async () => {
+  const handleUpgradeSubmit = async (e) => {
+    e.preventDefault();
     if (!planUpgradeDate) {
       alert("Plan Upgrade Date is required.");
       return;
@@ -705,20 +658,20 @@ const ManageCustomer = () => {
       return;
     }
 
-    const upgradeData = {
-      customerId: upgradeCustomer.customerId,
-      subscriptionTier: upgradeSubscriptionTier,
-      planUpgradeDate,
-      projectIds: upgradeCustomer.projectIds || [],
-      createdAt: new Date(),
-    };
-
     try {
-      await addDoc(collection(db, "upgrades"), upgradeData);
-      await updateDoc(doc(db, "customers", upgradeCustomer.id), {
-        subscriptionTier: upgradeSubscriptionTier,
-        status: "active",
-      });
+      await Promise.all([
+        addDoc(collection(db, "upgrades"), {
+          customerId: upgradeCustomer.customerId,
+          subscriptionTier: upgradeSubscriptionTier,
+          planUpgradeDate,
+          projectIds: upgradeCustomer.projectIds || [],
+          createdAt: new Date(),
+        }),
+        updateDoc(doc(db, "customers", upgradeCustomer.id), {
+          subscriptionTier: upgradeSubscriptionTier,
+          status: "active",
+        }),
+      ]);
       setCustomers(
         customers.map((cust) =>
           cust.id === upgradeCustomer.id
@@ -732,7 +685,8 @@ const ManageCustomer = () => {
     }
   };
 
-  const handleCancelSubmit = async () => {
+  const handleCancelSubmit = async (e) => {
+    e.preventDefault();
     if (!cancellationDate || !churnReason) {
       alert("Cancellation Date and Churn Reason are required.");
       return;
@@ -742,19 +696,19 @@ const ManageCustomer = () => {
       return;
     }
 
-    const cancellationData = {
-      customerId: cancelCustomer.customerId,
-      cancellationDate,
-      churnReason,
-      createdAt: new Date(),
-    };
-
     try {
-      await addDoc(collection(db, "cancellations"), cancellationData);
-      await updateDoc(doc(db, "customers", cancelCustomer.id), {
-        status: "inactive",
-        churnReason,
-      });
+      await Promise.all([
+        addDoc(collection(db, "cancellations"), {
+          customerId: cancelCustomer.customerId,
+          cancellationDate,
+          churnReason,
+          createdAt: new Date(),
+        }),
+        updateDoc(doc(db, "customers", cancelCustomer.id), {
+          status: "inactive",
+          churnReason,
+        }),
+      ]);
       setCustomers(
         customers.map((cust) =>
           cust.id === cancelCustomer.id
@@ -798,6 +752,18 @@ const ManageCustomer = () => {
     setResponseChannel([]);
   };
 
+  const handleProjectIdChange = (id) => {
+    setProjectIds((prev) =>
+      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+    );
+  };
+
+  const handleResponseChannelChange = (channel) => {
+    setResponseChannel((prev) =>
+      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]
+    );
+  };
+
   if (loadingRoles) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
@@ -814,1212 +780,728 @@ const ManageCustomer = () => {
     userRoles.includes("ManageCustomer:read") && !userRoles.includes("ManageCustomer:full access");
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Box
+    <Box sx={{ backgroundColor: darkMode ? "#212121" : "#f3f3f3", minHeight: "100vh" }}>
+      <DashboardNavbar
+        absolute
+        light={!darkMode}
         sx={{
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          minHeight: "100vh",
+          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backdropFilter: "blur(10px)",
+          zIndex: 1100,
+          padding: "0 16px",
+          minHeight: "60px",
+          top: "8px",
+          left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        }}
+      />
+      <MDBox
+        p={3}
+        sx={{
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          marginTop: { xs: "140px", md: "100px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
+          minHeight: "calc(100vh - 80px)",
+          paddingTop: { xs: "32px", md: "24px" },
         }}
       >
-        <DashboardNavbar
-          absolute
-          light={!darkMode}
-          isMini={false}
-          sx={{
-            backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
-            backdropFilter: "blur(10px)",
-            zIndex: 1100,
-            padding: "0 16px",
-            minHeight: "60px",
-            top: "8px",
-            left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
-            borderRadius: "12px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          }}
-        />
-        <MDBox
-          p={3}
-          sx={{
-            marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            marginTop: { xs: "140px", md: "100px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
-            minHeight: "calc(100vh - 80px)",
-            paddingTop: { xs: "32px", md: "24px" },
-            zIndex: 1000,
-          }}
-        >
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Card>
-                <MDBox
-                  mx={2}
-                  mt={-3}
-                  py={3}
-                  px={2}
-                  variant="gradient"
-                  bgColor={darkMode ? "dark" : "info"}
-                  borderRadius="lg"
-                  coloredShadow={darkMode ? "dark" : "info"}
-                >
-                  <MDTypography
-                    variant="h6"
-                    color={darkMode ? "white" : "white"}
-                    sx={{
-                      fontFamily: "'Poppins', 'Roboto', sans-serif",
-                      fontWeight: 700,
-                    }}
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Card>
+              <MDBox
+                mx={2}
+                mt={-3}
+                py={3}
+                px={2}
+                variant="gradient"
+                bgColor={darkMode ? "dark" : "info"}
+                borderRadius="lg"
+                coloredShadow={darkMode ? "dark" : "info"}
+              >
+                <MDTypography variant="h6" color="white">
+                  Customer Management
+                </MDTypography>
+              </MDBox>
+              <MDBox pt={3} pb={2} px={2} display="flex" flexDirection={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} gap={2} justifyContent="space-between">
+                <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} width={{ xs: "100%", sm: "auto" }}>
+                  {!isReadOnly && (
+                    <MDButton variant="gradient" color={darkMode ? "dark" : "info"} onClick={handleClickOpen} fullWidth={{ xs: true, sm: false }}>
+                      Add Customer
+                    </MDButton>
+                  )}
+                  <input
+                    type="text"
+                    placeholder="Search by Name or Email"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    style={formInputStyle}
+                  />
+                </Box>
+                <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} alignItems={{ xs: "stretch", sm: "center" }} width={{ xs: "100%", sm: "auto" }}>
+                  <select
+                    value={dateFilterType}
+                    onChange={(e) => setDateFilterType(e.target.value)}
+                    style={formSelectStyle}
                   >
-                    Customer Management
-                  </MDTypography>
-                </MDBox>
-                <MDBox
-                  pt={3}
-                  pb={2}
-                  px={2}
-                  display="flex"
-                  alignItems="center"
-                  gap={2}
-                  justifyContent="space-between"
-                >
-                  <Box display="flex" gap={2}>
-                    {!isReadOnly && (
-                      <MDButton
-                        variant="gradient"
-                        color={darkMode ? "dark" : "info"}
-                        onClick={handleClickOpen}
-                      >
-                        Add Customer
-                      </MDButton>
-                    )}
-                    <TextField
-                      label="Search by Name or Email"
-                      variant="outlined"
-                      size="small"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      sx={{
-                        maxWidth: 300,
-                        "& .MuiOutlinedInput-root": {
-                          borderRadius: "8px",
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                          color: darkMode ? "white" : "black",
-                        },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Box>
-                  <Box display="flex" gap={2} alignItems="center">
-                    <FormControl variant="outlined" size="small">
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Date Filter
-                      </InputLabel>
-                      <Select
-                        value={dateFilterType}
-                        onChange={(e) => setDateFilterType(e.target.value)}
-                        label="Date Filter"
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          minWidth: 120,
-                        }}
-                      >
-                        <MenuItem value="all">All Dates</MenuItem>
-                        <MenuItem value="today">Today</MenuItem>
-                        <MenuItem value="week">This Week</MenuItem>
-                        <MenuItem value="month">This Month</MenuItem>
-                        <MenuItem value="3months">Last 3 Months</MenuItem>
-                        <MenuItem value="year">This Year</MenuItem>
-                        <MenuItem value="custom">Custom Range</MenuItem>
-                      </Select>
-                    </FormControl>
-                    {dateFilterType === "custom" && (
-                      <Button
-                        variant="outlined"
-                        onClick={() => setDatePickerOpen(true)}
-                        sx={{
-                          height: 40,
-                          color: darkMode ? "white" : "black",
-                          borderColor: darkMode ? "white" : "black",
-                        }}
-                      >
-                        Choose Dates
-                      </Button>
-                    )}
-                  </Box>
-                </MDBox>
-
-                <Dialog
-                  open={datePickerOpen}
-                  onClose={() => setDatePickerOpen(false)}
-                  sx={{
-                    "& .MuiDialog-paper": {
-                      backgroundColor: darkMode ? "background.default" : "background.paper",
-                    },
-                  }}
-                >
-                  <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                    Select Date Range
-                  </DialogTitle>
-                  <DialogContent sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }}>
-                    <TextField
-                      label="Start Date"
-                      type="date"
-                      value={customStartDate ? customStartDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setCustomStartDate(new Date(e.target.value))}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                    <TextField
-                      label="End Date"
-                      type="date"
-                      value={customEndDate ? customEndDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setCustomEndDate(new Date(e.target.value))}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </DialogContent>
-                  <DialogActions>
+                    <option value="all">All Dates</option>
+                    <option value="today">Today</option>
+                    <option value="week">This Week</option>
+                    <option value="month">This Month</option>
+                    <option value="3months">Last 3 Months</option>
+                    <option value="year">This Year</option>
+                    <option value="custom">Custom Range</option>
+                  </select>
+                  {dateFilterType === "custom" && (
                     <Button
-                      onClick={() => setDatePickerOpen(false)}
-                      sx={{ color: darkMode ? "white" : "black" }}
+                      variant="outlined"
+                      onClick={() => setDatePickerOpen(true)}
+                      sx={{
+                        height: 40,
+                        color: darkMode ? "white" : "black",
+                        borderColor: darkMode ? "white" : "black",
+                        width: { xs: "100%", sm: "auto" },
+                      }}
                     >
-                      Cancel
+                      Choose Dates
                     </Button>
-                    <Button onClick={() => setDatePickerOpen(false)} color="primary">
-                      Apply
-                    </Button>
-                  </DialogActions>
-                </Dialog>
+                  )}
+                </Box>
+              </MDBox>
 
-                <Grid container spacing={3} sx={{ padding: "16px" }}>
-                  {filteredCustomers.map((customer) => (
-                    <Grid item xs={12} key={customer.id}>
-                      <Card
+              <Box sx={{ ...formContainerStyle, display: datePickerOpen ? "block" : "none" }}>
+                <form onSubmit={(e) => { e.preventDefault(); setDatePickerOpen(false); }}>
+                  <Typography sx={formHeadingStyle}>Select Date Range</Typography>
+                  <label style={formLabelStyle}>Start Date*</label>
+                  <input
+                    type="date"
+                    value={customStartDate ? customStartDate.toISOString().split("T")[0] : ""}
+                    onChange={(e) => setCustomStartDate(e.target.value ? new Date(e.target.value) : null)}
+                    required
+                    style={formInputStyle}
+                  />
+                  <label style={formLabelStyle}>End Date*</label>
+                  <input
+                    type="date"
+                    value={customEndDate ? customEndDate.toISOString().split("T")[0] : ""}
+                    onChange={(e) => setCustomEndDate(e.target.value ? new Date(e.target.value) : null)}
+                    required
+                    style={formInputStyle}
+                  />
+                  <button type="button" onClick={() => setDatePickerOpen(false)} style={formButtonStyle}>Cancel</button>
+                  <button type="submit" style={formButtonStyle}>Apply</button>
+                </form>
+              </Box>
+
+              <Grid container spacing={3} sx={{ padding: "16px" }}>
+                {filteredCustomers.map((customer) => (
+                  <Grid item xs={12} key={customer.id}>
+                    <Card
+                      sx={{
+                        background: darkMode
+                          ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                          : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                        borderRadius: "12px",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        padding: "20px",
+                        transition: "0.3s ease-in-out",
+                        "&:hover": { boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)", transform: "scale(1.02)" },
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                      }}
+                    >
+                      <Box
                         sx={{
-                          background: darkMode
-                            ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
-                            : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
-                          borderRadius: "12px",
-                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                          padding: "20px",
-                          transition: "0.3s ease-in-out",
-                          "&:hover": {
-                            boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
-                            transform: "scale(1.02)",
-                          },
+                          width: { xs: "100%", sm: "120px" },
                           display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: customer.subscriptionTier === "premium" ? "#4caf50" : darkMode ? "#90A4AE" : "#B0BEC5",
+                          borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+                          marginRight: { sm: "16px" },
+                          marginBottom: { xs: "16px", sm: 0 },
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
                         }}
                       >
-                        <Box
-                          sx={{
-                            width: "120px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor:
-                              customer.subscriptionTier === "premium"
-                                ? darkMode
-                                  ? "#4caf50"
-                                  : "#4caf50"
-                                : darkMode
-                                ? "#90A4AE"
-                                : "#B0BEC5",
-                            borderRadius: "8px 0 0 8px",
-                            marginRight: "16px",
-                            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                          }}
+                        <MDTypography
+                          variant="body2"
+                          color="white"
+                          sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
                         >
-                          <MDTypography
-                            variant="body2"
-                            color={darkMode ? "white" : "white"}
-                            sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
-                          >
-                            {customer.subscriptionTier === "premium" ? "Premium" : "Free"}
-                          </MDTypography>
-                        </Box>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <CardContent>
-                            <Grid container spacing={2}>
-                              <Grid item xs={12} sm={6}>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Customer ID: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.customerId}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Name: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.customerName}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Email: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.email}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Phone: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.phone || "N/A"}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Address: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.address || "N/A"}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Status: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.status}</span>
-                                </MDTypography>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Subscription Tier: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.subscriptionTier}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Feature: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.feature || "N/A"}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Project IDs: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.projectIds?.join(", ") || "None"}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>Sign-Up Date: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.signUpDate?.toLocaleDateString() || "N/A"}</span>
-                                </MDTypography>
-                                <MDTypography
-                                  variant="body2"
-                                  color={darkMode ? "white" : "textSecondary"}
-                                  sx={{ mb: 1 }}
-                                >
-                                  <span>CLTV: </span>
-                                  <span style={{ fontWeight: "bold" }}>{customer.cltv}</span>
-                                </MDTypography>
-                                <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                                  <MDButton
-                                    variant="outlined"
-                                    color={darkMode ? "white" : "info"}
-                                    size="small"
-                                    onClick={() => handleNpsUpdateOpen(customer)}
-                                  >
-                                    <Icon fontSize="small">update</Icon>
-                                    NPS: {latestMetrics[customer.customerId]?.nps?.value ?? "N/A"} 
-                                    {latestMetrics[customer.customerId]?.nps?.date 
-                                      ? ` (${latestMetrics[customer.customerId].nps.date.toLocaleDateString()})`
-                                      : ""}
-                                  </MDButton>
-                                  <MDButton
-                                    variant="outlined"
-                                    color={darkMode ? "white" : "info"}
-                                    size="small"
-                                    onClick={() => handleCsatUpdateOpen(customer)}
-                                  >
-                                    <Icon fontSize="small">update</Icon>
-                                    CSAT: {latestMetrics[customer.customerId]?.csat?.value ?? "N/A"} 
-                                    {latestMetrics[customer.customerId]?.csat?.date 
-                                      ? ` (${latestMetrics[customer.customerId].csat.date.toLocaleDateString()})`
-                                      : ""}
-                                  </MDButton>
-                                  <MDButton
-                                    variant="outlined"
-                                    color={darkMode ? "white" : "info"}
-                                    size="small"
-                                    onClick={() => handleChsUpdateOpen(customer)}
-                                  >
-                                    <Icon fontSize="small">update</Icon>
-                                    CHS: {latestMetrics[customer.customerId]?.chs?.value ?? "N/A"} 
-                                    {latestMetrics[customer.customerId]?.chs?.date 
-                                      ? ` (${latestMetrics[customer.customerId].chs.date.toLocaleDateString()})`
-                                      : ""}
-                                  </MDButton>
-                                </Box>
-                              </Grid>
+                          {customer.subscriptionTier === "premium" ? "Premium" : "Free"}
+                        </MDTypography>
+                      </Box>
+                      <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
+                        <CardContent>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Customer ID: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.customerId}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Name: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.customerName}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Email: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.email}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Phone: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.phone || "N/A"}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Address: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.address || "N/A"}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Status: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.status}</span>
+                              </MDTypography>
                             </Grid>
-                          </CardContent>
-                          {!isReadOnly && (
-                            <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
-                              <MDButton
-                                variant="gradient"
-                                color={darkMode ? "dark" : "info"}
-                                onClick={() => handleEdit(customer)}
+                            <Grid item xs={12} sm={6}>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Subscription Tier: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.subscriptionTier}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Feature: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.feature || "N/A"}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Project IDs: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.projectIds?.join(", ") || "None"}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Sign-Up Date: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.signUpDate?.toLocaleDateString() || "N/A"}</span>
+                              </MDTypography>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>CLTV: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.cltv}</span>
+                              </MDTypography>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  flexDirection: { xs: "column", sm: "row" },
+                                  gap: 1,
+                                  mt: 1,
+                                  flexWrap: "wrap",
+                                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                                }}
                               >
-                                <Icon fontSize="medium">edit</Icon> Edit
-                              </MDButton>
-                              <MDButton
-                                variant="gradient"
-                                color={darkMode ? "dark" : "success"}
-                                onClick={() => handleSupportOpen(customer)}
-                              >
-                                <Icon fontSize="medium">support</Icon> Support
-                              </MDButton>
-                              {customer.subscriptionTier === "free" && (
                                 <MDButton
-                                  variant="gradient"
-                                  color={darkMode ? "dark" : "warning"}
-                                  onClick={() => handleUpgradeOpen(customer)}
+                                  variant="outlined"
+                                  color={darkMode ? "white" : "info"}
+                                  size="small"
+                                  onClick={() => handleNpsUpdateOpen(customer)}
+                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
                                 >
-                                  <Icon fontSize="medium">upgrade</Icon> Upgrade
+                                  <Icon fontSize="small">update</Icon>
+                                  NPS: {latestMetrics[customer.customerId]?.nps?.value ?? "N/A"}
+                                  {latestMetrics[customer.customerId]?.nps?.date
+                                    ? ` (${latestMetrics[customer.customerId].nps.date.toLocaleDateString()})`
+                                    : ""}
                                 </MDButton>
-                              )}
+                                <MDButton
+                                  variant="outlined"
+                                  color={darkMode ? "white" : "info"}
+                                  size="small"
+                                  onClick={() => handleCsatUpdateOpen(customer)}
+                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
+                                >
+                                  <Icon fontSize="small">update</Icon>
+                                  CSAT: {latestMetrics[customer.customerId]?.csat?.value ?? "N/A"}
+                                  {latestMetrics[customer.customerId]?.csat?.date
+                                    ? ` (${latestMetrics[customer.customerId].csat.date.toLocaleDateString()})`
+                                    : ""}
+                                </MDButton>
+                                <MDButton
+                                  variant="outlined"
+                                  color={darkMode ? "white" : "info"}
+                                  size="small"
+                                  onClick={() => handleChsUpdateOpen(customer)}
+                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
+                                >
+                                  <Icon fontSize="small">update</Icon>
+                                  CHS: {latestMetrics[customer.customerId]?.chs?.value ?? "N/A"}
+                                  {latestMetrics[customer.customerId]?.chs?.date
+                                    ? ` (${latestMetrics[customer.customerId].chs.date.toLocaleDateString()})`
+                                    : ""}
+                                </MDButton>
+                              </Box>
+                            </Grid>
+                          </Grid>
+                        </CardContent>
+                        {!isReadOnly && (
+                          <CardActions
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              justifyContent: { xs: "space-between", sm: "flex-end" },
+                              alignItems: "center",
+                              padding: "8px 16px",
+                            }}
+                          >
+                            <MDButton
+                              variant="gradient"
+                              color={darkMode ? "dark" : "info"}
+                              onClick={() => handleEdit(customer)}
+                              sx={{
+                                flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                minWidth: { xs: "auto", sm: "100px" },
+                                maxWidth: { xs: "50%", sm: "auto" },
+                              }}
+                            >
+                              <Icon fontSize="medium">edit</Icon> Edit
+                            </MDButton>
+                            <MDButton
+                              variant="gradient"
+                              color={darkMode ? "dark" : "success"}
+                              onClick={() => handleSupportOpen(customer)}
+                              sx={{
+                                flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                minWidth: { xs: "auto", sm: "100px" },
+                                maxWidth: { xs: "50%", sm: "auto" },
+                              }}
+                            >
+                              <Icon fontSize="medium">support</Icon> Support
+                            </MDButton>
+                            {customer.subscriptionTier === "free" && (
                               <MDButton
                                 variant="gradient"
-                                color="error"
-                                onClick={() => handleCancelOpen(customer)}
+                                color={darkMode ? "dark" : "warning"}
+                                onClick={() => handleUpgradeOpen(customer)}
+                                sx={{
+                                  flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                  minWidth: { xs: "auto", sm: "100px" },
+                                  maxWidth: { xs: "50%", sm: "auto" },
+                                }}
                               >
-                                <Icon fontSize="medium">cancel</Icon> Cancel
+                                <Icon fontSize="medium">upgrade</Icon> Upgrade
                               </MDButton>
-                            </CardActions>
-                          )}
-                        </Box>
-                      </Card>
-                    </Grid>
-                  ))}
-                </Grid>
-              </Card>
-            </Grid>
+                            )}
+                            <MDButton
+                              variant="gradient"
+                              color="error"
+                              onClick={() => handleCancelOpen(customer)}
+                              sx={{
+                                flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                minWidth: { xs: "auto", sm: "100px" },
+                                maxWidth: { xs: "50%", sm: "auto" },
+                              }}
+                            >
+                              <Icon fontSize="medium">cancel</Icon> Cancel
+                            </MDButton>
+                          </CardActions>
+                        )}
+                      </Box>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Card>
           </Grid>
-        </MDBox>
-        <Box
-          sx={{
-            marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
-            zIndex: 1100,
-          }}
-        >
-          <Footer />
-        </Box>
-
-        {!isReadOnly && (
-          <>
-            <Dialog
-              open={open}
-              onClose={handleClose}
-              maxWidth="md"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                {editingCustomer ? "Edit Customer" : "Add Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Customer Name"
-                      placeholder="Enter Customer Name"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="email"
-                      label="Email"
-                      placeholder="Enter Email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="tel"
-                      label="Phone"
-                      placeholder="Enter Phone Number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Address"
-                      placeholder="Enter Address"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth required>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>Status</InputLabel>
-                      <Select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        label="Status"
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        <MenuItem value="active">Active</MenuItem>
-                        <MenuItem value="inactive">Inactive</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth required>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Subscription Tier
-                      </InputLabel>
-                      <Select
-                        value={subscriptionTier}
-                        onChange={(e) => setSubscriptionTier(e.target.value)}
-                        label="Subscription Tier"
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        <MenuItem value="free">Free</MenuItem>
-                        <MenuItem value="premium">Premium</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth required>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Feature
-                      </InputLabel>
-                      <Select
-                        value={feature}
-                        onChange={(e) => setFeature(e.target.value)}
-                        label="Feature"
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        {featureOptions.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <FormControl fullWidth>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Project IDs
-                      </InputLabel>
-                      <Select
-                        multiple
-                        value={projectIds}
-                        onChange={(e) => setProjectIds(e.target.value)}
-                        label="Project IDs"
-                        renderValue={(selected) => (
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                            {selected.map((value) => (
-                              <Chip
-                                key={value}
-                                label={value}
-                                sx={{
-                                  backgroundColor: darkMode ? "#616161" : "#e0e0e0",
-                                  color: darkMode ? "white" : "black",
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        )}
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        {projects.map((project) => (
-                          <MenuItem key={project.projectId} value={project.projectId}>
-                            {project.projectId} - {project.name}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Sign-Up Date"
-                      value={signUpDate ? signUpDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setSignUpDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Net Promoter Score (0-100)"
-                      placeholder="Enter NPS (0-100)"
-                      value={nps}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        if (value >= 0 && value <= 100) setNps(e.target.value);
-                      }}
-                      inputProps={{ min: 0, max: 100 }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="NPS Date"
-                      value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Customer Satisfaction Score (0-100)"
-                      placeholder="Enter CSAT (0-100)"
-                      value={csat}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        if (value >= 0 && value <= 100) setCsat(e.target.value);
-                      }}
-                      inputProps={{ min: 0, max: 100 }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="CSAT Date"
-                      value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Customer Health Score"
-                      placeholder="Enter CHS"
-                      value={chs}
-                      onChange={(e) => setChs(e.target.value)}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="CHS Date"
-                      value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Customer Lifetime Value"
-                      placeholder="Enter CLTV"
-                      value={cltv}
-                      onChange={(e) => setCltv(e.target.value)}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSubmit} color="primary">
-                  Save
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <Dialog
-              open={supportOpen}
-              onClose={handleSupportClose}
-              maxWidth="md"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Create Support Ticket for {supportCustomer?.customerName || "Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Project IDs"
-                      value={supportProjectIds.join(", ") || "None"}
-                      InputProps={{ readOnly: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      multiline
-                      rows={4}
-                      label="Issue Description"
-                      placeholder="Describe the issue"
-                      value={issueDescription}
-                      onChange={(e) => setIssueDescription(e.target.value)}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Number of Issues"
-                      placeholder="Enter Number of Issues"
-                      value={numberOfIssues}
-                      onChange={(e) => setNumberOfIssues(e.target.value)}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="datetime-local"
-                      label="Complaint Date"
-                      value={
-                        complaintDate
-                          ? complaintDate.toISOString().slice(0, 16)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        setComplaintDate(e.target.value ? new Date(e.target.value) : null)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      type="datetime-local"
-                      label="Resolved Date"
-                      value={
-                        resolvedDate
-                          ? resolvedDate.toISOString().slice(0, 16)
-                          : ""
-                      }
-                      onChange={(e) =>
-                        setResolvedDate(e.target.value ? new Date(e.target.value) : null)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Response Channel
-                      </InputLabel>
-                      <Select
-                        multiple
-                        value={responseChannel}
-                        onChange={(e) => setResponseChannel(e.target.value)}
-                        label="Response Channel"
-                        renderValue={(selected) => (
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                            {selected.map((value) => (
-                              <Chip
-                                key={value}
-                                label={value}
-                                sx={{
-                                  backgroundColor: darkMode ? "#616161" : "#e0e0e0",
-                                  color: darkMode ? "white" : "black",
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        )}
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        {responseChannelOptions.map((channel) => (
-                          <MenuItem key={channel} value={channel}>
-                            {channel}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleSupportClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSupportSubmit} color="primary">
-                  Save
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <Dialog
-              open={upgradeOpen}
-              onClose={handleUpgradeClose}
-              maxWidth="sm"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Upgrade Subscription for {upgradeCustomer?.customerName || "Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Subscription Tier
-                      </InputLabel>
-                      <Select
-                        value={upgradeSubscriptionTier}
-                        onChange={(e) => setUpgradeSubscriptionTier(e.target.value)}
-                        label="Subscription Tier"
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        <MenuItem value="premium">Premium</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Plan Upgrade Date"
-                      value={
-                        planUpgradeDate ? planUpgradeDate.toISOString().split("T")[0] : ""
-                      }
-                      onChange={(e) =>
-                        setPlanUpgradeDate(e.target.value ? new Date(e.target.value) : null)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      label="Project IDs"
-                      value={upgradeCustomer?.projectIds.join(", ") || "None"}
-                      InputProps={{ readOnly: true }}
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleUpgradeClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleUpgradeSubmit} color="primary">
-                  Upgrade
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <Dialog
-              open={cancelOpen}
-              onClose={handleCancelClose}
-              maxWidth="sm"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Cancel Subscription for {cancelCustomer?.customerName || "Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="Cancellation Date"
-                      value={
-                        cancellationDate ? cancellationDate.toISOString().split("T")[0] : ""
-                      }
-                      onChange={(e) =>
-                        setCancellationDate(e.target.value ? new Date(e.target.value) : null)
-                      }
-                      InputLabelProps={{ shrink: true }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl fullWidth required>
-                      <InputLabel sx={{ color: darkMode ? "white" : "black" }}>
-                        Churn Reason
-                      </InputLabel>
-                      <Select
-                        value={churnReason}
-                        onChange={(e) => setChurnReason(e.target.value)}
-                        label="Churn Reason"
-                        sx={{
-                          color: darkMode ? "white" : "black",
-                          "& .MuiSvgIcon-root": { color: darkMode ? "white" : "black" },
-                          backgroundColor: darkMode ? "#424242" : "#fff",
-                        }}
-                      >
-                        {churnReasonOptions.map((reason) => (
-                          <MenuItem key={reason} value={reason}>
-                            {reason}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCancelClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCancelSubmit} color="error">
-                  Confirm Cancellation
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <Dialog
-              open={npsUpdateOpen}
-              onClose={handleNpsUpdateClose}
-              maxWidth="sm"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Update NPS for {updateMetricCustomer?.customerName || "Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Net Promoter Score (0-100)"
-                      placeholder="Enter NPS (0-100)"
-                      value={nps}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        if (value >= 0 && value <= 100) setNps(e.target.value);
-                      }}
-                      inputProps={{ min: 0, max: 100 }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="NPS Date"
-                      value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleNpsUpdateClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleNpsUpdateSubmit} color="primary">
-                  Update
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <Dialog
-              open={csatUpdateOpen}
-              onClose={handleCsatUpdateClose}
-              maxWidth="sm"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Update CSAT for {updateMetricCustomer?.customerName || "Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Customer Satisfaction Score (0-100)"
-                      placeholder="Enter CSAT (0-100)"
-                      value={csat}
-                      onChange={(e) => {
-                        const value = Number(e.target.value);
-                        if (value >= 0 && value <= 100) setCsat(e.target.value);
-                      }}
-                      inputProps={{ min: 0, max: 100 }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="CSAT Date"
-                      value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleCsatUpdateClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCsatUpdateSubmit} color="primary">
-                  Update
-                </Button>
-              </DialogActions>
-            </Dialog>
-
-            <Dialog
-              open={chsUpdateOpen}
-              onClose={handleChsUpdateClose}
-              maxWidth="sm"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Update CHS for {updateMetricCustomer?.customerName || "Customer"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="number"
-                      label="Customer Health Score"
-                      placeholder="Enter CHS"
-                      value={chs}
-                      onChange={(e) => setChs(e.target.value)}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      label="CHS Date"
-                      value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                      onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
-                      InputLabelProps={{ shrink: true }}
-                      required
-                      sx={{
-                        input: { color: darkMode ? "white" : "black" },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                      }}
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={handleChsUpdateClose} sx={{ color: darkMode ? "white" : "black" }}>
-                  Cancel
-                </Button>
-                <Button onClick={handleChsUpdateSubmit} color="primary">
-                  Update
-                </Button>
-              </DialogActions>
-            </Dialog>
-          </>
-        )}
+        </Grid>
+      </MDBox>
+      <Box sx={{ marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" }, backgroundColor: darkMode ? "#212121" : "#f3f3f3" }}>
+        <Footer />
       </Box>
-    </LocalizationProvider>
+
+      {!isReadOnly && (
+        <>
+          <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
+            <form onSubmit={handleSubmit}>
+              <Typography sx={formHeadingStyle}>{editingCustomer ? "Edit Customer" : "Add Customer"}</Typography>
+              <label style={formLabelStyle}>Customer Name*</label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Enter Customer Name"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Email*</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter Email"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Phone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter Phone Number"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Address</label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter Address"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Status*</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <label style={formLabelStyle}>Subscription Tier*</label>
+              <select
+                value={subscriptionTier}
+                onChange={(e) => setSubscriptionTier(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Tier</option>
+                <option value="free">Free</option>
+                <option value="premium">Premium</option>
+              </select>
+              <label style={formLabelStyle}>Feature*</label>
+              <select
+                value={feature}
+                onChange={(e) => setFeature(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Feature</option>
+                {featureOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <label style={formLabelStyle}>Project IDs</label>
+              <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
+                {projects.map((project) => (
+                  <div key={project.projectId} style={{ textAlign: "left", marginBottom: "4px" }}>
+                    <input
+                      type="checkbox"
+                      id={project.projectId}
+                      checked={projectIds.includes(project.projectId)}
+                      onChange={() => handleProjectIdChange(project.projectId)}
+                      style={formCheckboxStyle}
+                    />
+                    <label htmlFor={project.projectId} style={{ ...formLabelStyle, display: "inline", marginLeft: "5px", fontWeight: "normal" }}>
+                      {project.projectId} - {project.name}
+                    </label>
+                  </div>
+                ))}
+              </Box>
+              <label style={formLabelStyle}>Sign-Up Date</label>
+              <input
+                type="date"
+                value={signUpDate ? signUpDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setSignUpDate(e.target.value ? new Date(e.target.value) : null)}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Net Promoter Score (0-100)</label>
+              <input
+                type="number"
+                value={nps}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) setNps(e.target.value);
+                }}
+                placeholder="Enter NPS (0-100)"
+                min="0"
+                max="100"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>NPS Date{!!nps && "*"}</label>
+              <input
+                type="date"
+                value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
+                required={!!nps}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Customer Satisfaction Score (0-100)</label>
+              <input
+                type="number"
+                value={csat}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) setCsat(e.target.value);
+                }}
+                placeholder="Enter CSAT (0-100)"
+                min="0"
+                max="100"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>CSAT Date{!!csat && "*"}</label>
+              <input
+                type="date"
+                value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
+                required={!!csat}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Customer Health Score</label>
+              <input
+                type="number"
+                value={chs}
+                onChange={(e) => setChs(e.target.value)}
+                placeholder="Enter CHS"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>CHS Date{!!chs && "*"}</label>
+              <input
+                type="date"
+                value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
+                required={!!chs}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Customer Lifetime Value</label>
+              <input
+                type="number"
+                value={cltv}
+                onChange={(e) => setCltv(e.target.value)}
+                placeholder="Enter CLTV"
+                style={formInputStyle}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Save</button>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ ...formContainerStyle, display: supportOpen ? "block" : "none" }}>
+            <form onSubmit={handleSupportSubmit}>
+              <Typography sx={formHeadingStyle}>Create Support Ticket for {supportCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Project IDs*</label>
+              <input
+                type="text"
+                value={supportProjectIds.join(", ") || "None"}
+                readOnly
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Issue Description*</label>
+              <textarea
+                value={issueDescription}
+                onChange={(e) => setIssueDescription(e.target.value)}
+                placeholder="Describe the issue"
+                required
+                style={formTextareaStyle}
+              />
+              <label style={formLabelStyle}>Number of Issues*</label>
+              <input
+                type="number"
+                value={numberOfIssues}
+                onChange={(e) => setNumberOfIssues(e.target.value)}
+                placeholder="Enter Number of Issues"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Complaint Date*</label>
+              <input
+                type="datetime-local"
+                value={complaintDate ? complaintDate.toISOString().slice(0, 16) : ""}
+                onChange={(e) => setComplaintDate(e.target.value ? new Date(e.target.value) : null)}
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Resolved Date</label>
+              <input
+                type="datetime-local"
+                value={resolvedDate ? resolvedDate.toISOString().slice(0, 16) : ""}
+                onChange={(e) => setResolvedDate(e.target.value ? new Date(e.target.value) : null)}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Response Channel</label>
+              {responseChannelOptions.map((channel) => (
+                <div key={channel} style={{ textAlign: "left", marginBottom: "4px" }}>
+                  <input
+                    type="checkbox"
+                    id={channel}
+                    checked={responseChannel.includes(channel)}
+                    onChange={() => handleResponseChannelChange(channel)}
+                    style={formCheckboxStyle}
+                  />
+                  <label htmlFor={channel} style={{ ...formLabelStyle, display: "inline", marginLeft: "5px", fontWeight: "normal" }}>
+                    {channel}
+                  </label>
+                </div>
+              ))}
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleSupportClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Save</button>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ ...formContainerStyle, display: upgradeOpen ? "block" : "none" }}>
+            <form onSubmit={handleUpgradeSubmit}>
+              <Typography sx={formHeadingStyle}>Upgrade Subscription for {upgradeCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Subscription Tier*</label>
+              <select
+                value={upgradeSubscriptionTier}
+                onChange={(e) => setUpgradeSubscriptionTier(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="premium">Premium</option>
+              </select>
+              <label style={formLabelStyle}>Plan Upgrade Date*</label>
+              <input
+                type="date"
+                value={planUpgradeDate ? planUpgradeDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setPlanUpgradeDate(e.target.value ? new Date(e.target.value) : null)}
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Project IDs</label>
+              <input
+                type="text"
+                value={upgradeCustomer?.projectIds.join(", ") || "None"}
+                readOnly
+                style={formInputStyle}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleUpgradeClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Upgrade</button>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ ...formContainerStyle, display: cancelOpen ? "block" : "none" }}>
+            <form onSubmit={handleCancelSubmit}>
+              <Typography sx={formHeadingStyle}>Cancel Subscription for {cancelCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Cancellation Date*</label>
+              <input
+                type="date"
+                value={cancellationDate ? cancellationDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setCancellationDate(e.target.value ? new Date(e.target.value) : null)}
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Churn Reason*</label>
+              <select
+                value={churnReason}
+                onChange={(e) => setChurnReason(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Reason</option>
+                {churnReasonOptions.map((reason) => (
+                  <option key={reason} value={reason}>{reason}</option>
+                ))}
+              </select>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleCancelClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Confirm Cancellation</button>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ ...formContainerStyle, display: npsUpdateOpen ? "block" : "none" }}>
+            <form onSubmit={handleNpsUpdateSubmit}>
+              <Typography sx={formHeadingStyle}>Update NPS for {updateMetricCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Net Promoter Score (0-100)*</label>
+              <input
+                type="number"
+                value={nps}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) setNps(e.target.value);
+                }}
+                placeholder="Enter NPS (0-100)"
+                min="0"
+                max="100"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>NPS Date*</label>
+              <input
+                type="date"
+                value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
+                required
+                style={formInputStyle}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleNpsUpdateClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Update</button>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ ...formContainerStyle, display: csatUpdateOpen ? "block" : "none" }}>
+            <form onSubmit={handleCsatUpdateSubmit}>
+              <Typography sx={formHeadingStyle}>Update CSAT for {updateMetricCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Customer Satisfaction Score (0-100)*</label>
+              <input
+                type="number"
+                value={csat}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) setCsat(e.target.value);
+                }}
+                placeholder="Enter CSAT (0-100)"
+                min="0"
+                max="100"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>CSAT Date*</label>
+              <input
+                type="date"
+                value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
+                required
+                style={formInputStyle}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleCsatUpdateClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Update</button>
+              </Box>
+            </form>
+          </Box>
+
+          <Box sx={{ ...formContainerStyle, display: chsUpdateOpen ? "block" : "none" }}>
+            <form onSubmit={handleChsUpdateSubmit}>
+              <Typography sx={formHeadingStyle}>Update CHS for {updateMetricCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Customer Health Score*</label>
+              <input
+                type="number"
+                value={chs}
+                onChange={(e) => setChs(e.target.value)}
+                placeholder="Enter CHS"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>CHS Date*</label>
+              <input
+                type="date"
+                value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
+                required
+                style={formInputStyle}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleChsUpdateClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Update</button>
+              </Box>
+            </form>
+          </Box>
+        </>
+      )}
+    </Box>
   );
 };
 
