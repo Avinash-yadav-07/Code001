@@ -232,7 +232,10 @@ const ManageProject = () => {
       }
 
       try {
-        const q = query(collection(db, "users"), where("email", "==", user.email));
+        const q = query(
+          collection(db, "users"),
+          where("email", "==", user.email)
+        );
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0].data();
@@ -252,21 +255,44 @@ const ManageProject = () => {
   }, []);
 
   const isReadOnly =
-    userRoles.includes("ManageProject:read") && !userRoles.includes("ManageProject:full access");
+    userRoles.includes("ManageProject:read") &&
+    !userRoles.includes("ManageProject:full access");
   const hasAccess =
-    userRoles.includes("ManageProject:read") || userRoles.includes("ManageProject:full access");
+    userRoles.includes("ManageProject:read") ||
+    userRoles.includes("ManageProject:full access");
 
   const normalizeDate = (dateField) => {
     if (!dateField) return "";
     if (dateField instanceof Timestamp) {
       return dateField.toDate().toISOString().split("T")[0];
     }
-    if (typeof dateField === "string" && dateField.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    if (
+      typeof dateField === "string" &&
+      dateField.match(/^\d{4}-\d{2}-\d{2}$/)
+    ) {
       return dateField;
     }
     return "";
   };
+  const generateProjectId = async () => {
+    const maxAttempts = 10;
+    let attempts = 0;
 
+    while (attempts < maxAttempts) {
+      const number = Math.floor(Math.random() * 999) + 1; // Random number from 1 to 999
+      const projectId = `P-${number}`;
+      const q = query(
+        collection(db, "projects"),
+        where("projectId", "==", projectId)
+      );
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        return projectId;
+      }
+      attempts++;
+    }
+    throw new Error("Could not generate a unique project ID");
+  };
   useEffect(() => {
     if (loadingRoles || !hasAccess) return;
 
@@ -292,14 +318,18 @@ const ManageProject = () => {
             projectId: data.projectId || doc.id,
             name: data.name || "",
             team: Array.isArray(data.team) ? data.team : [],
-            teamMembers: Array.isArray(data.teamMembers) ? data.teamMembers : [],
+            teamMembers: Array.isArray(data.teamMembers)
+              ? data.teamMembers
+              : [],
             financialMetrics: {
               budget: Number(data.financialMetrics?.budget) || 0,
               roi: Number(data.financialMetrics?.roi) || 0,
               burnRate: Number(data.financialMetrics?.burnRate) || 0,
               profitMargin: Number(data.financialMetrics?.profitMargin) || 0,
-              revenueGenerated: Number(data.financialMetrics?.revenueGenerated) || 0,
-              expectedRevenue: Number(data.financialMetrics?.expectedRevenue) || 0,
+              revenueGenerated:
+                Number(data.financialMetrics?.revenueGenerated) || 0,
+              expectedRevenue:
+                Number(data.financialMetrics?.expectedRevenue) || 0,
             },
             startDate: normalizeDate(data.startDate),
             endDate: normalizeDate(data.endDate),
@@ -323,7 +353,12 @@ const ManageProject = () => {
     const unsubscribeEmployees = onSnapshot(
       collection(db, "employees"),
       (snapshot) => {
-        setEmployees(snapshot.docs.map((doc) => ({ id: doc.id, name: doc.data().name || "Unknown" })));
+        setEmployees(
+          snapshot.docs.map((doc) => ({
+            id: doc.id,
+            name: doc.data().name || "Unknown",
+          }))
+        );
       },
       (error) => {
         toast.error("Error fetching employees");
@@ -339,7 +374,10 @@ const ManageProject = () => {
   }, [loadingRoles, hasAccess, isReadOnly]);
 
   useEffect(() => {
-    if (!selectedProject || !(selectedProject.projectId || selectedProject.id)) {
+    if (
+      !selectedProject ||
+      !(selectedProject.projectId || selectedProject.id)
+    ) {
       setProjectExpenses(0);
       return;
     }
@@ -365,7 +403,10 @@ const ManageProject = () => {
   }, [selectedProject]);
 
   useEffect(() => {
-    if (!selectedProject || !(selectedProject.projectId || selectedProject.id)) {
+    if (
+      !selectedProject ||
+      !(selectedProject.projectId || selectedProject.id)
+    ) {
       setProjectRevenue(0);
       return;
     }
@@ -397,7 +438,8 @@ const ManageProject = () => {
   useEffect(() => {
     const budgetValue = Number(form.budget) || 0;
     const revenueGenerated = budgetValue - projectExpenses;
-    const profitMargin = budgetValue > 0 ? (revenueGenerated / budgetValue) * 100 : 0;
+    const profitMargin =
+      budgetValue > 0 ? (revenueGenerated / budgetValue) * 100 : 0;
     setForm((prev) => ({
       ...prev,
       revenueGenerated: revenueGenerated.toFixed(2),
@@ -439,7 +481,9 @@ const ManageProject = () => {
       const projectSnap = await getDoc(projectRef);
       if (projectSnap.exists()) {
         const data = projectSnap.data();
-        const teamMemberIds = Array.isArray(data.teamMembers) ? data.teamMembers : [];
+        const teamMemberIds = Array.isArray(data.teamMembers)
+          ? data.teamMembers
+          : [];
         const teamMemberNames = teamMemberIds
           .map((id) => {
             const emp = employees.find((e) => e.id === id);
@@ -457,8 +501,10 @@ const ManageProject = () => {
             roi: Number(data.financialMetrics?.roi) || 0,
             burnRate: Number(data.financialMetrics?.burnRate) || 0,
             profitMargin: Number(data.financialMetrics?.profitMargin) || 0,
-            revenueGenerated: Number(data.financialMetrics?.revenueGenerated) || 0,
-            expectedRevenue: Number(data.financialMetrics?.expectedRevenue) || 0,
+            revenueGenerated:
+              Number(data.financialMetrics?.revenueGenerated) || 0,
+            expectedRevenue:
+              Number(data.financialMetrics?.expectedRevenue) || 0,
           },
           startDate: normalizeDate(data.startDate),
           endDate: normalizeDate(data.endDate),
@@ -503,7 +549,9 @@ const ManageProject = () => {
       status: project.status || "",
       description: project.description || "",
       completion: project.completion || "",
-      selectedEmployees: employees.filter((e) => project.teamMembers.includes(e.name)),
+      selectedEmployees: employees.filter((e) =>
+        project.teamMembers.includes(e.name)
+      ),
     });
     setViewDetailsOpen(false);
     setOpen(true);
@@ -514,10 +562,16 @@ const ManageProject = () => {
     if (!form.name) errors.name = "Project name is required";
     if (!form.status) errors.status = "Status is required";
     if (!form.startDate) errors.startDate = "Start date is required";
-    if (form.budget && Number(form.budget) < 0) errors.budget = "Budget must be non-negative";
-    if (form.roi && Number(form.roi) < 0) errors.roi = "ROI must be non-negative";
-    if (form.burnRate && Number(form.burnRate) < 0) errors.burnRate = "Burn rate must be non-negative";
-    if (form.completion && (Number(form.completion) < 0 || Number(form.completion) > 100))
+    if (form.budget && Number(form.budget) < 0)
+      errors.budget = "Budget must be non-negative";
+    if (form.roi && Number(form.roi) < 0)
+      errors.roi = "ROI must be non-negative";
+    if (form.burnRate && Number(form.burnRate) < 0)
+      errors.burnRate = "Burn rate must be non-negative";
+    if (
+      form.completion &&
+      (Number(form.completion) < 0 || Number(form.completion) > 100)
+    )
       errors.completion = "Completion must be between 0 and 100";
     if (form.endDate && new Date(form.endDate) < new Date(form.startDate)) {
       errors.endDate = "End date must be after start date";
@@ -546,7 +600,9 @@ const ManageProject = () => {
 
     try {
       const projectData = {
-        projectId: editingProject ? editingProject.projectId : doc(collection(db, "projects")).id,
+        projectId: editingProject
+          ? editingProject.projectId
+          : await generateProjectId(),
         name: form.name,
         team: form.team,
         teamMembers: form.selectedEmployees.map((e) => e.id),
@@ -558,8 +614,12 @@ const ManageProject = () => {
           revenueGenerated: Number(form.revenueGenerated) || 0,
           expectedRevenue: Number(form.expectedRevenue) || 0,
         },
-        startDate: form.startDate ? Timestamp.fromDate(new Date(form.startDate)) : null,
-        endDate: form.endDate ? Timestamp.fromDate(new Date(form.endDate)) : null,
+        startDate: form.startDate
+          ? Timestamp.fromDate(new Date(form.startDate))
+          : null,
+        endDate: form.endDate
+          ? Timestamp.fromDate(new Date(form.endDate))
+          : null,
         status: form.status,
         description: form.description,
         completion: Number(form.completion) || 0,
@@ -628,7 +688,9 @@ const ManageProject = () => {
         { Header: "action", accessor: "action", align: "center" },
       ],
       rows: filteredProjects.map((project) => ({
-        project: <ProjectInfo name={project.name} projectId={project.projectId} />,
+        project: (
+          <ProjectInfo name={project.name} projectId={project.projectId} />
+        ),
         budget: (
           <MDTypography variant="button" color="text" fontWeight="medium">
             ${project.financialMetrics?.budget || 0}
@@ -647,7 +709,9 @@ const ManageProject = () => {
             size="small"
           />
         ),
-        completion: <Progress value={project.completion || 0} status={project.status} />,
+        completion: (
+          <Progress value={project.completion || 0} status={project.status} />
+        ),
         action: (
           <MDBox display="flex" justifyContent="center">
             <Button
@@ -668,7 +732,12 @@ const ManageProject = () => {
   if (loadingRoles) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -693,14 +762,19 @@ const ManageProject = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+          },
         }}
       />
       <MDBox
@@ -745,13 +819,19 @@ const ManageProject = () => {
                       backgroundColor: darkMode ? "#424242" : "#fff",
                       color: darkMode ? "white" : "black",
                     },
-                    "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                    "& .MuiInputLabel-root": {
+                      color: darkMode ? "white" : "black",
+                    },
                   }}
                 />
               </MDBox>
               <MDBox pt={3} pb={2} px={2}>
                 {error && (
-                  <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
+                  <Alert
+                    severity="error"
+                    onClose={() => setError(null)}
+                    sx={{ mb: 2 }}
+                  >
                     {error}
                   </Alert>
                 )}
@@ -760,7 +840,12 @@ const ManageProject = () => {
                     variant="gradient"
                     color={darkMode ? "dark" : "info"}
                     onClick={handleClickOpen}
-                    sx={{ mb: 2, textTransform: "none", fontWeight: "medium", boxShadow: 3 }}
+                    sx={{
+                      mb: 2,
+                      textTransform: "none",
+                      fontWeight: "medium",
+                      boxShadow: 3,
+                    }}
                   >
                     Add Project
                   </Button>
@@ -800,7 +885,9 @@ const ManageProject = () => {
         fullWidth
         sx={{
           "& .MuiDialog-paper": {
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
             borderRadius: "15px",
             boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
           },
@@ -829,7 +916,11 @@ const ManageProject = () => {
                   <Grid item xs={12}>
                     <MDTypography
                       variant="h4"
-                      sx={{ fontWeight: "bold", color: darkMode ? "white" : "#333", mb: 2 }}
+                      sx={{
+                        fontWeight: "bold",
+                        color: darkMode ? "white" : "#333",
+                        mb: 2,
+                      }}
                     >
                       {selectedProject.projectId || selectedProject.id || "N/A"}
                     </MDTypography>
@@ -866,8 +957,8 @@ const ManageProject = () => {
                       variant="body2"
                       color={darkMode ? "white" : "textSecondary"}
                     >
-                      <span style={{ fontWeight: "bold" }}>Budget: </span>
-                      ${selectedProject.financialMetrics?.budget || 0}
+                      <span style={{ fontWeight: "bold" }}>Budget: </span>$
+                      {selectedProject.financialMetrics?.budget || 0}
                     </MDTypography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -875,8 +966,8 @@ const ManageProject = () => {
                       variant="body2"
                       color={darkMode ? "white" : "textSecondary"}
                     >
-                      <span style={{ fontWeight: "bold" }}>Expenses: </span>
-                      ${projectExpenses}
+                      <span style={{ fontWeight: "bold" }}>Expenses: </span>$
+                      {projectExpenses}
                     </MDTypography>
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -902,7 +993,9 @@ const ManageProject = () => {
                       variant="body2"
                       color={darkMode ? "white" : "textSecondary"}
                     >
-                      <span style={{ fontWeight: "bold" }}>Profit Margin (%): </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        Profit Margin (%):{" "}
+                      </span>
                       {selectedProject.financialMetrics?.profitMargin || 0}
                     </MDTypography>
                   </Grid>
@@ -911,7 +1004,9 @@ const ManageProject = () => {
                       variant="body2"
                       color={darkMode ? "white" : "textSecondary"}
                     >
-                      <span style={{ fontWeight: "bold" }}>Revenue Generated: </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        Revenue Generated:{" "}
+                      </span>
                       ${projectRevenue}
                     </MDTypography>
                   </Grid>
@@ -920,7 +1015,9 @@ const ManageProject = () => {
                       variant="body2"
                       color={darkMode ? "white" : "textSecondary"}
                     >
-                      <span style={{ fontWeight: "bold" }}>Expected Revenue: </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        Expected Revenue:{" "}
+                      </span>
                       ${selectedProject.financialMetrics?.expectedRevenue || 0}
                     </MDTypography>
                   </Grid>
@@ -931,7 +1028,9 @@ const ManageProject = () => {
                     >
                       <span style={{ fontWeight: "bold" }}>Start Date: </span>
                       {selectedProject.startDate
-                        ? new Date(selectedProject.startDate).toLocaleDateString()
+                        ? new Date(
+                            selectedProject.startDate
+                          ).toLocaleDateString()
                         : "N/A"}
                     </MDTypography>
                   </Grid>
@@ -974,7 +1073,9 @@ const ManageProject = () => {
                       variant="body2"
                       color={darkMode ? "white" : "textSecondary"}
                     >
-                      <span style={{ fontWeight: "bold" }}>Completion (%): </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        Completion (%):{" "}
+                      </span>
                       {selectedProject.completion || 0}%
                     </MDTypography>
                   </Grid>
@@ -984,7 +1085,8 @@ const ManageProject = () => {
                       color={darkMode ? "white" : "textSecondary"}
                     >
                       <span style={{ fontWeight: "bold" }}>Description: </span>
-                      {selectedProject.description || "No description available"}
+                      {selectedProject.description ||
+                        "No description available"}
                     </MDTypography>
                   </Grid>
                 </Grid>
@@ -993,7 +1095,9 @@ const ManageProject = () => {
           )}
         </DialogContent>
         <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
-          <CustomButton onClick={() => setViewDetailsOpen(false)}>Close</CustomButton>
+          <CustomButton onClick={() => setViewDetailsOpen(false)}>
+            Close
+          </CustomButton>
           {!isReadOnly && (
             <>
               <CustomButton onClick={handleEditFromDetails}>Edit</CustomButton>
@@ -1038,7 +1142,10 @@ const ManageProject = () => {
                     Project Name*
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.name ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.name ? "red" : "#ddd",
+                    }}
                     type="text"
                     id="name"
                     value={form.name}
@@ -1047,7 +1154,9 @@ const ManageProject = () => {
                     required
                   />
                   {formErrors.name && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.name}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.name}
+                    </span>
                   )}
 
                   <label style={labelStyle}>Team Members</label>
@@ -1057,11 +1166,15 @@ const ManageProject = () => {
                         key={employee.id}
                         control={
                           <Checkbox
-                            checked={form.selectedEmployees.some((e) => e.id === employee.id)}
+                            checked={form.selectedEmployees.some(
+                              (e) => e.id === employee.id
+                            )}
                             onChange={(e) => {
                               const updated = e.target.checked
                                 ? [...form.selectedEmployees, employee]
-                                : form.selectedEmployees.filter((e) => e.id !== employee.id);
+                                : form.selectedEmployees.filter(
+                                    (e) => e.id !== employee.id
+                                  );
                               setForm({ ...form, selectedEmployees: updated });
                             }}
                             sx={{
@@ -1093,7 +1206,10 @@ const ManageProject = () => {
                     Budget ($)
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.budget ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.budget ? "red" : "#ddd",
+                    }}
                     type="number"
                     id="budget"
                     value={form.budget}
@@ -1103,31 +1219,39 @@ const ManageProject = () => {
                     placeholder="Enter Budget"
                   />
                   {formErrors.budget && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.budget}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.budget}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="roi">
                     ROI (%)
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.roi ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.roi ? "red" : "#ddd",
+                    }}
                     type="number"
                     id="roi"
                     value={form.roi}
-                    onChange={(e) =>
-                      setForm({ ...form, roi: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, roi: e.target.value })}
                     placeholder="Enter ROI"
                   />
                   {formErrors.roi && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.roi}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.roi}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="burnRate">
                     Burn Rate
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.burnRate ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.burnRate ? "red" : "#ddd",
+                    }}
                     type="number"
                     id="burnRate"
                     value={form.burnRate}
@@ -1137,46 +1261,67 @@ const ManageProject = () => {
                     placeholder="Enter Burn Rate"
                   />
                   {formErrors.burnRate && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.burnRate}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.burnRate}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="startDate">
                     Start Date*
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.startDate ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.startDate ? "red" : "#ddd",
+                    }}
                     type="date"
                     id="startDate"
                     value={form.startDate}
-                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, startDate: e.target.value })
+                    }
                     required
                   />
                   {formErrors.startDate && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.startDate}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.startDate}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="endDate">
                     End Date
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.endDate ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.endDate ? "red" : "#ddd",
+                    }}
                     type="date"
                     id="endDate"
                     value={form.endDate}
-                    onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, endDate: e.target.value })
+                    }
                   />
                   {formErrors.endDate && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.endDate}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.endDate}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="status">
                     Status*
                   </label>
                   <select
-                    style={{ ...selectStyle, borderColor: formErrors.status ? "red" : "#ddd" }}
+                    style={{
+                      ...selectStyle,
+                      borderColor: formErrors.status ? "red" : "#ddd",
+                    }}
                     id="status"
                     value={form.status}
-                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, status: e.target.value })
+                    }
                     required
                   >
                     <option value="" disabled>
@@ -1189,14 +1334,19 @@ const ManageProject = () => {
                     ))}
                   </select>
                   {formErrors.status && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.status}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.status}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="completion">
                     Completion (%)
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: formErrors.completion ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: formErrors.completion ? "red" : "#ddd",
+                    }}
                     type="number"
                     id="completion"
                     value={form.completion}
@@ -1206,7 +1356,9 @@ const ManageProject = () => {
                     placeholder="Enter Completion Percentage"
                   />
                   {formErrors.completion && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{formErrors.completion}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {formErrors.completion}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="description">
@@ -1216,13 +1368,17 @@ const ManageProject = () => {
                     style={{ ...inputStyle, minHeight: "100px" }}
                     id="description"
                     value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, description: e.target.value })
+                    }
                     placeholder="Enter Description"
                   />
                 </form>
               </fieldset>
             </DialogContent>
-            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+            <DialogActions
+              sx={{ padding: "16px 24px", justifyContent: "center" }}
+            >
               <CustomButton onClick={handleClose} disabled={saving}>
                 Cancel
               </CustomButton>
@@ -1237,7 +1393,9 @@ const ManageProject = () => {
             onClose={() => setConfirmDeleteOpen(false)}
             sx={{
               "& .MuiDialog-paper": {
-                backgroundColor: darkMode ? "background.default" : "background.paper",
+                backgroundColor: darkMode
+                  ? "background.default"
+                  : "background.paper",
                 borderRadius: "12px",
               },
             }}
@@ -1246,9 +1404,16 @@ const ManageProject = () => {
             <DialogContent sx={{ color: darkMode ? "white" : "black" }}>
               Are you sure you want to delete this project?
             </DialogContent>
-            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
-              <CustomButton onClick={() => setConfirmDeleteOpen(false)}>Cancel</CustomButton>
-              <CustomButton onClick={handleDelete} style={{ backgroundColor: "#F44336" }}>
+            <DialogActions
+              sx={{ padding: "16px 24px", justifyContent: "center" }}
+            >
+              <CustomButton onClick={() => setConfirmDeleteOpen(false)}>
+                Cancel
+              </CustomButton>
+              <CustomButton
+                onClick={handleDelete}
+                style={{ backgroundColor: "#F44336" }}
+              >
                 Delete
               </CustomButton>
             </DialogActions>
@@ -1259,7 +1424,9 @@ const ManageProject = () => {
             onClose={() => setConfirmUpdateOpen(false)}
             sx={{
               "& .MuiDialog-paper": {
-                backgroundColor: darkMode ? "background.default" : "background.paper",
+                backgroundColor: darkMode
+                  ? "background.default"
+                  : "background.paper",
                 borderRadius: "12px",
               },
             }}
@@ -1268,8 +1435,13 @@ const ManageProject = () => {
             <DialogContent sx={{ color: darkMode ? "white" : "black" }}>
               Are you sure you want to save this project?
             </DialogContent>
-            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
-              <CustomButton onClick={() => setConfirmUpdateOpen(false)} disabled={saving}>
+            <DialogActions
+              sx={{ padding: "16px 24px", justifyContent: "center" }}
+            >
+              <CustomButton
+                onClick={() => setConfirmUpdateOpen(false)}
+                disabled={saving}
+              >
                 Cancel
               </CustomButton>
               <CustomButton onClick={confirmUpdate} disabled={saving}>

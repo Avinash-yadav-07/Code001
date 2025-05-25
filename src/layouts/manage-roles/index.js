@@ -18,7 +18,14 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { db } from "../manage-employee/firebase";
-import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  deleteDoc,
+  updateDoc,
+} from "firebase/firestore";
 import { Timestamp } from "firebase/firestore";
 import MDBox from "components/MDBox";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -101,10 +108,14 @@ const ManageRoles = () => {
     return roles.filter((role) => {
       try {
         return (
-          (typeof role.roleName === "string" && role.roleName.toLowerCase().includes(term)) ||
-          (typeof role.department === "string" && role.department.toLowerCase().includes(term)) ||
-          (typeof role.description === "string" && role.description.toLowerCase().includes(term)) ||
-          (typeof role.status === "string" && role.status.toLowerCase().includes(term))
+          (typeof role.roleName === "string" &&
+            role.roleName.toLowerCase().includes(term)) ||
+          (typeof role.department === "string" &&
+            role.department.toLowerCase().includes(term)) ||
+          (typeof role.description === "string" &&
+            role.description.toLowerCase().includes(term)) ||
+          (typeof role.status === "string" &&
+            role.status.toLowerCase().includes(term))
         );
       } catch (error) {
         console.error("Error filtering role:", role, error);
@@ -142,14 +153,29 @@ const ManageRoles = () => {
     if (!roleName.trim()) errors.roleName = "Role Name is required";
     if (!description.trim()) errors.description = "Description is required";
     if (!department) errors.department = "Department is required";
-    if (!responsibilities.trim()) errors.responsibilities = "Responsibilities are required";
-    if (!requiredSkills.trim()) errors.requiredSkills = "Required Skills are required";
-    if (!experienceLevel) errors.experienceLevel = "Experience Level is required";
-    if (!salaryRange.min || isNaN(salaryRange.min) || Number(salaryRange.min) < 0)
+    if (!responsibilities.trim())
+      errors.responsibilities = "Responsibilities are required";
+    if (!requiredSkills.trim())
+      errors.requiredSkills = "Required Skills are required";
+    if (!experienceLevel)
+      errors.experienceLevel = "Experience Level is required";
+    if (
+      !salaryRange.min ||
+      isNaN(salaryRange.min) ||
+      Number(salaryRange.min) < 0
+    )
       errors.salaryMin = "Valid minimum salary is required";
-    if (!salaryRange.max || isNaN(salaryRange.max) || Number(salaryRange.max) < 0)
+    if (
+      !salaryRange.max ||
+      isNaN(salaryRange.max) ||
+      Number(salaryRange.max) < 0
+    )
       errors.salaryMax = "Valid maximum salary is required";
-    if (Number(salaryRange.min) > Number(salaryRange.max) && salaryRange.min && salaryRange.max)
+    if (
+      Number(salaryRange.min) > Number(salaryRange.max) &&
+      salaryRange.min &&
+      salaryRange.max
+    )
       errors.salaryRange = "Minimum salary cannot exceed maximum";
     if (!status) errors.status = "Status is required";
     setFormErrors(errors);
@@ -190,14 +216,18 @@ const ManageRoles = () => {
         },
         isManagerial,
         status,
-        createdAt: editingRole ? editingRole.createdAt : Timestamp.fromDate(new Date()),
+        createdAt: editingRole
+          ? editingRole.createdAt
+          : Timestamp.fromDate(new Date()),
         updatedAt: Timestamp.fromDate(new Date()),
       };
 
       if (editingRole) {
         await updateDoc(doc(db, "roles", editingRole.id), newRole);
         setRoles(
-          roles.map((role) => (role.id === editingRole.id ? { id: role.id, ...newRole } : role))
+          roles.map((role) =>
+            role.id === editingRole.id ? { id: role.id, ...newRole } : role
+          )
         );
         toast.success("Role updated successfully");
       } else {
@@ -252,14 +282,19 @@ const ManageRoles = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+          },
         }}
       />
       <MDBox
@@ -290,7 +325,14 @@ const ManageRoles = () => {
                   Role Management
                 </MDTypography>
               </MDBox>
-              <MDBox pt={3} pb={2} px={2} display="flex" alignItems="center" gap={2}>
+              <MDBox
+                pt={3}
+                pb={2}
+                px={2}
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
                 <MDButton
                   variant="gradient"
                   color={darkMode ? "dark" : "info"}
@@ -310,7 +352,9 @@ const ManageRoles = () => {
                       backgroundColor: darkMode ? "#424242" : "#fff",
                       color: darkMode ? "white" : "black",
                     },
-                    "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                    "& .MuiInputLabel-root": {
+                      color: darkMode ? "white" : "black",
+                    },
                   }}
                 />
               </MDBox>
@@ -341,7 +385,11 @@ const ManageRoles = () => {
                           <CardContent>
                             <Typography
                               variant="h4"
-                              sx={{ fontWeight: "bold", color: darkMode ? "white" : "#333", mb: 2 }}
+                              sx={{
+                                fontWeight: "bold",
+                                color: darkMode ? "white" : "#333",
+                                mb: 2,
+                              }}
                             >
                               {role.roleId}
                             </Typography>
@@ -352,28 +400,36 @@ const ManageRoles = () => {
                                   color={darkMode ? "white" : "textSecondary"}
                                 >
                                   <span>Role Name: </span>
-                                  <span style={{ fontWeight: "bold" }}>{role.roleName}</span>
+                                  <span style={{ fontWeight: "bold" }}>
+                                    {role.roleName}
+                                  </span>
                                 </MDTypography>
                                 <MDTypography
                                   variant="body2"
                                   color={darkMode ? "white" : "textSecondary"}
                                 >
                                   <span>Description: </span>
-                                  <span style={{ fontWeight: "bold" }}>{role.description}</span>
+                                  <span style={{ fontWeight: "bold" }}>
+                                    {role.description}
+                                  </span>
                                 </MDTypography>
                                 <MDTypography
                                   variant="body2"
                                   color={darkMode ? "white" : "textSecondary"}
                                 >
                                   <span>Department: </span>
-                                  <span style={{ fontWeight: "bold" }}>{role.department}</span>
+                                  <span style={{ fontWeight: "bold" }}>
+                                    {role.department}
+                                  </span>
                                 </MDTypography>
                                 <MDTypography
                                   variant="body2"
                                   color={darkMode ? "white" : "textSecondary"}
                                 >
                                   <span>Experience Level: </span>
-                                  <span style={{ fontWeight: "bold" }}>{role.experienceLevel}</span>
+                                  <span style={{ fontWeight: "bold" }}>
+                                    {role.experienceLevel}
+                                  </span>
                                 </MDTypography>
                               </Grid>
                               <Grid item xs={12} md={6}>
@@ -383,7 +439,8 @@ const ManageRoles = () => {
                                 >
                                   <span>Salary Range: </span>
                                   <span style={{ fontWeight: "bold" }}>
-                                    ${role.salaryRange.min} - ${role.salaryRange.max}
+                                    ${role.salaryRange.min} - $
+                                    {role.salaryRange.max}
                                   </span>
                                 </MDTypography>
                                 <MDTypography
@@ -391,7 +448,9 @@ const ManageRoles = () => {
                                   color={darkMode ? "white" : "textSecondary"}
                                 >
                                   <span>Managerial: </span>
-                                  <span style={{ fontWeight: "bold" }}>{role.isManagerial ? "Yes" : "No"}</span>
+                                  <span style={{ fontWeight: "bold" }}>
+                                    {role.isManagerial ? "Yes" : "No"}
+                                  </span>
                                 </MDTypography>
                                 <MDTypography
                                   variant="body2"
@@ -402,7 +461,9 @@ const ManageRoles = () => {
                                     label={role.status}
                                     sx={{
                                       backgroundColor:
-                                        role.status === "Active" ? "#2196F3" : "#9E9E9E",
+                                        role.status === "Active"
+                                          ? "#2196F3"
+                                          : "#9E9E9E",
                                       color: "#fff",
                                       fontSize: "12px",
                                       padding: "4px 8px",
@@ -413,7 +474,9 @@ const ManageRoles = () => {
                               </Grid>
                             </Grid>
                           </CardContent>
-                          <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
+                          <CardActions
+                            sx={{ display: "flex", justifyContent: "flex-end" }}
+                          >
                             <MDButton
                               variant="gradient"
                               color={darkMode ? "dark" : "info"}
@@ -457,174 +520,382 @@ const ManageRoles = () => {
       <Dialog
         open={open}
         onClose={handleClose}
+        maxWidth="md"
         fullWidth
-        maxWidth="sm"
         sx={{
           "& .MuiDialog-paper": {
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: "#f3f6f8",
+            borderRadius: "15px",
+            boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+            width: "500px",
+            margin: "auto",
           },
         }}
       >
-        <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
+        <DialogTitle
+          sx={{ fontSize: "x-large", textAlign: "center", color: "#327c35" }}
+        >
           {editingRole ? "Edit Role" : "Add Role"}
         </DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12}>
-              <TextField
-                label="Role Name"
+        <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
+          <fieldset style={{ border: "none" }}>
+            <form action="#" method="get">
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="roleName"
+              >
+                Role Name*
+              </label>
+              <input
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  border: formErrors.roleName
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                }}
+                type="text"
+                id="roleName"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                fullWidth
-                margin="dense"
+                placeholder="Enter Role Name"
                 required
-                error={!!formErrors.roleName}
-                helperText={formErrors.roleName}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Description"
+              {formErrors.roleName && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.roleName}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="description"
+              >
+                Description*
+              </label>
+              <textarea
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  border: formErrors.description
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                  minHeight: "80px",
+                }}
+                id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                fullWidth
-                margin="dense"
+                placeholder="Enter Description"
                 required
-                multiline
-                rows={3}
-                error={!!formErrors.description}
-                helperText={formErrors.description}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                select
-                label="Department"
+              {formErrors.description && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.description}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="department"
+              >
+                Department*
+              </label>
+              <select
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginBottom: "15px",
+                  padding: "10px",
+                  boxSizing: "border-box",
+                  border: formErrors.department
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "5px",
+                  fontSize: "12px",
+                }}
+                id="department"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                fullWidth
-                margin="dense"
                 required
-                error={!!formErrors.department}
-                helperText={formErrors.department}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               >
+                <option value="" disabled>
+                  Select Department
+                </option>
                 {departments.map((dept) => (
-                  <MenuItem key={dept} value={dept}>
+                  <option key={dept} value={dept}>
                     {dept}
-                  </MenuItem>
+                  </option>
                 ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                select
-                label="Experience Level"
+              </select>
+              {formErrors.department && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.department}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="experienceLevel"
+              >
+                Experience Level*
+              </label>
+              <select
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginBottom: "15px",
+                  padding: "10px",
+                  boxSizing: "border-box",
+                  border: formErrors.experienceLevel
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "5px",
+                  fontSize: "12px",
+                }}
+                id="experienceLevel"
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value)}
-                fullWidth
-                margin="dense"
                 required
-                error={!!formErrors.experienceLevel}
-                helperText={formErrors.experienceLevel}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               >
+                <option value="" disabled>
+                  Select Experience Level
+                </option>
                 {experienceLevels.map((level) => (
-                  <MenuItem key={level} value={level}>
+                  <option key={level} value={level}>
                     {level}
-                  </MenuItem>
+                  </option>
                 ))}
-              </TextField>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Responsibilities"
+              </select>
+              {formErrors.experienceLevel && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.experienceLevel}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="responsibilities"
+              >
+                Responsibilities*
+              </label>
+              <input
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  border: formErrors.responsibilities
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                }}
+                type="text"
+                id="responsibilities"
                 value={responsibilities}
                 onChange={(e) => setResponsibilities(e.target.value)}
-                fullWidth
-                margin="dense"
-                required
                 placeholder="Separate with commas"
-                error={!!formErrors.responsibilities}
-                helperText={formErrors.responsibilities}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
+                required
               />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                label="Required Skills"
+              {formErrors.responsibilities && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.responsibilities}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="requiredSkills"
+              >
+                Required Skills*
+              </label>
+              <input
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  border: formErrors.requiredSkills
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                }}
+                type="text"
+                id="requiredSkills"
                 value={requiredSkills}
                 onChange={(e) => setRequiredSkills(e.target.value)}
-                fullWidth
-                margin="dense"
-                required
                 placeholder="Separate with commas"
-                error={!!formErrors.requiredSkills}
-                helperText={formErrors.requiredSkills}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
+                required
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
+              {formErrors.requiredSkills && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.requiredSkills}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="salaryMin"
+              >
+                Salary Range (Min)*
+              </label>
+              <input
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  border:
+                    formErrors.salaryMin || formErrors.salaryRange
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                }}
                 type="number"
-                label="Salary Range (Min)"
+                id="salaryMin"
                 value={salaryRange.min}
-                onChange={(e) => setSalaryRange({ ...salaryRange, min: e.target.value })}
-                fullWidth
-                margin="dense"
+                onChange={(e) =>
+                  setSalaryRange({ ...salaryRange, min: e.target.value })
+                }
+                placeholder="Enter Minimum Salary"
                 required
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                }}
-                error={!!formErrors.salaryMin || !!formErrors.salaryRange}
-                helperText={formErrors.salaryMin || formErrors.salaryRange}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
+              {(formErrors.salaryMin || formErrors.salaryRange) && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.salaryMin || formErrors.salaryRange}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="salaryMax"
+              >
+                Salary Range (Max)*
+              </label>
+              <input
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "8px",
+                  boxSizing: "border-box",
+                  border:
+                    formErrors.salaryMax || formErrors.salaryRange
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                }}
                 type="number"
-                label="Salary Range (Max)"
+                id="salaryMax"
                 value={salaryRange.max}
-                onChange={(e) => setSalaryRange({ ...salaryRange, max: e.target.value })}
-                fullWidth
-                margin="dense"
+                onChange={(e) =>
+                  setSalaryRange({ ...salaryRange, max: e.target.value })
+                }
+                placeholder="Enter Maximum Salary"
                 required
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                }}
-                error={!!formErrors.salaryMax || !!formErrors.salaryRange}
-                helperText={formErrors.salaryMax || formErrors.salaryRange}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
+              {(formErrors.salaryMax || formErrors.salaryRange) && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.salaryMax || formErrors.salaryRange}
+                </span>
+              )}
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+              >
+                Managerial Role
+              </label>
               <FormControlLabel
                 control={
                   <Checkbox
@@ -634,39 +905,99 @@ const ManageRoles = () => {
                   />
                 }
                 label="Managerial Role"
-                sx={{ color: darkMode ? "white" : "black" }}
+                sx={{
+                  display: "block",
+                  margin: "0",
+                  color: "#333",
+                  fontSize: "12px",
+                }}
               />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                select
-                label="Status"
+
+              <label
+                style={{
+                  fontSize: "15px",
+                  display: "block",
+                  width: "100%",
+                  marginTop: "8px",
+                  marginBottom: "5px",
+                  textAlign: "left",
+                  color: "#555",
+                  fontWeight: "bold",
+                }}
+                htmlFor="status"
+              >
+                Status*
+              </label>
+              <select
+                style={{
+                  display: "block",
+                  width: "100%",
+                  marginBottom: "15px",
+                  padding: "10px",
+                  boxSizing: "border-box",
+                  border: formErrors.status
+                    ? "1px solid red"
+                    : "1px solid #ddd",
+                  borderRadius: "5px",
+                  fontSize: "12px",
+                }}
+                id="status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                fullWidth
-                margin="dense"
                 required
-                error={!!formErrors.status}
-                helperText={formErrors.status}
-                sx={{
-                  input: { color: darkMode ? "white" : "black" },
-                  "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                }}
               >
+                <option value="" disabled>
+                  Select Status
+                </option>
                 {statuses.map((s) => (
-                  <MenuItem key={s} value={s}>
+                  <option key={s} value={s}>
                     {s}
-                  </MenuItem>
+                  </option>
                 ))}
-              </TextField>
-            </Grid>
-          </Grid>
+              </select>
+              {formErrors.status && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {formErrors.status}
+                </span>
+              )}
+            </form>
+          </fieldset>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleSubmit} color="primary">
+        <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+          <button
+            style={{
+              padding: "15px",
+              borderRadius: "10px",
+              margin: "15px",
+              border: "none",
+              color: "white",
+              cursor: "pointer",
+              backgroundColor: "#4caf50",
+              width: "40%",
+              fontSize: "16px",
+              fontWeight: "bold",
+            }}
+            onClick={handleClose}
+          >
+            Cancel
+          </button>
+          <button
+            style={{
+              padding: "15px",
+              borderRadius: "10px",
+              margin: "15px",
+              border: "none",
+              color: "white",
+              cursor: "pointer",
+              backgroundColor: "#4caf50",
+              width: "40%",
+              fontSize: "16px",
+              fontWeight: "bold",
+            }}
+            onClick={handleSubmit}
+          >
             Save
-          </Button>
+          </button>
         </DialogActions>
       </Dialog>
 
@@ -675,7 +1006,9 @@ const ManageRoles = () => {
         onClose={() => setConfirmDeleteOpen(false)}
         sx={{
           "& .MuiDialog-paper": {
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
           },
         }}
       >
@@ -695,7 +1028,9 @@ const ManageRoles = () => {
         onClose={() => setConfirmUpdateOpen(false)}
         sx={{
           "& .MuiDialog-paper": {
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
           },
         }}
       >

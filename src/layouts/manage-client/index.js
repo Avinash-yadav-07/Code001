@@ -21,7 +21,15 @@ import {
   InputLabel,
 } from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
-import { collection, addDoc, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
@@ -34,7 +42,13 @@ import { casual } from "chrono-node";
 
 // Define constants for statuses and industries
 const statuses = ["Active", "Inactive"];
-const industries = ["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"];
+const industries = [
+  "Technology",
+  "Finance",
+  "Healthcare",
+  "Retail",
+  "Manufacturing",
+];
 
 // Utility function to format Firestore timestamps
 const formatTimestamp = (timestamp) => {
@@ -54,7 +68,12 @@ const generateClientId = () => `CL-${generateRandomNumber()}`;
 const generateContractId = () => `CON-${generateRandomNumber()}`;
 
 // Check if an ID is unique in Firestore
-const checkUniqueId = async (collectionName, field, value, excludeDocId = null) => {
+const checkUniqueId = async (
+  collectionName,
+  field,
+  value,
+  excludeDocId = null
+) => {
   try {
     const q = query(collection(db, collectionName), where(field, "==", value));
     const querySnapshot = await getDocs(q);
@@ -117,7 +136,10 @@ const ManageClient = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
@@ -141,9 +163,11 @@ const ManageClient = () => {
 
   // Determine user permissions
   const isReadOnly =
-    userRoles.includes("ManageClient:read") && !userRoles.includes("ManageClient:full access");
+    userRoles.includes("ManageClient:read") &&
+    !userRoles.includes("ManageClient:full access");
   const hasAccess =
-    userRoles.includes("ManageClient:read") || userRoles.includes("ManageClient:full access");
+    userRoles.includes("ManageClient:read") ||
+    userRoles.includes("ManageClient:full access");
 
   // Fetch clients and projects from Firestore
   const fetchAllData = useCallback(async () => {
@@ -161,7 +185,10 @@ const ManageClient = () => {
       if (isReadOnly) {
         clientsQuery = query(clientsQuery, where("email", "==", user.email));
       }
-      clientsQuery = query(clientsQuery, where("status", "in", ["Active", "Inactive"]));
+      clientsQuery = query(
+        clientsQuery,
+        where("status", "in", ["Active", "Inactive"])
+      );
 
       const projectsQuery = query(
         collection(db, "projects"),
@@ -180,6 +207,7 @@ const ManageClient = () => {
       const projectsData = projectsSnapshot.docs.map((doc) => ({
         id: doc.id,
         projectId: doc.data().projectId || "Unknown",
+        name: doc.data().name || "Unknown",
         ...doc.data(),
       }));
 
@@ -233,7 +261,10 @@ const ManageClient = () => {
         const workbook = XLSX.read(data, { type: "array", cellDates: true });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "", blankrows: false });
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          defval: "",
+          blankrows: false,
+        });
 
         const validProjectIds = projects.map((p) => p.projectId);
 
@@ -241,24 +272,38 @@ const ManageClient = () => {
         const normalizeColumnName = (name) => {
           if (!name) return "";
           const cleanName = name.trim().toLowerCase().replace(/\s+/g, "");
-          if (cleanName.includes("name") || cleanName.includes("clientname")) return "Name";
+          if (cleanName.includes("name") || cleanName.includes("clientname"))
+            return "Name";
           if (cleanName.includes("email")) return "Email";
           if (cleanName.includes("phone")) return "Phone";
           if (cleanName.includes("address")) return "Address";
           if (cleanName.includes("industry")) return "Industry";
-          if (cleanName.includes("contractstart") || cleanName.includes("startdate"))
+          if (
+            cleanName.includes("contractstart") ||
+            cleanName.includes("startdate")
+          )
             return "Contract Start Date";
-          if (cleanName.includes("contractend") || cleanName.includes("enddate"))
+          if (
+            cleanName.includes("contractend") ||
+            cleanName.includes("enddate")
+          )
             return "Contract End Date";
-          if (cleanName.includes("contractamount") || cleanName.includes("amount"))
+          if (
+            cleanName.includes("contractamount") ||
+            cleanName.includes("amount")
+          )
             return "Contract Amount";
           if (cleanName.includes("cac")) return "CAC";
           if (cleanName.includes("cltv")) return "CLTV";
-          if (cleanName.includes("revenuegenerated") || cleanName.includes("totalrevenue"))
+          if (
+            cleanName.includes("revenuegenerated") ||
+            cleanName.includes("totalrevenue")
+          )
             return "Revenue Generated";
           if (cleanName.includes("onetime") || cleanName.includes("onetime"))
             return "One-Time Revenue";
-          if (cleanName.includes("recurringrevenue")) return "Recurring Revenue";
+          if (cleanName.includes("recurringrevenue"))
+            return "Recurring Revenue";
           if (cleanName.includes("status")) return "Status";
           if (cleanName.includes("projectid") || cleanName.includes("projects"))
             return "Project IDs";
@@ -281,7 +326,11 @@ const ManageClient = () => {
 
           // Ensure unique client ID
           while (attempts < maxAttempts) {
-            const isClientIdUnique = await checkUniqueId("clients", "clientId", newClientId);
+            const isClientIdUnique = await checkUniqueId(
+              "clients",
+              "clientId",
+              newClientId
+            );
             if (isClientIdUnique) break;
             newClientId = generateClientId();
             attempts++;
@@ -290,15 +339,24 @@ const ManageClient = () => {
           // Ensure unique contract ID
           attempts = 0;
           while (attempts < maxAttempts) {
-            const isContractIdUnique = await checkUniqueId("clients", "contractId", newContractId);
+            const isContractIdUnique = await checkUniqueId(
+              "clients",
+              "contractId",
+              newContractId
+            );
             if (isContractIdUnique) break;
             newContractId = generateContractId();
             attempts++;
           }
 
           if (attempts >= maxAttempts) {
-            console.error("Could not generate unique IDs for client:", client["Name"]);
-            alert("Failed to generate unique IDs for some clients. Please try again.");
+            console.error(
+              "Could not generate unique IDs for client:",
+              client["Name"]
+            );
+            alert(
+              "Failed to generate unique IDs for some clients. Please try again."
+            );
             return;
           }
 
@@ -323,17 +381,29 @@ const ManageClient = () => {
 
           // Validate industry
           const normalizedIndustry = client["Industry"].trim();
-          if (!industries.map((i) => i.toLowerCase()).includes(normalizedIndustry.toLowerCase())) {
+          if (
+            !industries
+              .map((i) => i.toLowerCase())
+              .includes(normalizedIndustry.toLowerCase())
+          ) {
             console.error("Invalid industry for client:", client["Name"]);
-            alert(`Invalid industry "${client["Industry"]}" for client ${client["Name"]}.`);
+            alert(
+              `Invalid industry "${client["Industry"]}" for client ${client["Name"]}.`
+            );
             return;
           }
 
           // Validate status
           const normalizedStatus = client["Status"].trim();
-          if (!statuses.map((s) => s.toLowerCase()).includes(normalizedStatus.toLowerCase())) {
+          if (
+            !statuses
+              .map((s) => s.toLowerCase())
+              .includes(normalizedStatus.toLowerCase())
+          ) {
             console.error("Invalid status for client:", client["Name"]);
-            alert(`Invalid status "${client["Status"]}" for client ${client["Name"]}.`);
+            alert(
+              `Invalid status "${client["Status"]}" for client ${client["Name"]}.`
+            );
             return;
           }
 
@@ -353,14 +423,20 @@ const ManageClient = () => {
           }
 
           if (!startDate) {
-            console.error("Invalid contract start date for client:", client["Name"]);
+            console.error(
+              "Invalid contract start date for client:",
+              client["Name"]
+            );
             alert(
               `Invalid contract start date "${client["Contract Start Date"]}" for client ${client["Name"]}.`
             );
             return;
           }
           if (!endDate) {
-            console.error("Invalid contract end date for client:", client["Name"]);
+            console.error(
+              "Invalid contract end date for client:",
+              client["Name"]
+            );
             alert(
               `Invalid contract end date "${client["Contract End Date"]}" for client ${client["Name"]}.`
             );
@@ -370,8 +446,13 @@ const ManageClient = () => {
           // Validate contract amount
           const contractAmount = cleanNumericValue(client["Contract Amount"]);
           if (contractAmount <= 0) {
-            console.error("Invalid contract amount for client:", client["Name"]);
-            alert(`Contract amount must be positive for client ${client["Name"]}.`);
+            console.error(
+              "Invalid contract amount for client:",
+              client["Name"]
+            );
+            alert(
+              `Contract amount must be positive for client ${client["Name"]}.`
+            );
             return;
           }
 
@@ -392,26 +473,47 @@ const ManageClient = () => {
           }
 
           // Validate revenue generated
-          const revenueGenerated = cleanNumericValue(client["Revenue Generated"] || 0);
+          const revenueGenerated = cleanNumericValue(
+            client["Revenue Generated"] || 0
+          );
           if (revenueGenerated < 0) {
-            console.error("Invalid revenue generated for client:", client["Name"]);
-            alert(`Revenue generated cannot be negative for client ${client["Name"]}.`);
+            console.error(
+              "Invalid revenue generated for client:",
+              client["Name"]
+            );
+            alert(
+              `Revenue generated cannot be negative for client ${client["Name"]}.`
+            );
             return;
           }
 
           // Validate one-time revenue
-          const oneTimeRevenue = cleanNumericValue(client["One-Time Revenue"] || 0);
+          const oneTimeRevenue = cleanNumericValue(
+            client["One-Time Revenue"] || 0
+          );
           if (oneTimeRevenue < 0) {
-            console.error("Invalid one-time revenue for client:", client["Name"]);
-            alert(`One-time revenue cannot be negative for client ${client["Name"]}.`);
+            console.error(
+              "Invalid one-time revenue for client:",
+              client["Name"]
+            );
+            alert(
+              `One-time revenue cannot be negative for client ${client["Name"]}.`
+            );
             return;
           }
 
           // Validate recurring revenue
-          const recurringRevenue = cleanNumericValue(client["Recurring Revenue"] || 0);
+          const recurringRevenue = cleanNumericValue(
+            client["Recurring Revenue"] || 0
+          );
           if (recurringRevenue < 0) {
-            console.error("Invalid recurring revenue for client:", client["Name"]);
-            alert(`Recurring revenue cannot be negative for client ${client["Name"]}.`);
+            console.error(
+              "Invalid recurring revenue for client:",
+              client["Name"]
+            );
+            alert(
+              `Recurring revenue cannot be negative for client ${client["Name"]}.`
+            );
             return;
           }
 
@@ -423,7 +525,9 @@ const ManageClient = () => {
               .split(",")
               .map((id) => id.trim())
               .filter((id) => id);
-            projectIds = projectIds.filter((id) => validProjectIds.includes(id));
+            projectIds = projectIds.filter((id) =>
+              validProjectIds.includes(id)
+            );
           }
 
           // Create new client object
@@ -459,7 +563,11 @@ const ManageClient = () => {
             setClients((prev) => [...prev, { id: docRef.id, ...newClient }]);
           } catch (error) {
             console.error("Error adding client from Excel:", error);
-            alert(`Failed to add client ${client["Name"] || "unknown"}. Error: ${error.message}`);
+            alert(
+              `Failed to add client ${client["Name"] || "unknown"}. Error: ${
+                error.message
+              }`
+            );
             return;
           }
         }
@@ -495,11 +603,19 @@ const ManageClient = () => {
       CLTV: client.Metrics?.cltv || 0,
       "Revenue Generated": client.Metrics?.revenueGenerated || 0,
       "One-Time Revenue": client.Metrics?.revenueBreakdown?.oneTimeRevenue || 0,
-      "Recurring Revenue": client.Metrics?.revenueBreakdown?.recurringRevenue || 0,
+      "Recurring Revenue":
+        client.Metrics?.revenueBreakdown?.recurringRevenue || 0,
       Status: client.status,
-      "Project IDs": Array.isArray(client.projects)
-        ? client.projects.join(", ")
-        : client.projects || "",
+      Projects: Array.isArray(client.projects)
+        ? client.projects
+            .map((projectId) => {
+              const project = projects.find((p) => p.projectId === projectId);
+              return project
+                ? `${project.name || "Unknown"} (${project.projectId})`
+                : projectId;
+            })
+            .join(", ")
+        : "",
       "Created At": formatTimestamp(client.createdAt),
       "Updated At": formatTimestamp(client.updatedAt),
     }));
@@ -561,12 +677,14 @@ const ManageClient = () => {
     setAddress(client.address || "");
     setIndustry(client.industry || "");
     setContractStartDate(
-      client.contractStartDate && typeof client.contractStartDate.toDate === "function"
+      client.contractStartDate &&
+        typeof client.contractStartDate.toDate === "function"
         ? client.contractStartDate.toDate().toISOString().substring(0, 10)
         : client.contractStartDate || ""
     );
     setContractEndDate(
-      client.contractEndDate && typeof client.contractEndDate.toDate === "function"
+      client.contractEndDate &&
+        typeof client.contractEndDate.toDate === "function"
         ? client.contractEndDate.toDate().toISOString().substring(0, 10)
         : client.contractEndDate || ""
     );
@@ -575,7 +693,9 @@ const ManageClient = () => {
     setCltv(client.Metrics?.cltv || "");
     setRevenueGenerated(client.Metrics?.revenueGenerated || "");
     setOneTimeRevenue(client.Metrics?.revenueBreakdown?.oneTimeRevenue || "");
-    setRecurringRevenue(client.Metrics?.revenueBreakdown?.recurringRevenue || "");
+    setRecurringRevenue(
+      client.Metrics?.revenueBreakdown?.recurringRevenue || ""
+    );
     setStatus(client.status || "");
     setSelectedProjects(Array.isArray(client.projects) ? client.projects : []);
     setErrors({});
@@ -588,14 +708,18 @@ const ManageClient = () => {
     if (!name.trim()) newErrors.name = "Name is required";
     if (!email.trim()) newErrors.email = "Email is required";
     if (!industry) newErrors.industry = "Industry is required";
-    if (!contractStartDate) newErrors.contractStartDate = "Contract Start Date is required";
-    if (!contractEndDate) newErrors.contractEndDate = "Contract End Date is required";
-    if (!contractAmount) newErrors.contractAmount = "Contract Amount is required";
+    if (!contractStartDate)
+      newErrors.contractStartDate = "Contract Start Date is required";
+    if (!contractEndDate)
+      newErrors.contractEndDate = "Contract End Date is required";
+    if (!contractAmount)
+      newErrors.contractAmount = "Contract Amount is required";
     else if (parseFloat(contractAmount) <= 0)
       newErrors.contractAmount = "Contract Amount must be positive";
     if (!status) newErrors.status = "Status is required";
     if (cac && parseFloat(cac) < 0) newErrors.cac = "CAC cannot be negative";
-    if (cltv && parseFloat(cltv) < 0) newErrors.cltv = "CLTV cannot be negative";
+    if (cltv && parseFloat(cltv) < 0)
+      newErrors.cltv = "CLTV cannot be negative";
     if (revenueGenerated && parseFloat(revenueGenerated) < 0)
       newErrors.revenueGenerated = "Revenue Generated cannot be negative";
     if (oneTimeRevenue && parseFloat(oneTimeRevenue) < 0)
@@ -616,14 +740,22 @@ const ManageClient = () => {
 
   // Confirm and save client updates
   const confirmUpdate = async () => {
-    let newClientId = editingClient ? editingClient.clientId : generateClientId();
-    let newContractId = editingClient ? editingClient.contractId : generateContractId();
+    let newClientId = editingClient
+      ? editingClient.clientId
+      : generateClientId();
+    let newContractId = editingClient
+      ? editingClient.contractId
+      : generateContractId();
     let attempts = 0;
     const maxAttempts = 10;
 
     if (!editingClient) {
       while (attempts < maxAttempts) {
-        const isClientIdUnique = await checkUniqueId("clients", "clientId", newClientId);
+        const isClientIdUnique = await checkUniqueId(
+          "clients",
+          "clientId",
+          newClientId
+        );
         if (isClientIdUnique) break;
         newClientId = generateClientId();
         attempts++;
@@ -631,7 +763,11 @@ const ManageClient = () => {
 
       attempts = 0;
       while (attempts < maxAttempts) {
-        const isContractIdUnique = await checkUniqueId("clients", "contractId", newContractId);
+        const isContractIdUnique = await checkUniqueId(
+          "clients",
+          "contractId",
+          newContractId
+        );
         if (isContractIdUnique) break;
         newContractId = generateContractId();
         attempts++;
@@ -639,7 +775,9 @@ const ManageClient = () => {
 
       if (attempts >= maxAttempts) {
         console.error("Could not generate unique IDs");
-        alert("Failed to generate unique Client ID or Contract ID. Please try again.");
+        alert(
+          "Failed to generate unique Client ID or Contract ID. Please try again."
+        );
         setConfirmUpdateOpen(false);
         return;
       }
@@ -678,7 +816,9 @@ const ManageClient = () => {
         await updateDoc(doc(db, "clients", editingClient.id), newClient);
         setClients(
           clients.map((client) =>
-            client.id === editingClient.id ? { ...client, ...newClient } : client
+            client.id === editingClient.id
+              ? { ...client, ...newClient }
+              : client
           )
         );
       } else {
@@ -798,7 +938,9 @@ const ManageClient = () => {
   // Handle project selection change
   const handleProjectChange = (projectId) => {
     setSelectedProjects((prev) =>
-      prev.includes(projectId) ? prev.filter((id) => id !== projectId) : [...prev, projectId]
+      prev.includes(projectId)
+        ? prev.filter((id) => id !== projectId)
+        : [...prev, projectId]
     );
   };
 
@@ -806,7 +948,12 @@ const ManageClient = () => {
   if (loadingRoles) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -819,7 +966,12 @@ const ManageClient = () => {
   if (!hasAccess) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           You do not have permission to view this page.
@@ -832,7 +984,12 @@ const ManageClient = () => {
   if (fetchError) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color="error">
           {fetchError}
@@ -854,14 +1011,19 @@ const ManageClient = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+          },
         }}
       />
       <MDBox
@@ -894,7 +1056,14 @@ const ManageClient = () => {
               </MDBox>
               <MDBox pt={2} pb={2} px={2}>
                 {!isReadOnly && (
-                  <Box sx={{ display: "flex", gap: 2, mb: 1, alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 2,
+                      mb: 1,
+                      alignItems: "center",
+                    }}
+                  >
                     <Button
                       variant="gradient"
                       color={darkMode ? "dark" : "info"}
@@ -913,7 +1082,9 @@ const ManageClient = () => {
                       Add Client
                     </Button>
                     <FormControl sx={{ minWidth: 150 }}>
-                      <InputLabel id="excel-options-label">Excel Options</InputLabel>
+                      <InputLabel id="excel-options-label">
+                        Excel Options
+                      </InputLabel>
                       <Select
                         labelId="excel-options-label"
                         value={excelOption}
@@ -931,7 +1102,9 @@ const ManageClient = () => {
                         </MenuItem>
                         <MenuItem value="upload">Upload Excel</MenuItem>
                         <MenuItem value="download">Download Excel</MenuItem>
-                        <MenuItem value="downloadDummy">Download Dummy Excel</MenuItem>
+                        <MenuItem value="downloadDummy">
+                          Download Dummy Excel
+                        </MenuItem>
                       </Select>
                     </FormControl>
                     <input
@@ -962,7 +1135,12 @@ const ManageClient = () => {
                         },
                       }}
                     >
-                      <CardContent sx={{ padding: 0, "&:last-child": { paddingBottom: 0 } }}>
+                      <CardContent
+                        sx={{
+                          padding: 0,
+                          "&:last-child": { paddingBottom: 0 },
+                        }}
+                      >
                         <MDBox>
                           <Typography
                             variant="h5"
@@ -981,7 +1159,9 @@ const ManageClient = () => {
                                 color={darkMode ? "white" : "textSecondary"}
                               >
                                 <span>Client ID: </span>
-                                <span style={{ fontWeight: "bold" }}>{client.clientId}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {client.clientId}
+                                </span>
                               </MDTypography>
                               <MDTypography
                                 variant="body2"
@@ -989,7 +1169,9 @@ const ManageClient = () => {
                                 display="block"
                               >
                                 <span>Email: </span>
-                                <span style={{ fontWeight: "bold" }}>{client.email || "N/A"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {client.email || "N/A"}
+                                </span>
                               </MDTypography>
                               <MDTypography
                                 variant="body2"
@@ -997,7 +1179,9 @@ const ManageClient = () => {
                                 display="block"
                               >
                                 <span>Phone: </span>
-                                <span style={{ fontWeight: "bold" }}>{client.phone || "N/A"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {client.phone || "N/A"}
+                                </span>
                               </MDTypography>
                             </Grid>
                             <Grid item xs={12} sm={4}>
@@ -1052,7 +1236,9 @@ const ManageClient = () => {
                                   size="small"
                                   sx={{
                                     backgroundColor:
-                                      client.status === "Active" ? "#4CAF50" : "#F44336",
+                                      client.status === "Active"
+                                        ? "#4CAF50"
+                                        : "#F44336",
                                     color: "#fff",
                                     fontSize: "12px",
                                     height: "24px",
@@ -1074,11 +1260,23 @@ const ManageClient = () => {
                                 color={darkMode ? "white" : "textSecondary"}
                                 display="block"
                               >
-                                <span>Project IDs: </span>
+                                <span>Projects: </span>
                                 <span style={{ fontWeight: "bold" }}>
-                                  {Array.isArray(client.projects) && client.projects.length > 0
-                                    ? client.projects.join(", ")
-                                    : "N/A"}
+                                  {Array.isArray(client.projects) &&
+                                  client.projects.length > 0
+                                    ? client.projects
+                                        .map((projectId) => {
+                                          const project = projects.find(
+                                            (p) => p.projectId === projectId
+                                          );
+                                          return project
+                                            ? `${project.name || "Unknown"} (${
+                                                project.projectId
+                                              })`
+                                            : projectId;
+                                        })
+                                        .join(", ")
+                                    : "No projects assigned"}
                                 </span>
                               </MDTypography>
                             </Grid>
@@ -1098,7 +1296,11 @@ const ManageClient = () => {
                             </Grid>
                           </Grid>
                           {!isReadOnly && (
-                            <MDBox mt={2} display="flex" justifyContent="flex-end">
+                            <MDBox
+                              mt={2}
+                              display="flex"
+                              justifyContent="flex-end"
+                            >
                               <MDButton
                                 variant="gradient"
                                 color={darkMode ? "dark" : "info"}
@@ -1154,7 +1356,10 @@ const ManageClient = () => {
                   Name
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.name ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.name ? "red" : "#ddd",
+                  }}
                   type="text"
                   id="name"
                   value={name}
@@ -1163,14 +1368,19 @@ const ManageClient = () => {
                   required
                 />
                 {errors.name && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.name}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.name}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="email">
                   Email
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.email ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.email ? "red" : "#ddd",
+                  }}
                   type="email"
                   id="email"
                   value={email}
@@ -1179,7 +1389,9 @@ const ManageClient = () => {
                   required
                 />
                 {errors.email && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.email}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.email}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="phone">
@@ -1210,7 +1422,10 @@ const ManageClient = () => {
                   Industry*
                 </label>
                 <select
-                  style={{ ...selectStyle, borderColor: errors.industry ? "red" : "#ddd" }}
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.industry ? "red" : "#ddd",
+                  }}
                   id="industry"
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
@@ -1226,14 +1441,19 @@ const ManageClient = () => {
                   ))}
                 </select>
                 {errors.industry && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.industry}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.industry}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="contractStartDate">
                   Contract Start Date*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.contractStartDate ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.contractStartDate ? "red" : "#ddd",
+                  }}
                   type="date"
                   id="contractStartDate"
                   value={contractStartDate}
@@ -1241,14 +1461,19 @@ const ManageClient = () => {
                   required
                 />
                 {errors.contractStartDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.contractStartDate}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.contractStartDate}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="contractEndDate">
                   Contract End Date*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.contractEndDate ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.contractEndDate ? "red" : "#ddd",
+                  }}
                   type="date"
                   id="contractEndDate"
                   value={contractEndDate}
@@ -1256,14 +1481,19 @@ const ManageClient = () => {
                   required
                 />
                 {errors.contractEndDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.contractEndDate}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.contractEndDate}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="contractAmount">
                   Contract Amount*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.contractAmount ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.contractAmount ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="contractAmount"
                   value={contractAmount}
@@ -1272,27 +1502,39 @@ const ManageClient = () => {
                   required
                 />
                 {errors.contractAmount && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.contractAmount}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.contractAmount}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="cac">
                   CAC
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.cac ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.cac ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="cac"
                   value={cac}
                   onChange={(e) => setCac(e.target.value)}
                   placeholder="Enter CAC"
                 />
-                {errors.cac && <span style={{ color: "red", fontSize: "12px" }}>{errors.cac}</span>}
+                {errors.cac && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.cac}
+                  </span>
+                )}
 
                 <label style={labelStyle} htmlFor="cltv">
                   CLTV
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.cltv ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.cltv ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="cltv"
                   value={cltv}
@@ -1300,14 +1542,19 @@ const ManageClient = () => {
                   placeholder="Enter CLTV"
                 />
                 {errors.cltv && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.cltv}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.cltv}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="revenueGenerated">
                   Revenue Generated
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.revenueGenerated ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.revenueGenerated ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="revenueGenerated"
                   value={revenueGenerated}
@@ -1315,14 +1562,19 @@ const ManageClient = () => {
                   placeholder="Enter Revenue Generated"
                 />
                 {errors.revenueGenerated && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.revenueGenerated}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.revenueGenerated}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="oneTimeRevenue">
                   One-Time Revenue
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.oneTimeRevenue ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.oneTimeRevenue ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="oneTimeRevenue"
                   value={oneTimeRevenue}
@@ -1330,14 +1582,19 @@ const ManageClient = () => {
                   placeholder="Enter One-Time Revenue"
                 />
                 {errors.oneTimeRevenue && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.oneTimeRevenue}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.oneTimeRevenue}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="recurringRevenue">
                   Recurring Revenue
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.recurringRevenue ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.recurringRevenue ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="recurringRevenue"
                   value={recurringRevenue}
@@ -1345,14 +1602,19 @@ const ManageClient = () => {
                   placeholder="Enter Recurring Revenue"
                 />
                 {errors.recurringRevenue && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.recurringRevenue}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.recurringRevenue}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="status">
                   Status*
                 </label>
                 <select
-                  style={{ ...selectStyle, borderColor: errors.status ? "red" : "#ddd" }}
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.status ? "red" : "#ddd",
+                  }}
                   id="status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
@@ -1368,13 +1630,20 @@ const ManageClient = () => {
                   ))}
                 </select>
                 {errors.status && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.status}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.status}
+                  </span>
                 )}
 
-                <label style={labelStyle}>Project IDs</label>
+                <label style={labelStyle}>Projects</label>
                 {loadingProjects ? (
                   <Box
-                    sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 2 }}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      py: 2,
+                    }}
                   >
                     <CircularProgress size={24} />
                   </Box>
@@ -1385,20 +1654,24 @@ const ManageClient = () => {
                         key={project.id}
                         control={
                           <Checkbox
-                            checked={selectedProjects.includes(project.projectId)}
-                            onChange={() => handleProjectChange(project.projectId)}
+                            checked={selectedProjects.includes(
+                              project.projectId
+                            )}
+                            onChange={() =>
+                              handleProjectChange(project.projectId)
+                            }
                             sx={{
-                              "& .MuiSvgIcon-root": { fontSize: "20px" },
+                              "& .MuiSvgIcon-root": { fontSize: "inline-flex" },
                             }}
                           />
                         }
-                        label={project.projectId || "Unknown"}
+                        label={project.name || "Unknown"}
                         sx={{
                           display: "block",
                           margin: "0",
                           "& .MuiFormControlLabel-label": {
                             fontSize: "12px",
-                            color: "#555",
+                            color: "#333",
                           },
                         }}
                       />
@@ -1415,7 +1688,9 @@ const ManageClient = () => {
               </form>
             </fieldset>
           </DialogContent>
-          <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+          <DialogActions
+            sx={{ padding: "16px 24px", justifyContent: "center" }}
+          >
             <button style={buttonStyle} onClick={handleClose}>
               Cancel
             </button>
@@ -1431,7 +1706,9 @@ const ManageClient = () => {
           onClose={() => setConfirmUpdateOpen(false)}
           sx={{
             "& .MuiDialog-paper": {
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: darkMode
+                ? "background.default"
+                : "background.paper",
               borderRadius: "12px",
             },
           }}
@@ -1451,7 +1728,9 @@ const ManageClient = () => {
                 borderRadius: "8px",
                 border: darkMode ? "1px solid #ffffff" : "1px solid #000000",
                 "&:hover": {
-                  backgroundColor: darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
+                  backgroundColor: darkMode
+                    ? "rgba(255,255,255,0.2)"
+                    : "rgba(0,0,0,0.1)",
                   color: darkMode ? "#ffffff" : "#000000",
                 },
               }}
