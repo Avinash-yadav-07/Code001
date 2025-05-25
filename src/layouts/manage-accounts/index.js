@@ -21,7 +21,15 @@ import {
   FormControlLabel,
 } from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
-import { collection, getDocs, query, where, addDoc, updateDoc, doc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  addDoc,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
@@ -33,7 +41,13 @@ import * as XLSX from "xlsx";
 import AddIcon from "@mui/icons-material/Add";
 
 const statuses = ["Active", "Closed"];
-const industries = ["Technology", "Finance", "Healthcare", "Retail", "Manufacturing"];
+const industries = [
+  "Technology",
+  "Finance",
+  "Healthcare",
+  "Retail",
+  "Manufacturing",
+];
 
 // Utility function to generate random numbers for IDs
 const generateRandomNumber = () => Math.floor(1000 + Math.random() * 9000);
@@ -42,7 +56,12 @@ const generateRandomNumber = () => Math.floor(1000 + Math.random() * 9000);
 const generateAccountId = () => `ACC-${generateRandomNumber()}`;
 
 // Check if an ID is unique in Firestore
-const checkUniqueId = async (collectionName, field, value, excludeDocId = null) => {
+const checkUniqueId = async (
+  collectionName,
+  field,
+  value,
+  excludeDocId = null
+) => {
   try {
     const q = query(collection(db, collectionName), where(field, "==", value));
     const querySnapshot = await getDocs(q);
@@ -83,7 +102,10 @@ const ManageAccount = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
@@ -106,9 +128,11 @@ const ManageAccount = () => {
   }, []);
 
   const isReadOnly =
-    userRoles.includes("ManageAccount:read") && !userRoles.includes("ManageAccount:full access");
+    userRoles.includes("ManageAccount:read") &&
+    !userRoles.includes("ManageAccount:full access");
   const hasAccess =
-    userRoles.includes("ManageAccount:read") || userRoles.includes("ManageAccount:full access");
+    userRoles.includes("ManageAccount:read") ||
+    userRoles.includes("ManageAccount:full access");
 
   // Fetch all data (accounts, projects, clients, expenses) in a single batch
   const fetchAllData = useCallback(async () => {
@@ -123,13 +147,17 @@ const ManageAccount = () => {
       }
 
       // Batch fetch accounts, projects, clients, expenses
-      const [accountsSnapshot, projectsSnapshot, clientsSnapshot, expensesSnapshot] =
-        await Promise.all([
-          getDocs(collection(db, "accounts")),
-          getDocs(collection(db, "projects")),
-          getDocs(collection(db, "clients")),
-          getDocs(collection(db, "expenses")),
-        ]);
+      const [
+        accountsSnapshot,
+        projectsSnapshot,
+        clientsSnapshot,
+        expensesSnapshot,
+      ] = await Promise.all([
+        getDocs(collection(db, "accounts")),
+        getDocs(collection(db, "projects")),
+        getDocs(collection(db, "clients")),
+        getDocs(collection(db, "expenses")),
+      ]);
 
       const accountsData = accountsSnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -137,11 +165,13 @@ const ManageAccount = () => {
       }));
       const projectsData = projectsSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        projectId: doc.data().projectId || doc.id,
+        name: doc.data().name || "Unknown",
       }));
       const clientsData = clientsSnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data(),
+        clientId: doc.data().clientId || doc.id,
+        name: doc.data().name || "Unknown",
       }));
       const expensesData = expensesSnapshot.docs.map((doc) => doc.data());
 
@@ -219,7 +249,10 @@ const ManageAccount = () => {
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "", blankrows: false });
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          defval: "",
+          blankrows: false,
+        });
 
         const validProjectIds = projectList.map((p) => p.id);
         const validClientIds = clientList.map((c) => c.id);
@@ -228,10 +261,13 @@ const ManageAccount = () => {
         const normalizeColumnName = (name) => {
           if (!name) return "";
           const cleanName = name.trim().toLowerCase().replace(/\s+/g, "");
-          if (cleanName.includes("name") || cleanName.includes("accountname")) return "Name";
+          if (cleanName.includes("name") || cleanName.includes("accountname"))
+            return "Name";
           if (cleanName.includes("industry")) return "Industry";
-          if (cleanName.includes("project") || cleanName.includes("projects")) return "Projects";
-          if (cleanName.includes("client") || cleanName.includes("clients")) return "Clients";
+          if (cleanName.includes("project") || cleanName.includes("projects"))
+            return "Projects";
+          if (cleanName.includes("client") || cleanName.includes("clients"))
+            return "Clients";
           if (cleanName.includes("status")) return "Status";
           if (cleanName.includes("notes")) return "Notes";
           return name;
@@ -252,15 +288,24 @@ const ManageAccount = () => {
 
           // Ensure unique account ID
           while (attempts < maxAttempts) {
-            const isAccountIdUnique = await checkUniqueId("accounts", "accountId", newAccountId);
+            const isAccountIdUnique = await checkUniqueId(
+              "accounts",
+              "accountId",
+              newAccountId
+            );
             if (isAccountIdUnique) break;
             newAccountId = generateAccountId();
             attempts++;
           }
 
           if (attempts >= maxAttempts) {
-            console.error("Could not generate unique ID for account:", account["Name"]);
-            alert("Failed to generate unique ID for some accounts. Please try again.");
+            console.error(
+              "Could not generate unique ID for account:",
+              account["Name"]
+            );
+            alert(
+              "Failed to generate unique ID for some accounts. Please try again."
+            );
             return;
           }
 
@@ -270,7 +315,10 @@ const ManageAccount = () => {
             !account["Industry"]?.trim() ||
             !account["Status"]?.trim()
           ) {
-            console.error("Missing required fields in account:", account["Name"]);
+            console.error(
+              "Missing required fields in account:",
+              account["Name"]
+            );
             alert(
               `Missing required fields for account ${
                 account["Name"] || "unknown"
@@ -281,17 +329,29 @@ const ManageAccount = () => {
 
           // Validate industry
           const normalizedIndustry = account["Industry"].trim();
-          if (!industries.map((i) => i.toLowerCase()).includes(normalizedIndustry.toLowerCase())) {
+          if (
+            !industries
+              .map((i) => i.toLowerCase())
+              .includes(normalizedIndustry.toLowerCase())
+          ) {
             console.error("Invalid industry for account:", account["Name"]);
-            alert(`Invalid industry "${account["Industry"]}" for account ${account["Name"]}.`);
+            alert(
+              `Invalid industry "${account["Industry"]}" for account ${account["Name"]}.`
+            );
             return;
           }
 
           // Validate status
           const normalizedStatus = account["Status"].trim();
-          if (!statuses.map((s) => s.toLowerCase()).includes(normalizedStatus.toLowerCase())) {
+          if (
+            !statuses
+              .map((s) => s.toLowerCase())
+              .includes(normalizedStatus.toLowerCase())
+          ) {
             console.error("Invalid status for account:", account["Name"]);
-            alert(`Invalid status "${account["Status"]}" for account ${account["Name"]}.`);
+            alert(
+              `Invalid status "${account["Status"]}" for account ${account["Name"]}.`
+            );
             return;
           }
 
@@ -319,9 +379,14 @@ const ManageAccount = () => {
           const currentExpenses = accountExpenses[newAccountId] || 0;
           const totalBudget = projectList
             .filter((project) => projectIds.includes(project.id))
-            .reduce((sum, project) => sum + (Number(project.financialMetrics?.budget) || 0), 0);
+            .reduce(
+              (sum, project) =>
+                sum + (Number(project.financialMetrics?.budget) || 0),
+              0
+            );
           const revenue = totalBudget - currentExpenses;
-          const profitMargin = totalBudget > 0 ? (revenue / totalBudget) * 100 : 0;
+          const profitMargin =
+            totalBudget > 0 ? (revenue / totalBudget) * 100 : 0;
 
           // Create new account object
           const newAccount = {
@@ -343,7 +408,11 @@ const ManageAccount = () => {
             setAccounts((prev) => [...prev, { id: docRef.id, ...newAccount }]);
           } catch (error) {
             console.error("Error adding account from Excel:", error);
-            alert(`Failed to add account ${account["Name"] || "unknown"}. Error: ${error.message}`);
+            alert(
+              `Failed to add account ${account["Name"] || "unknown"}. Error: ${
+                error.message
+              }`
+            );
             return;
           }
         }
@@ -376,7 +445,9 @@ const ManageAccount = () => {
         ? account.projects
             .map((projectId) => {
               const project = projectList.find((p) => p.id === projectId);
-              return project ? project.name || project.id : projectId;
+              return project
+                ? `${project.name} (${project.projectId})`
+                : projectId;
             })
             .join(", ")
         : "",
@@ -384,7 +455,7 @@ const ManageAccount = () => {
         ? account.clients
             .map((clientId) => {
               const client = clientList.find((c) => c.id === clientId);
-              return client ? client.name || client.id : clientId;
+              return client ? `${client.name} (${client.clientId})` : clientId;
             })
             .join(", ")
         : "",
@@ -460,13 +531,19 @@ const ManageAccount = () => {
   };
 
   const confirmUpdate = async () => {
-    let accountId = editingAccount ? editingAccount.accountId : generateAccountId();
+    let accountId = editingAccount
+      ? editingAccount.accountId
+      : generateAccountId();
     let attempts = 0;
     const maxAttempts = 10;
 
     if (!editingAccount) {
       while (attempts < maxAttempts) {
-        const isAccountIdUnique = await checkUniqueId("accounts", "accountId", accountId);
+        const isAccountIdUnique = await checkUniqueId(
+          "accounts",
+          "accountId",
+          accountId
+        );
         if (isAccountIdUnique) break;
         accountId = generateAccountId();
         attempts++;
@@ -483,7 +560,10 @@ const ManageAccount = () => {
     const currentExpenses = accountExpenses[accountId] || 0;
     const totalBudget = projectList
       .filter((project) => projects.includes(project.id))
-      .reduce((sum, project) => sum + (Number(project.financialMetrics?.budget) || 0), 0);
+      .reduce(
+        (sum, project) => sum + (Number(project.financialMetrics?.budget) || 0),
+        0
+      );
     const revenue = totalBudget - currentExpenses;
     const profitMargin = totalBudget > 0 ? (revenue / totalBudget) * 100 : 0;
 
@@ -504,7 +584,9 @@ const ManageAccount = () => {
       if (editingAccount) {
         await updateDoc(doc(db, "accounts", editingAccount.id), newAccount);
         setAccounts(
-          accounts.map((acc) => (acc.id === editingAccount.id ? { ...acc, ...newAccount } : acc))
+          accounts.map((acc) =>
+            acc.id === editingAccount.id ? { ...acc, ...newAccount } : acc
+          )
         );
       } else {
         const docRef = await addDoc(collection(db, "accounts"), newAccount);
@@ -640,60 +722,96 @@ const ManageAccount = () => {
           <CardContent>
             <Typography
               variant="h4"
-              sx={{ fontWeight: "bold", color: darkMode ? "#fff" : "#333", mb: 2 }}
+              sx={{
+                fontWeight: "bold",
+                color: darkMode ? "#fff" : "#333",
+                mb: 2,
+              }}
             >
               {account.name}
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>ID:</strong> {account.accountId}
                 </MDTypography>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>Industry:</strong> {account.industry}
                 </MDTypography>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>Revenue:</strong> ${displayedRevenue}
                 </MDTypography>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                  <strong>Expenses:</strong> ${accountExpenses[account.accountId] || 0}
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
+                  <strong>Expenses:</strong> $
+                  {accountExpenses[account.accountId] || 0}
                 </MDTypography>
               </Grid>
               <Grid item xs={12} sm={6}>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>Profit Margin:</strong> {account.profitMargin || 0}%
                 </MDTypography>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>Projects:</strong>{" "}
-                  {Array.isArray(account.projects) && account.projects.length > 0
+                  {Array.isArray(account.projects) &&
+                  account.projects.length > 0
                     ? account.projects
                         .map((projectId) => {
-                          const project = projectList.find((p) => p.id === projectId);
-                          const projectExpense = projectExpenses[projectId] || 0;
+                          const project = projectList.find(
+                            (p) => p.id === projectId
+                          );
                           return project
-                            ? `${project.name || project.id} ($${projectExpense})`
+                            ? `${project.name} (${project.projectId})`
                             : projectId;
                         })
                         .join(", ")
                     : "No projects assigned"}
                 </MDTypography>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>Clients:</strong>{" "}
                   {Array.isArray(account.clients) && account.clients.length > 0
                     ? account.clients
                         .map((clientId) => {
-                          const client = clientList.find((c) => c.id === clientId);
-                          return client ? client.name || client.id : clientId;
+                          const client = clientList.find(
+                            (c) => c.id === clientId
+                          );
+                          return client
+                            ? `${client.name} (${client.clientId})`
+                            : clientId;
                         })
                         .join(", ")
                     : "No clients assigned"}
                 </MDTypography>
-                <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                <MDTypography
+                  variant="body2"
+                  color={darkMode ? "white" : "textSecondary"}
+                >
                   <strong>Status:</strong>{" "}
                   <Chip
                     label={account.status}
                     sx={{
-                      backgroundColor: account.status === "Active" ? "#4CAF50" : "#F44336",
+                      backgroundColor:
+                        account.status === "Active" ? "#4CAF50" : "#F44336",
                       color: "#fff",
                       fontSize: "12px",
                       padding: "4px 8px",
@@ -725,7 +843,12 @@ const ManageAccount = () => {
   if (loadingRoles || loadingData) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -738,7 +861,12 @@ const ManageAccount = () => {
   if (!hasAccess) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           You do not have permission to view this page.
@@ -751,7 +879,12 @@ const ManageAccount = () => {
   if (fetchError) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color="error">
           {fetchError}
@@ -772,14 +905,19 @@ const ManageAccount = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+          },
         }}
       />
       <MDBox
@@ -812,7 +950,14 @@ const ManageAccount = () => {
               </MDBox>
               {!isReadOnly && (
                 <MDBox pt={2} pb={2} px={2}>
-                  <Box sx={{ display: "flex", gap: 2, mb: 1, alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 2,
+                      mb: 1,
+                      alignItems: "center",
+                    }}
+                  >
                     <Button
                       variant="gradient"
                       color={darkMode ? "dark" : "info"}
@@ -831,7 +976,9 @@ const ManageAccount = () => {
                       Add Account
                     </Button>
                     <FormControl sx={{ minWidth: 150 }}>
-                      <InputLabel id="excel-options-label">Excel Options</InputLabel>
+                      <InputLabel id="excel-options-label">
+                        Excel Options
+                      </InputLabel>
                       <Select
                         labelId="excel-options-label"
                         value={excelOption}
@@ -849,7 +996,9 @@ const ManageAccount = () => {
                         </MenuItem>
                         <MenuItem value="upload">Upload Excel</MenuItem>
                         <MenuItem value="download">Download Excel</MenuItem>
-                        <MenuItem value="downloadDummy">Download Dummy Excel</MenuItem>
+                        <MenuItem value="downloadDummy">
+                          Download Dummy Excel
+                        </MenuItem>
                       </Select>
                     </FormControl>
                     <input
@@ -865,7 +1014,10 @@ const ManageAccount = () => {
               <Grid container spacing={3} sx={{ padding: "16px" }}>
                 {accounts.length === 0 ? (
                   <Grid item xs={12}>
-                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                    >
                       No accounts available.
                     </MDTypography>
                   </Grid>
@@ -913,7 +1065,10 @@ const ManageAccount = () => {
                     Name*
                   </label>
                   <input
-                    style={{ ...inputStyle, borderColor: errors.name ? "red" : "#ddd" }}
+                    style={{
+                      ...inputStyle,
+                      borderColor: errors.name ? "red" : "#ddd",
+                    }}
                     type="text"
                     id="name"
                     value={name}
@@ -922,14 +1077,19 @@ const ManageAccount = () => {
                     required
                   />
                   {errors.name && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{errors.name}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {errors.name}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="industry">
                     Industry*
                   </label>
                   <select
-                    style={{ ...selectStyle, borderColor: errors.industry ? "red" : "#ddd" }}
+                    style={{
+                      ...selectStyle,
+                      borderColor: errors.industry ? "red" : "#ddd",
+                    }}
                     id="industry"
                     value={industry}
                     onChange={(e) => setIndustry(e.target.value)}
@@ -945,12 +1105,21 @@ const ManageAccount = () => {
                     ))}
                   </select>
                   {errors.industry && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{errors.industry}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {errors.industry}
+                    </span>
                   )}
 
                   <label style={labelStyle}>Projects</label>
                   {loadingData ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        py: 2,
+                      }}
+                    >
                       <CircularProgress size={24} />
                     </Box>
                   ) : projectList.length === 0 ? (
@@ -965,7 +1134,9 @@ const ManageAccount = () => {
                           control={
                             <Checkbox
                               checked={projects.includes(project.id)}
-                              onChange={() => handleSelectionChange(project.id, "project")}
+                              onChange={() =>
+                                handleSelectionChange(project.id, "project")
+                              }
                               sx={{
                                 "& .MuiSvgIcon-root": { fontSize: "20px" },
                               }}
@@ -994,7 +1165,14 @@ const ManageAccount = () => {
 
                   <label style={labelStyle}>Clients</label>
                   {loadingData ? (
-                    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", py: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        py: 2,
+                      }}
+                    >
                       <CircularProgress size={24} />
                     </Box>
                   ) : clientList.length === 0 ? (
@@ -1009,7 +1187,9 @@ const ManageAccount = () => {
                           control={
                             <Checkbox
                               checked={clients.includes(client.id)}
-                              onChange={() => handleSelectionChange(client.id, "client")}
+                              onChange={() =>
+                                handleSelectionChange(client.id, "client")
+                              }
                               sx={{
                                 "& .MuiSvgIcon-root": { fontSize: "20px" },
                               }}
@@ -1040,7 +1220,10 @@ const ManageAccount = () => {
                     Status*
                   </label>
                   <select
-                    style={{ ...selectStyle, borderColor: errors.status ? "red" : "#ddd" }}
+                    style={{
+                      ...selectStyle,
+                      borderColor: errors.status ? "red" : "#ddd",
+                    }}
                     id="status"
                     value={status}
                     onChange={(e) => setStatus(e.target.value)}
@@ -1056,7 +1239,9 @@ const ManageAccount = () => {
                     ))}
                   </select>
                   {errors.status && (
-                    <span style={{ color: "red", fontSize: "12px" }}>{errors.status}</span>
+                    <span style={{ color: "red", fontSize: "12px" }}>
+                      {errors.status}
+                    </span>
                   )}
 
                   <label style={labelStyle} htmlFor="notes">
@@ -1073,7 +1258,9 @@ const ManageAccount = () => {
                 </form>
               </fieldset>
             </DialogContent>
-            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+            <DialogActions
+              sx={{ padding: "16px 24px", justifyContent: "center" }}
+            >
               <button style={buttonStyle} onClick={handleClose}>
                 Cancel
               </button>
@@ -1087,7 +1274,9 @@ const ManageAccount = () => {
             onClose={() => setConfirmUpdateOpen(false)}
             sx={{
               "& .MuiDialog-paper": {
-                backgroundColor: darkMode ? "background.default" : "background.paper",
+                backgroundColor: darkMode
+                  ? "background.default"
+                  : "background.paper",
                 borderRadius: "12px",
               },
             }}
@@ -1107,7 +1296,9 @@ const ManageAccount = () => {
                   borderRadius: "8px",
                   border: darkMode ? "1px solid #ffffff" : "1px solid #000000",
                   "&:hover": {
-                    backgroundColor: darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
+                    backgroundColor: darkMode
+                      ? "rgba(255,255,255,0.2)"
+                      : "rgba(0,0,0,0.1)",
                     color: darkMode ? "#ffffff" : "#000000",
                   },
                 }}
