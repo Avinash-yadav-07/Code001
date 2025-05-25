@@ -1,5 +1,6 @@
 function navbar(theme, ownerState) {
-  const { palette, boxShadows, functions, transitions, breakpoints, borders } = theme;
+  const { palette, boxShadows, functions, transitions, breakpoints, borders } =
+    theme;
   const { transparentNavbar, absolute, light, darkMode } = ownerState;
 
   const { dark, white, transparent, background } = palette;
@@ -9,7 +10,10 @@ function navbar(theme, ownerState) {
 
   return {
     boxShadow: transparentNavbar || absolute ? "none" : navbarBoxShadow,
-    backdropFilter: transparentNavbar || absolute ? "none" : `saturate(200%) blur(${pxToRem(20)})`,
+    backdropFilter:
+      transparentNavbar || absolute
+        ? "none"
+        : `saturate(200%) blur(${pxToRem(20)})`,
     backgroundColor:
       transparentNavbar || absolute
         ? `${transparent.main} !important`
@@ -104,4 +108,10 @@ const navbarMobileMenu = ({ breakpoints }) => ({
   },
 });
 
-export { navbar, navbarContainer, navbarRow, navbarIconButton, navbarMobileMenu };
+export {
+  navbar,
+  navbarContainer,
+  navbarRow,
+  navbarIconButton,
+  navbarMobileMenu,
+};

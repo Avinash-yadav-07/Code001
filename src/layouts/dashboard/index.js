@@ -1,4 +1,4 @@
-import React,{useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Grid,
   Collapse,
@@ -88,7 +88,11 @@ const tableColumns = [
         size="small"
         onClick={() => row.original.onCategoryClick(row.original.category)}
       >
-        {row.original.isOpen ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+        {row.original.isOpen ? (
+          <KeyboardArrowUpIcon />
+        ) : (
+          <KeyboardArrowDownIcon />
+        )}
       </IconButton>
     ),
   },
@@ -116,7 +120,12 @@ const detailsColumns = [
 ];
 
 function Dashboard() {
-  const [data, setData] = useState({ expenses: [], earnings: [], isLoading: true, error: null });
+  const [data, setData] = useState({
+    expenses: [],
+    earnings: [],
+    isLoading: true,
+    error: null,
+  });
   const [selectedChartData, setSelectedChartData] = useState(null);
   const [openCategory, setOpenCategory] = useState(null);
   const [activeCard, setActiveCard] = useState("expenses");
@@ -134,11 +143,14 @@ function Dashboard() {
   // Menu handlers
   const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
   const handleMenuClose = () => setAnchorEl(null);
-  const handleAccountMenuOpen = (event) => setAccountAnchorEl(event.currentTarget);
+  const handleAccountMenuOpen = (event) =>
+    setAccountAnchorEl(event.currentTarget);
   const handleAccountMenuClose = () => setAccountAnchorEl(null);
-  const handleRunwaySettingsOpen = (event) => setRunwayAnchorEl(event.currentTarget);
+  const handleRunwaySettingsOpen = (event) =>
+    setRunwayAnchorEl(event.currentTarget);
   const handleRunwaySettingsClose = () => setRunwayAnchorEl(null);
-  const handleDateFilterOpen = (event) => setDateFilterAnchorEl(event.currentTarget);
+  const handleDateFilterOpen = (event) =>
+    setDateFilterAnchorEl(event.currentTarget);
   const handleDateFilterClose = () => setDateFilterAnchorEl(null);
 
   // Debounced filter application
@@ -197,7 +209,10 @@ function Dashboard() {
     const loadData = async () => {
       setData((prev) => ({ ...prev, isLoading: true, error: null }));
       try {
-        const [expensesData, earningsData] = await Promise.all([fetchExpenses(), fetchEarnings()]);
+        const [expensesData, earningsData] = await Promise.all([
+          fetchExpenses(),
+          fetchEarnings(),
+        ]);
 
         // Validate and normalize data
         const validatedExpenses = expensesData.map((expense) => ({
@@ -232,7 +247,11 @@ function Dashboard() {
         setSelectedChartData(expensesByCat);
       } catch (error) {
         console.error("Error loading data:", error);
-        setData((prev) => ({ ...prev, isLoading: false, error: error.message }));
+        setData((prev) => ({
+          ...prev,
+          isLoading: false,
+          error: error.message,
+        }));
         toast.error("Failed to load financial data");
       }
     };
@@ -283,7 +302,8 @@ function Dashboard() {
     return data.expenses.filter((expense) => {
       const date = expense.date;
       return selectedFilters.some(
-        (filter) => date.getFullYear() === filter.year && date.getMonth() === filter.month
+        (filter) =>
+          date.getFullYear() === filter.year && date.getMonth() === filter.month
       );
     });
   }, [data.expenses, selectedRunwayMonths]);
@@ -299,7 +319,8 @@ function Dashboard() {
     return data.earnings.filter((earning) => {
       const date = earning.date;
       return selectedFilters.some(
-        (filter) => date.getFullYear() === filter.year && date.getMonth() === filter.month
+        (filter) =>
+          date.getFullYear() === filter.year && date.getMonth() === filter.month
       );
     });
   }, [data.earnings, selectedRunwayMonths]);
@@ -346,9 +367,12 @@ function Dashboard() {
     [runwayEarnings]
   );
   const runwayProfitLoss = runwayTotalEarnings - runwayTotalExpenses;
-  const runwayMonthCount = Object.values(selectedRunwayMonths).filter(Boolean).length || 12;
+  const runwayMonthCount =
+    Object.values(selectedRunwayMonths).filter(Boolean).length || 12;
   const runwayAvgMonthlyExpense = runwayTotalExpenses / runwayMonthCount || 1; // Avoid division by zero
-  const financialRunway = Number.isFinite(runwayProfitLoss / runwayAvgMonthlyExpense)
+  const financialRunway = Number.isFinite(
+    runwayProfitLoss / runwayAvgMonthlyExpense
+  )
     ? Math.round(runwayProfitLoss / runwayAvgMonthlyExpense)
     : 0;
 
@@ -398,7 +422,9 @@ function Dashboard() {
       ],
       yAxisName: "Months",
       yAxisUnit: "",
-      seriesData: [{ name: "Financial Runway", type: "bar", data: [financialRunway] }],
+      seriesData: [
+        { name: "Financial Runway", type: "bar", data: [financialRunway] },
+      ],
       yAxis: {
         type: "value",
         name: "Months",
@@ -475,14 +501,18 @@ function Dashboard() {
 
   const accountIds = useMemo(
     () =>
-      [...new Set([...data.expenses, ...data.earnings].map((item) => item.accountId))].filter(
-        Boolean
-      ),
+      [
+        ...new Set(
+          [...data.expenses, ...data.earnings].map((item) => item.accountId)
+        ),
+      ].filter(Boolean),
     [data.expenses, data.earnings]
   );
 
   const availableYears = useMemo(() => {
-    const allDates = [...data.expenses, ...data.earnings].map((item) => item.date.getFullYear());
+    const allDates = [...data.expenses, ...data.earnings].map((item) =>
+      item.date.getFullYear()
+    );
     return [...new Set(allDates)].sort();
   }, [data.expenses, data.earnings]);
 
@@ -518,7 +548,9 @@ function Dashboard() {
       <DashboardLayout>
         <DashboardNavbar />
         <MDBox py={8} mt={8} display="flex" justifyContent="center">
-          <Typography color="error">Error loading data: {data.error}</Typography>
+          <Typography color="error">
+            Error loading data: {data.error}
+          </Typography>
         </MDBox>
         <Footer />
       </DashboardLayout>
@@ -529,7 +561,13 @@ function Dashboard() {
     <DashboardLayout>
       <DashboardNavbar />
       <MDBox py={8} mt={8}>
-        <MDBox mb={4} display="flex" justifyContent="flex-start" gap={2} alignItems="center">
+        <MDBox
+          mb={4}
+          display="flex"
+          justifyContent="flex-start"
+          gap={2}
+          alignItems="center"
+        >
           <div className="radio-inputs">
             <label className="radio">
               <input
@@ -537,7 +575,9 @@ function Dashboard() {
                 name="dashboardLevel"
                 value="Organization Level"
                 checked={dashboardLevel === "Organization Level"}
-                onChange={() => handleDashboardLevelChange("Organization Level")}
+                onChange={() =>
+                  handleDashboardLevelChange("Organization Level")
+                }
               />
               <span className="name">Organization Level</span>
             </label>
@@ -674,7 +714,11 @@ function Dashboard() {
             <ReportsBarChart
               title="Financial Runway"
               description={
-                <MDBox display="flex" alignItems="center" justifyContent="space-between">
+                <MDBox
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                >
                   <span>
                     Months of runway
                     {Object.keys(selectedRunwayMonths).length === 0
@@ -708,7 +752,9 @@ function Dashboard() {
                       control={
                         <Checkbox
                           checked={!!selectedRunwayMonths[`${year}-${index}`]}
-                          onChange={() => handleRunwayMonthToggle(`${year}-${index}`)}
+                          onChange={() =>
+                            handleRunwayMonthToggle(`${year}-${index}`)
+                          }
                         />
                       }
                       label={`${month} ${year}`}
@@ -723,26 +769,27 @@ function Dashboard() {
         <MDBox mt={4}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              {(activeCard === "expenses" || activeCard === "earnings") && selectedChartData && (
-                <DataTable
-                  table={{ columns: tableColumns, rows: tableRows }}
-                  showTotalEntries={false}
-                  isSorted={false}
-                  noEndBorder
-                  entriesPerPage={false}
-                  sx={{
-                    "& .MuiTable-root": {
-                      border: "1px solid #ddd",
-                    },
-                    "& .MuiTableCell-root": {
-                      padding: "10px",
-                    },
-                    "& .MuiTableRow-root:nth-of-type(odd)": {
-                      backgroundColor: "#f9f9f9",
-                    },
-                  }}
-                />
-              )}
+              {(activeCard === "expenses" || activeCard === "earnings") &&
+                selectedChartData && (
+                  <DataTable
+                    table={{ columns: tableColumns, rows: tableRows }}
+                    showTotalEntries={false}
+                    isSorted={false}
+                    noEndBorder
+                    entriesPerPage={false}
+                    sx={{
+                      "& .MuiTable-root": {
+                        border: "1px solid #ddd",
+                      },
+                      "& .MuiTableCell-root": {
+                        padding: "10px",
+                      },
+                      "& .MuiTableRow-root:nth-of-type(odd)": {
+                        backgroundColor: "#f9f9f9",
+                      },
+                    }}
+                  />
+                )}
             </Grid>
           </Grid>
         </MDBox>

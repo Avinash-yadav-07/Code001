@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardActions, Typography, Box, Grid, Button } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Box,
+  Grid,
+  Button,
+} from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
-import { collection, addDoc, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  getDocs,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
@@ -53,7 +69,8 @@ const ManageCustomer = () => {
   const [complaintDate, setComplaintDate] = useState(null);
   const [resolvedDate, setResolvedDate] = useState(null);
   const [responseChannel, setResponseChannel] = useState([]);
-  const [upgradeSubscriptionTier, setUpgradeSubscriptionTier] = useState("premium");
+  const [upgradeSubscriptionTier, setUpgradeSubscriptionTier] =
+    useState("premium");
   const [planUpgradeDate, setPlanUpgradeDate] = useState(null);
   const [cancellationDate, setCancellationDate] = useState(null);
   const [churnReason, setChurnReason] = useState("");
@@ -161,7 +178,10 @@ const ManageCustomer = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             setUserRoles(querySnapshot.docs[0].data().roles || []);
@@ -180,23 +200,26 @@ const ManageCustomer = () => {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const [customerSnapshot, metricsSnapshot, projectSnapshot] = await Promise.all([
-          getDocs(collection(db, "customers")),
-          getDocs(collection(db, "customerMetrics")),
-          getDocs(collection(db, "projects")),
-        ]);
+        const [customerSnapshot, metricsSnapshot, projectSnapshot] =
+          await Promise.all([
+            getDocs(collection(db, "customers")),
+            getDocs(collection(db, "customerMetrics")),
+            getDocs(collection(db, "projects")),
+          ]);
 
         const customersData = customerSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date(doc.data().createdAt),
+          createdAt:
+            doc.data().createdAt?.toDate() || new Date(doc.data().createdAt),
           signUpDate: doc.data().signUpDate?.toDate() || null,
         }));
 
         const metricsData = metricsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          metricDate: doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
+          metricDate:
+            doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
         }));
 
         const projectsData = projectSnapshot.docs.map((doc) => ({
@@ -207,7 +230,9 @@ const ManageCustomer = () => {
 
         const latestMetricsData = {};
         customersData.forEach((customer) => {
-          const customerMetrics = metricsData.filter((metric) => metric.customerId === customer.customerId);
+          const customerMetrics = metricsData.filter(
+            (metric) => metric.customerId === customer.customerId
+          );
           const latestNps = customerMetrics
             .filter((m) => m.metricType === "nps")
             .sort((a, b) => b.metricDate - a.metricDate)[0];
@@ -218,9 +243,15 @@ const ManageCustomer = () => {
             .filter((m) => m.metricType === "chs")
             .sort((a, b) => b.metricDate - a.metricDate)[0];
           latestMetricsData[customer.customerId] = {
-            nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
-            csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
-            chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
+            nps: latestNps
+              ? { value: latestNps.value, date: latestNps.metricDate }
+              : null,
+            csat: latestCsat
+              ? { value: latestCsat.value, date: latestCsat.metricDate }
+              : null,
+            chs: latestChs
+              ? { value: latestChs.value, date: latestChs.metricDate }
+              : null,
           };
         });
 
@@ -246,7 +277,9 @@ const ManageCustomer = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (customer) =>
-          customer.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          customer.customerName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
           customer.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -298,7 +331,9 @@ const ManageCustomer = () => {
         if (customStartDate && customEndDate) {
           filtered = filtered.filter((customer) => {
             const customerDate = new Date(customer.createdAt);
-            return customerDate >= customStartDate && customerDate <= customEndDate;
+            return (
+              customerDate >= customStartDate && customerDate <= customEndDate
+            );
           });
         }
         break;
@@ -420,7 +455,9 @@ const ManageCustomer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!customerName || !email || !status || !subscriptionTier || !feature) {
-      alert("Customer Name, Email, Status, Subscription Tier, and Feature are required.");
+      alert(
+        "Customer Name, Email, Status, Subscription Tier, and Feature are required."
+      );
       return;
     }
     if ((nps && !npsDate) || (npsDate && !nps)) {
@@ -437,7 +474,9 @@ const ManageCustomer = () => {
     }
 
     const newCustomer = {
-      customerId: editingCustomer ? editingCustomer.customerId : generateCustomerId(),
+      customerId: editingCustomer
+        ? editingCustomer.customerId
+        : generateCustomerId(),
       customerName,
       email,
       phone,
@@ -456,7 +495,9 @@ const ManageCustomer = () => {
         await updateDoc(doc(db, "customers", editingCustomer.id), newCustomer);
         setCustomers(
           customers.map((cust) =>
-            cust.id === editingCustomer.id ? { id: cust.id, ...newCustomer } : cust
+            cust.id === editingCustomer.id
+              ? { id: cust.id, ...newCustomer }
+              : cust
           )
         );
       } else {
@@ -494,7 +535,11 @@ const ManageCustomer = () => {
       }
 
       if (metricsToSave.length > 0) {
-        await Promise.all(metricsToSave.map((metric) => addDoc(collection(db, "customerMetrics"), metric)));
+        await Promise.all(
+          metricsToSave.map((metric) =>
+            addDoc(collection(db, "customerMetrics"), metric)
+          )
+        );
       }
 
       await refreshMetrics();
@@ -509,12 +554,15 @@ const ManageCustomer = () => {
     const metricsData = metricsSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      metricDate: doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
+      metricDate:
+        doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
     }));
 
     const latestMetricsData = {};
     customers.forEach((customer) => {
-      const customerMetrics = metricsData.filter((metric) => metric.customerId === customer.customerId);
+      const customerMetrics = metricsData.filter(
+        (metric) => metric.customerId === customer.customerId
+      );
       const latestNps = customerMetrics
         .filter((m) => m.metricType === "nps")
         .sort((a, b) => b.metricDate - a.metricDate)[0];
@@ -525,9 +573,15 @@ const ManageCustomer = () => {
         .filter((m) => m.metricType === "chs")
         .sort((a, b) => b.metricDate - a.metricDate)[0];
       latestMetricsData[customer.customerId] = {
-        nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
-        csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
-        chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
+        nps: latestNps
+          ? { value: latestNps.value, date: latestNps.metricDate }
+          : null,
+        csat: latestCsat
+          ? { value: latestCsat.value, date: latestCsat.metricDate }
+          : null,
+        chs: latestChs
+          ? { value: latestChs.value, date: latestChs.metricDate }
+          : null,
       };
     });
     setLatestMetrics(latestMetricsData);
@@ -621,8 +675,15 @@ const ManageCustomer = () => {
 
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
-    if (!supportProjectIds.length || !issueDescription || !numberOfIssues || !complaintDate) {
-      alert("Project IDs, Issue Description, Number of Issues, and Complaint Date are required.");
+    if (
+      !supportProjectIds.length ||
+      !issueDescription ||
+      !numberOfIssues ||
+      !complaintDate
+    ) {
+      alert(
+        "Project IDs, Issue Description, Number of Issues, and Complaint Date are required."
+      );
       return;
     }
     if (!supportCustomer) {
@@ -638,7 +699,8 @@ const ManageCustomer = () => {
         numberOfIssues: Number(numberOfIssues),
         complaintDate,
         resolvedDate,
-        responseChannel: responseChannel.length > 0 ? responseChannel : ["None"],
+        responseChannel:
+          responseChannel.length > 0 ? responseChannel : ["None"],
         createdAt: new Date(),
       });
       handleSupportClose();
@@ -675,7 +737,11 @@ const ManageCustomer = () => {
       setCustomers(
         customers.map((cust) =>
           cust.id === upgradeCustomer.id
-            ? { ...cust, subscriptionTier: upgradeSubscriptionTier, status: "active" }
+            ? {
+                ...cust,
+                subscriptionTier: upgradeSubscriptionTier,
+                status: "active",
+              }
             : cust
         )
       );
@@ -722,7 +788,8 @@ const ManageCustomer = () => {
     }
   };
 
-  const generateCustomerId = () => Math.floor(1000 + Math.random() * 9000).toString();
+  const generateCustomerId = () =>
+    Math.floor(1000 + Math.random() * 9000).toString();
 
   const resetForm = () => {
     setCustomerName("");
@@ -760,39 +827,64 @@ const ManageCustomer = () => {
 
   const handleResponseChannelChange = (channel) => {
     setResponseChannel((prev) =>
-      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]
+      prev.includes(channel)
+        ? prev.filter((c) => c !== channel)
+        : [...prev, channel]
     );
   };
 
   if (loadingRoles) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>Loading...</MDTypography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+          Loading...
+        </MDTypography>
       </Box>
     );
   }
 
-  if (!userRoles.includes("ManageCustomer:read") && !userRoles.includes("ManageCustomer:full access")) {
+  if (
+    !userRoles.includes("ManageCustomer:read") &&
+    !userRoles.includes("ManageCustomer:full access")
+  ) {
     return <Navigate to="/unauthorized" />;
   }
 
   const isReadOnly =
-    userRoles.includes("ManageCustomer:read") && !userRoles.includes("ManageCustomer:full access");
+    userRoles.includes("ManageCustomer:read") &&
+    !userRoles.includes("ManageCustomer:full access");
 
   return (
-    <Box sx={{ backgroundColor: darkMode ? "#212121" : "#f3f3f3", minHeight: "100vh" }}>
+    <Box
+      sx={{
+        backgroundColor: darkMode ? "#212121" : "#f3f3f3",
+        minHeight: "100vh",
+      }}
+    >
       <DashboardNavbar
         absolute
         light={!darkMode}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
+          },
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
@@ -824,10 +916,29 @@ const ManageCustomer = () => {
                   Customer Management
                 </MDTypography>
               </MDBox>
-              <MDBox pt={3} pb={2} px={2} display="flex" flexDirection={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} gap={2} justifyContent="space-between">
-                <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} width={{ xs: "100%", sm: "auto" }}>
+              <MDBox
+                pt={3}
+                pb={2}
+                px={2}
+                display="flex"
+                flexDirection={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "stretch", sm: "center" }}
+                gap={2}
+                justifyContent="space-between"
+              >
+                <Box
+                  display="flex"
+                  flexDirection={{ xs: "column", sm: "row" }}
+                  gap={2}
+                  width={{ xs: "100%", sm: "auto" }}
+                >
                   {!isReadOnly && (
-                    <MDButton variant="gradient" color={darkMode ? "dark" : "info"} onClick={handleClickOpen} fullWidth={{ xs: true, sm: false }}>
+                    <MDButton
+                      variant="gradient"
+                      color={darkMode ? "dark" : "info"}
+                      onClick={handleClickOpen}
+                      fullWidth={{ xs: true, sm: false }}
+                    >
                       Add Customer
                     </MDButton>
                   )}
@@ -839,7 +950,13 @@ const ManageCustomer = () => {
                     style={formInputStyle}
                   />
                 </Box>
-                <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} alignItems={{ xs: "stretch", sm: "center" }} width={{ xs: "100%", sm: "auto" }}>
+                <Box
+                  display="flex"
+                  flexDirection={{ xs: "column", sm: "row" }}
+                  gap={2}
+                  alignItems={{ xs: "stretch", sm: "center" }}
+                  width={{ xs: "100%", sm: "auto" }}
+                >
                   <select
                     value={dateFilterType}
                     onChange={(e) => setDateFilterType(e.target.value)}
@@ -870,27 +987,63 @@ const ManageCustomer = () => {
                 </Box>
               </MDBox>
 
-              <Box sx={{ ...formContainerStyle, display: datePickerOpen ? "block" : "none" }}>
-                <form onSubmit={(e) => { e.preventDefault(); setDatePickerOpen(false); }}>
-                  <Typography sx={formHeadingStyle}>Select Date Range</Typography>
+              <Box
+                sx={{
+                  ...formContainerStyle,
+                  display: datePickerOpen ? "block" : "none",
+                }}
+              >
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setDatePickerOpen(false);
+                  }}
+                >
+                  <Typography sx={formHeadingStyle}>
+                    Select Date Range
+                  </Typography>
                   <label style={formLabelStyle}>Start Date*</label>
                   <input
                     type="date"
-                    value={customStartDate ? customStartDate.toISOString().split("T")[0] : ""}
-                    onChange={(e) => setCustomStartDate(e.target.value ? new Date(e.target.value) : null)}
+                    value={
+                      customStartDate
+                        ? customStartDate.toISOString().split("T")[0]
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setCustomStartDate(
+                        e.target.value ? new Date(e.target.value) : null
+                      )
+                    }
                     required
                     style={formInputStyle}
                   />
                   <label style={formLabelStyle}>End Date*</label>
                   <input
                     type="date"
-                    value={customEndDate ? customEndDate.toISOString().split("T")[0] : ""}
-                    onChange={(e) => setCustomEndDate(e.target.value ? new Date(e.target.value) : null)}
+                    value={
+                      customEndDate
+                        ? customEndDate.toISOString().split("T")[0]
+                        : ""
+                    }
+                    onChange={(e) =>
+                      setCustomEndDate(
+                        e.target.value ? new Date(e.target.value) : null
+                      )
+                    }
                     required
                     style={formInputStyle}
                   />
-                  <button type="button" onClick={() => setDatePickerOpen(false)} style={formButtonStyle}>Cancel</button>
-                  <button type="submit" style={formButtonStyle}>Apply</button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePickerOpen(false)}
+                    style={formButtonStyle}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" style={formButtonStyle}>
+                    Apply
+                  </button>
                 </form>
               </Box>
 
@@ -906,7 +1059,10 @@ const ManageCustomer = () => {
                         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                         padding: "20px",
                         transition: "0.3s ease-in-out",
-                        "&:hover": { boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)", transform: "scale(1.02)" },
+                        "&:hover": {
+                          boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
+                          transform: "scale(1.02)",
+                        },
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                       }}
@@ -917,8 +1073,16 @@ const ManageCustomer = () => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: customer.subscriptionTier === "premium" ? "#4caf50" : darkMode ? "#90A4AE" : "#B0BEC5",
-                          borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+                          backgroundColor:
+                            customer.subscriptionTier === "premium"
+                              ? "#4caf50"
+                              : darkMode
+                              ? "#90A4AE"
+                              : "#B0BEC5",
+                          borderRadius: {
+                            xs: "8px 8px 0 0",
+                            sm: "8px 0 0 8px",
+                          },
                           marginRight: { sm: "16px" },
                           marginBottom: { xs: "16px", sm: 0 },
                           boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
@@ -927,60 +1091,135 @@ const ManageCustomer = () => {
                         <MDTypography
                           variant="body2"
                           color="white"
-                          sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: "1rem",
+                            textTransform: "uppercase",
+                          }}
                         >
-                          {customer.subscriptionTier === "premium" ? "Premium" : "Free"}
+                          {customer.subscriptionTier === "premium"
+                            ? "Premium"
+                            : "Free"}
                         </MDTypography>
                       </Box>
-                      <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
+                      <Box
+                        sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}
+                      >
                         <CardContent>
                           <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Customer ID: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.customerId}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.customerId}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Name: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.customerName}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.customerName}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Email: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.email}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.email}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Phone: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.phone || "N/A"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.phone || "N/A"}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Address: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.address || "N/A"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.address || "N/A"}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Status: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.status}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.status}
+                                </span>
                               </MDTypography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Subscription Tier: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.subscriptionTier}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.subscriptionTier}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Feature: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.feature || "N/A"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.feature || "N/A"}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Project IDs: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.projectIds?.join(", ") || "None"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.projectIds?.join(", ") || "None"}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>Sign-Up Date: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.signUpDate?.toLocaleDateString() || "N/A"}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.signUpDate?.toLocaleDateString() ||
+                                    "N/A"}
+                                </span>
                               </MDTypography>
-                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
                                 <span>CLTV: </span>
-                                <span style={{ fontWeight: "bold" }}>{customer.cltv}</span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {customer.cltv}
+                                </span>
                               </MDTypography>
                               <Box
                                 sx={{
@@ -989,7 +1228,10 @@ const ManageCustomer = () => {
                                   gap: 1,
                                   mt: 1,
                                   flexWrap: "wrap",
-                                  justifyContent: { xs: "flex-start", sm: "flex-end" },
+                                  justifyContent: {
+                                    xs: "flex-start",
+                                    sm: "flex-end",
+                                  },
                                 }}
                               >
                                 <MDButton
@@ -997,12 +1239,19 @@ const ManageCustomer = () => {
                                   color={darkMode ? "white" : "info"}
                                   size="small"
                                   onClick={() => handleNpsUpdateOpen(customer)}
-                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
+                                  sx={{
+                                    minWidth: { xs: "100%", sm: "120px" },
+                                    textAlign: "left",
+                                  }}
                                 >
                                   <Icon fontSize="small">update</Icon>
-                                  NPS: {latestMetrics[customer.customerId]?.nps?.value ?? "N/A"}
+                                  NPS:{" "}
+                                  {latestMetrics[customer.customerId]?.nps
+                                    ?.value ?? "N/A"}
                                   {latestMetrics[customer.customerId]?.nps?.date
-                                    ? ` (${latestMetrics[customer.customerId].nps.date.toLocaleDateString()})`
+                                    ? ` (${latestMetrics[
+                                        customer.customerId
+                                      ].nps.date.toLocaleDateString()})`
                                     : ""}
                                 </MDButton>
                                 <MDButton
@@ -1010,12 +1259,20 @@ const ManageCustomer = () => {
                                   color={darkMode ? "white" : "info"}
                                   size="small"
                                   onClick={() => handleCsatUpdateOpen(customer)}
-                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
+                                  sx={{
+                                    minWidth: { xs: "100%", sm: "120px" },
+                                    textAlign: "left",
+                                  }}
                                 >
                                   <Icon fontSize="small">update</Icon>
-                                  CSAT: {latestMetrics[customer.customerId]?.csat?.value ?? "N/A"}
-                                  {latestMetrics[customer.customerId]?.csat?.date
-                                    ? ` (${latestMetrics[customer.customerId].csat.date.toLocaleDateString()})`
+                                  CSAT:{" "}
+                                  {latestMetrics[customer.customerId]?.csat
+                                    ?.value ?? "N/A"}
+                                  {latestMetrics[customer.customerId]?.csat
+                                    ?.date
+                                    ? ` (${latestMetrics[
+                                        customer.customerId
+                                      ].csat.date.toLocaleDateString()})`
                                     : ""}
                                 </MDButton>
                                 <MDButton
@@ -1023,12 +1280,19 @@ const ManageCustomer = () => {
                                   color={darkMode ? "white" : "info"}
                                   size="small"
                                   onClick={() => handleChsUpdateOpen(customer)}
-                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
+                                  sx={{
+                                    minWidth: { xs: "100%", sm: "120px" },
+                                    textAlign: "left",
+                                  }}
                                 >
                                   <Icon fontSize="small">update</Icon>
-                                  CHS: {latestMetrics[customer.customerId]?.chs?.value ?? "N/A"}
+                                  CHS:{" "}
+                                  {latestMetrics[customer.customerId]?.chs
+                                    ?.value ?? "N/A"}
                                   {latestMetrics[customer.customerId]?.chs?.date
-                                    ? ` (${latestMetrics[customer.customerId].chs.date.toLocaleDateString()})`
+                                    ? ` (${latestMetrics[
+                                        customer.customerId
+                                      ].chs.date.toLocaleDateString()})`
                                     : ""}
                                 </MDButton>
                               </Box>
@@ -1041,7 +1305,10 @@ const ManageCustomer = () => {
                               display: "flex",
                               flexWrap: "wrap",
                               gap: 1,
-                              justifyContent: { xs: "space-between", sm: "flex-end" },
+                              justifyContent: {
+                                xs: "space-between",
+                                sm: "flex-end",
+                              },
                               alignItems: "center",
                               padding: "8px 16px",
                             }}
@@ -1051,7 +1318,10 @@ const ManageCustomer = () => {
                               color={darkMode ? "dark" : "info"}
                               onClick={() => handleEdit(customer)}
                               sx={{
-                                flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                flex: {
+                                  xs: "1 1 calc(50% - 4px)",
+                                  sm: "0 0 auto",
+                                },
                                 minWidth: { xs: "auto", sm: "100px" },
                                 maxWidth: { xs: "50%", sm: "auto" },
                               }}
@@ -1063,7 +1333,10 @@ const ManageCustomer = () => {
                               color={darkMode ? "dark" : "success"}
                               onClick={() => handleSupportOpen(customer)}
                               sx={{
-                                flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                flex: {
+                                  xs: "1 1 calc(50% - 4px)",
+                                  sm: "0 0 auto",
+                                },
                                 minWidth: { xs: "auto", sm: "100px" },
                                 maxWidth: { xs: "50%", sm: "auto" },
                               }}
@@ -1076,7 +1349,10 @@ const ManageCustomer = () => {
                                 color={darkMode ? "dark" : "warning"}
                                 onClick={() => handleUpgradeOpen(customer)}
                                 sx={{
-                                  flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                  flex: {
+                                    xs: "1 1 calc(50% - 4px)",
+                                    sm: "0 0 auto",
+                                  },
                                   minWidth: { xs: "auto", sm: "100px" },
                                   maxWidth: { xs: "50%", sm: "auto" },
                                 }}
@@ -1089,7 +1365,10 @@ const ManageCustomer = () => {
                               color="error"
                               onClick={() => handleCancelOpen(customer)}
                               sx={{
-                                flex: { xs: "1 1 calc(50% - 4px)", sm: "0 0 auto" },
+                                flex: {
+                                  xs: "1 1 calc(50% - 4px)",
+                                  sm: "0 0 auto",
+                                },
                                 minWidth: { xs: "auto", sm: "100px" },
                                 maxWidth: { xs: "50%", sm: "auto" },
                               }}
@@ -1107,7 +1386,12 @@ const ManageCustomer = () => {
           </Grid>
         </Grid>
       </MDBox>
-      <Box sx={{ marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" }, backgroundColor: darkMode ? "#212121" : "#f3f3f3" }}>
+      <Box
+        sx={{
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
+        }}
+      >
         <Footer />
       </Box>
 
@@ -1115,7 +1399,9 @@ const ManageCustomer = () => {
         <>
           <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
             <form onSubmit={handleSubmit}>
-              <Typography sx={formHeadingStyle}>{editingCustomer ? "Edit Customer" : "Add Customer"}</Typography>
+              <Typography sx={formHeadingStyle}>
+                {editingCustomer ? "Edit Customer" : "Add Customer"}
+              </Typography>
               <label style={formLabelStyle}>Customer Name*</label>
               <input
                 type="text"
@@ -1157,7 +1443,9 @@ const ManageCustomer = () => {
                 required
                 style={formSelectStyle}
               >
-                <option value="" disabled>Select Status</option>
+                <option value="" disabled>
+                  Select Status
+                </option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
@@ -1168,7 +1456,9 @@ const ManageCustomer = () => {
                 required
                 style={formSelectStyle}
               >
-                <option value="" disabled>Select Tier</option>
+                <option value="" disabled>
+                  Select Tier
+                </option>
                 <option value="free">Free</option>
                 <option value="premium">Premium</option>
               </select>
@@ -1179,15 +1469,22 @@ const ManageCustomer = () => {
                 required
                 style={formSelectStyle}
               >
-                <option value="" disabled>Select Feature</option>
+                <option value="" disabled>
+                  Select Feature
+                </option>
                 {featureOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
                 ))}
               </select>
               <label style={formLabelStyle}>Project IDs</label>
               <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
                 {projects.map((project) => (
-                  <div key={project.projectId} style={{ textAlign: "left", marginBottom: "4px" }}>
+                  <div
+                    key={project.projectId}
+                    style={{ textAlign: "left", marginBottom: "4px" }}
+                  >
                     <input
                       type="checkbox"
                       id={project.projectId}
@@ -1195,7 +1492,15 @@ const ManageCustomer = () => {
                       onChange={() => handleProjectIdChange(project.projectId)}
                       style={formCheckboxStyle}
                     />
-                    <label htmlFor={project.projectId} style={{ ...formLabelStyle, display: "inline", marginLeft: "5px", fontWeight: "normal" }}>
+                    <label
+                      htmlFor={project.projectId}
+                      style={{
+                        ...formLabelStyle,
+                        display: "inline",
+                        marginLeft: "5px",
+                        fontWeight: "normal",
+                      }}
+                    >
                       {project.projectId} - {project.name}
                     </label>
                   </div>
@@ -1205,7 +1510,11 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={signUpDate ? signUpDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setSignUpDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setSignUpDate(
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
                 style={formInputStyle}
               />
               <label style={formLabelStyle}>Net Promoter Score (0-100)</label>
@@ -1225,11 +1534,15 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setNpsDate(e.target.value ? new Date(e.target.value) : null)
+                }
                 required={!!nps}
                 style={formInputStyle}
               />
-              <label style={formLabelStyle}>Customer Satisfaction Score (0-100)</label>
+              <label style={formLabelStyle}>
+                Customer Satisfaction Score (0-100)
+              </label>
               <input
                 type="number"
                 value={csat}
@@ -1246,7 +1559,9 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setCsatDate(e.target.value ? new Date(e.target.value) : null)
+                }
                 required={!!csat}
                 style={formInputStyle}
               />
@@ -1262,7 +1577,9 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setChsDate(e.target.value ? new Date(e.target.value) : null)
+                }
                 required={!!chs}
                 style={formInputStyle}
               />
@@ -1275,15 +1592,31 @@ const ManageCustomer = () => {
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Save</button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Save
+                </button>
               </Box>
             </form>
           </Box>
 
-          <Box sx={{ ...formContainerStyle, display: supportOpen ? "block" : "none" }}>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: supportOpen ? "block" : "none",
+            }}
+          >
             <form onSubmit={handleSupportSubmit}>
-              <Typography sx={formHeadingStyle}>Create Support Ticket for {supportCustomer?.customerName || "Customer"}</Typography>
+              <Typography sx={formHeadingStyle}>
+                Create Support Ticket for{" "}
+                {supportCustomer?.customerName || "Customer"}
+              </Typography>
               <label style={formLabelStyle}>Project IDs*</label>
               <input
                 type="text"
@@ -1311,21 +1644,36 @@ const ManageCustomer = () => {
               <label style={formLabelStyle}>Complaint Date*</label>
               <input
                 type="datetime-local"
-                value={complaintDate ? complaintDate.toISOString().slice(0, 16) : ""}
-                onChange={(e) => setComplaintDate(e.target.value ? new Date(e.target.value) : null)}
+                value={
+                  complaintDate ? complaintDate.toISOString().slice(0, 16) : ""
+                }
+                onChange={(e) =>
+                  setComplaintDate(
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
                 required
                 style={formInputStyle}
               />
               <label style={formLabelStyle}>Resolved Date</label>
               <input
                 type="datetime-local"
-                value={resolvedDate ? resolvedDate.toISOString().slice(0, 16) : ""}
-                onChange={(e) => setResolvedDate(e.target.value ? new Date(e.target.value) : null)}
+                value={
+                  resolvedDate ? resolvedDate.toISOString().slice(0, 16) : ""
+                }
+                onChange={(e) =>
+                  setResolvedDate(
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
                 style={formInputStyle}
               />
               <label style={formLabelStyle}>Response Channel</label>
               {responseChannelOptions.map((channel) => (
-                <div key={channel} style={{ textAlign: "left", marginBottom: "4px" }}>
+                <div
+                  key={channel}
+                  style={{ textAlign: "left", marginBottom: "4px" }}
+                >
                   <input
                     type="checkbox"
                     id={channel}
@@ -1333,21 +1681,45 @@ const ManageCustomer = () => {
                     onChange={() => handleResponseChannelChange(channel)}
                     style={formCheckboxStyle}
                   />
-                  <label htmlFor={channel} style={{ ...formLabelStyle, display: "inline", marginLeft: "5px", fontWeight: "normal" }}>
+                  <label
+                    htmlFor={channel}
+                    style={{
+                      ...formLabelStyle,
+                      display: "inline",
+                      marginLeft: "5px",
+                      fontWeight: "normal",
+                    }}
+                  >
                     {channel}
                   </label>
                 </div>
               ))}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleSupportClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Save</button>
+                <button
+                  type="button"
+                  onClick={handleSupportClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Save
+                </button>
               </Box>
             </form>
           </Box>
 
-          <Box sx={{ ...formContainerStyle, display: upgradeOpen ? "block" : "none" }}>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: upgradeOpen ? "block" : "none",
+            }}
+          >
             <form onSubmit={handleUpgradeSubmit}>
-              <Typography sx={formHeadingStyle}>Upgrade Subscription for {upgradeCustomer?.customerName || "Customer"}</Typography>
+              <Typography sx={formHeadingStyle}>
+                Upgrade Subscription for{" "}
+                {upgradeCustomer?.customerName || "Customer"}
+              </Typography>
               <label style={formLabelStyle}>Subscription Tier*</label>
               <select
                 value={upgradeSubscriptionTier}
@@ -1360,8 +1732,16 @@ const ManageCustomer = () => {
               <label style={formLabelStyle}>Plan Upgrade Date*</label>
               <input
                 type="date"
-                value={planUpgradeDate ? planUpgradeDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setPlanUpgradeDate(e.target.value ? new Date(e.target.value) : null)}
+                value={
+                  planUpgradeDate
+                    ? planUpgradeDate.toISOString().split("T")[0]
+                    : ""
+                }
+                onChange={(e) =>
+                  setPlanUpgradeDate(
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
                 required
                 style={formInputStyle}
               />
@@ -1373,20 +1753,44 @@ const ManageCustomer = () => {
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleUpgradeClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Upgrade</button>
+                <button
+                  type="button"
+                  onClick={handleUpgradeClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Upgrade
+                </button>
               </Box>
             </form>
           </Box>
 
-          <Box sx={{ ...formContainerStyle, display: cancelOpen ? "block" : "none" }}>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: cancelOpen ? "block" : "none",
+            }}
+          >
             <form onSubmit={handleCancelSubmit}>
-              <Typography sx={formHeadingStyle}>Cancel Subscription for {cancelCustomer?.customerName || "Customer"}</Typography>
+              <Typography sx={formHeadingStyle}>
+                Cancel Subscription for{" "}
+                {cancelCustomer?.customerName || "Customer"}
+              </Typography>
               <label style={formLabelStyle}>Cancellation Date*</label>
               <input
                 type="date"
-                value={cancellationDate ? cancellationDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setCancellationDate(e.target.value ? new Date(e.target.value) : null)}
+                value={
+                  cancellationDate
+                    ? cancellationDate.toISOString().split("T")[0]
+                    : ""
+                }
+                onChange={(e) =>
+                  setCancellationDate(
+                    e.target.value ? new Date(e.target.value) : null
+                  )
+                }
                 required
                 style={formInputStyle}
               />
@@ -1397,21 +1801,41 @@ const ManageCustomer = () => {
                 required
                 style={formSelectStyle}
               >
-                <option value="" disabled>Select Reason</option>
+                <option value="" disabled>
+                  Select Reason
+                </option>
                 {churnReasonOptions.map((reason) => (
-                  <option key={reason} value={reason}>{reason}</option>
+                  <option key={reason} value={reason}>
+                    {reason}
+                  </option>
                 ))}
               </select>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleCancelClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Confirm Cancellation</button>
+                <button
+                  type="button"
+                  onClick={handleCancelClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Confirm Cancellation
+                </button>
               </Box>
             </form>
           </Box>
 
-          <Box sx={{ ...formContainerStyle, display: npsUpdateOpen ? "block" : "none" }}>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: npsUpdateOpen ? "block" : "none",
+            }}
+          >
             <form onSubmit={handleNpsUpdateSubmit}>
-              <Typography sx={formHeadingStyle}>Update NPS for {updateMetricCustomer?.customerName || "Customer"}</Typography>
+              <Typography sx={formHeadingStyle}>
+                Update NPS for{" "}
+                {updateMetricCustomer?.customerName || "Customer"}
+              </Typography>
               <label style={formLabelStyle}>Net Promoter Score (0-100)*</label>
               <input
                 type="number"
@@ -1430,21 +1854,41 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setNpsDate(e.target.value ? new Date(e.target.value) : null)
+                }
                 required
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleNpsUpdateClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Update</button>
+                <button
+                  type="button"
+                  onClick={handleNpsUpdateClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Update
+                </button>
               </Box>
             </form>
           </Box>
 
-          <Box sx={{ ...formContainerStyle, display: csatUpdateOpen ? "block" : "none" }}>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: csatUpdateOpen ? "block" : "none",
+            }}
+          >
             <form onSubmit={handleCsatUpdateSubmit}>
-              <Typography sx={formHeadingStyle}>Update CSAT for {updateMetricCustomer?.customerName || "Customer"}</Typography>
-              <label style={formLabelStyle}>Customer Satisfaction Score (0-100)*</label>
+              <Typography sx={formHeadingStyle}>
+                Update CSAT for{" "}
+                {updateMetricCustomer?.customerName || "Customer"}
+              </Typography>
+              <label style={formLabelStyle}>
+                Customer Satisfaction Score (0-100)*
+              </label>
               <input
                 type="number"
                 value={csat}
@@ -1462,20 +1906,38 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setCsatDate(e.target.value ? new Date(e.target.value) : null)
+                }
                 required
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleCsatUpdateClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Update</button>
+                <button
+                  type="button"
+                  onClick={handleCsatUpdateClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Update
+                </button>
               </Box>
             </form>
           </Box>
 
-          <Box sx={{ ...formContainerStyle, display: chsUpdateOpen ? "block" : "none" }}>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: chsUpdateOpen ? "block" : "none",
+            }}
+          >
             <form onSubmit={handleChsUpdateSubmit}>
-              <Typography sx={formHeadingStyle}>Update CHS for {updateMetricCustomer?.customerName || "Customer"}</Typography>
+              <Typography sx={formHeadingStyle}>
+                Update CHS for{" "}
+                {updateMetricCustomer?.customerName || "Customer"}
+              </Typography>
               <label style={formLabelStyle}>Customer Health Score*</label>
               <input
                 type="number"
@@ -1489,13 +1951,23 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
+                onChange={(e) =>
+                  setChsDate(e.target.value ? new Date(e.target.value) : null)
+                }
                 required
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button type="button" onClick={handleChsUpdateClose} style={formButtonStyle}>Cancel</button>
-                <button type="submit" style={formButtonStyle}>Update</button>
+                <button
+                  type="button"
+                  onClick={handleChsUpdateClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Update
+                </button>
               </Box>
             </form>
           </Box>

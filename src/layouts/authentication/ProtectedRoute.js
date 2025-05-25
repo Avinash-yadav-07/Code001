@@ -17,7 +17,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log("Has access:", hasAccess); // Debugging log
 
   if (!hasAccess) {
-    console.log("User not authorized for this route, redirecting to unauthorized"); // Debugging log
+    console.log(
+      "User not authorized for this route, redirecting to unauthorized"
+    ); // Debugging log
     return <Navigate to="/unauthorized" replace />; // Redirect to unauthorized page
   }
 

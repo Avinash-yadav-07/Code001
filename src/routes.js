@@ -62,7 +62,9 @@ const routes = [
         icon: <Icon fontSize="small">business</Icon>,
         route: "/manage/clients",
         component: (
-          <ProtectedRoute allowedRoles={["ManageClient:full access", "ManageClient:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageClient:full access", "ManageClient:read"]}
+          >
             <ManageClient />
           </ProtectedRoute>
         ),
@@ -74,7 +76,9 @@ const routes = [
         icon: <Icon fontSize="small">account_balance_wallet</Icon>,
         route: "/manage/accounts",
         component: (
-          <ProtectedRoute allowedRoles={["ManageAccount:full access", "ManageAccount:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageAccount:full access", "ManageAccount:read"]}
+          >
             <ManageAccount />
           </ProtectedRoute>
         ),
@@ -86,7 +90,9 @@ const routes = [
         icon: <Icon fontSize="small">money_off</Icon>,
         route: "/manage/expenses",
         component: (
-          <ProtectedRoute allowedRoles={["ManageExpense:full access", "ManageExpense:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageExpense:full access", "ManageExpense:read"]}
+          >
             <ManageExpenses />
           </ProtectedRoute>
         ),
@@ -98,7 +104,9 @@ const routes = [
         icon: <Icon fontSize="small">work</Icon>,
         route: "/manage/projects",
         component: (
-          <ProtectedRoute allowedRoles={["ManageProject:full access", "ManageProject:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageProject:full access", "ManageProject:read"]}
+          >
             <ManageProjects />
           </ProtectedRoute>
         ),
@@ -110,7 +118,9 @@ const routes = [
         icon: <Icon fontSize="small">admin_panel_settings</Icon>,
         route: "/manage/roles",
         component: (
-          <ProtectedRoute allowedRoles={["ManageRoles:full access", "ManageRoles:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageRoles:full access", "ManageRoles:read"]}
+          >
             <ManageRoles />
           </ProtectedRoute>
         ),
@@ -122,7 +132,9 @@ const routes = [
         icon: <Icon fontSize="small">attach_money</Icon>,
         route: "/manage/earnings",
         component: (
-          <ProtectedRoute allowedRoles={["ManageEarning:full access", "ManageEarning:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageEarning:full access", "ManageEarning:read"]}
+          >
             <ManageEarnings />
           </ProtectedRoute>
         ),
@@ -134,7 +146,9 @@ const routes = [
         icon: <Icon fontSize="small">support_agent</Icon>,
         route: "/manage/customers",
         component: (
-          <ProtectedRoute allowedRoles={["ManageCustomer:full access", "ManageCustomer:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageCustomer:full access", "ManageCustomer:read"]}
+          >
             <ManageCustomer />
           </ProtectedRoute>
         ),
@@ -146,7 +160,12 @@ const routes = [
         icon: <Icon fontSize="small">campaign</Icon>,
         route: "/manage/marketing",
         component: (
-          <ProtectedRoute allowedRoles={["ManageMarketing:full access", "ManageMarketing:read"]}>
+          <ProtectedRoute
+            allowedRoles={[
+              "ManageMarketing:full access",
+              "ManageMarketing:read",
+            ]}
+          >
             <ManageMarketing />
           </ProtectedRoute>
         ),
@@ -158,7 +177,9 @@ const routes = [
         icon: <Icon fontSize="small">trending_up</Icon>,
         route: "/manage/sales",
         component: (
-          <ProtectedRoute allowedRoles={["ManageSales:full access", "ManageSales:read"]}>
+          <ProtectedRoute
+            allowedRoles={["ManageSales:full access", "ManageSales:read"]}
+          >
             <ManageSales />
           </ProtectedRoute>
         ),

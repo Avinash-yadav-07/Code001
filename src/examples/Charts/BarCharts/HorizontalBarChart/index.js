@@ -44,7 +44,14 @@ import configs from "examples/Charts/BarCharts/HorizontalBarChart/configs";
 // Material Dashboard 2 React base styles
 import colors from "assets/theme/base/colors";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 function HorizontalBarChart({ icon, title, description, height, chart }) {
   const chartDatasets = chart.datasets

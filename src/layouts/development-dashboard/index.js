@@ -40,7 +40,9 @@ const DevelopmentDashboard = () => {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "developmentRecords"));
+        const querySnapshot = await getDocs(
+          collection(db, "developmentRecords")
+        );
         const recordsData = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -59,7 +61,9 @@ const DevelopmentDashboard = () => {
 
   // Prepare data for charts
   const labels = records.map((rec) => rec.createdAt.toLocaleDateString());
-  const featureUtilizationData = records.map((rec) => rec.featureUtilizationRate);
+  const featureUtilizationData = records.map(
+    (rec) => rec.featureUtilizationRate
+  );
   const bugResolutionData = records.map((rec) => rec.bugResolutionTime);
   const defectDensityData = records.map((rec) => rec.qaDefectDensity);
   const crashFreeData = records.map((rec) => rec.productCrashFreeSessions);
@@ -167,14 +171,19 @@ const DevelopmentDashboard = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
+          },
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
@@ -219,50 +228,80 @@ const DevelopmentDashboard = () => {
                   <Grid item xs={12} md={6}>
                     <Card>
                       <MDBox p={2}>
-                        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+                        <MDTypography
+                          variant="h6"
+                          color={darkMode ? "white" : "textPrimary"}
+                        >
                           Feature Adoption Rates
                         </MDTypography>
-                        <Bar data={featureAdoptionChart.data} options={featureAdoptionChart.options} />
+                        <Bar
+                          data={featureAdoptionChart.data}
+                          options={featureAdoptionChart.options}
+                        />
                       </MDBox>
                     </Card>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <Card>
                       <MDBox p={2}>
-                        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+                        <MDTypography
+                          variant="h6"
+                          color={darkMode ? "white" : "textPrimary"}
+                        >
                           Bug Resolution Time
                         </MDTypography>
-                        <Bar data={bugResolutionChart.data} options={bugResolutionChart.options} />
+                        <Bar
+                          data={bugResolutionChart.data}
+                          options={bugResolutionChart.options}
+                        />
                       </MDBox>
                     </Card>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <Card>
                       <MDBox p={2}>
-                        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+                        <MDTypography
+                          variant="h6"
+                          color={darkMode ? "white" : "textPrimary"}
+                        >
                           Defect Density Over Time
                         </MDTypography>
-                        <Line data={defectDensityChart.data} options={defectDensityChart.options} />
+                        <Line
+                          data={defectDensityChart.data}
+                          options={defectDensityChart.options}
+                        />
                       </MDBox>
                     </Card>
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <Card>
                       <MDBox p={2}>
-                        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+                        <MDTypography
+                          variant="h6"
+                          color={darkMode ? "white" : "textPrimary"}
+                        >
                           Crash-Free Sessions Trends
                         </MDTypography>
-                        <Line data={crashFreeChart.data} options={crashFreeChart.options} />
+                        <Line
+                          data={crashFreeChart.data}
+                          options={crashFreeChart.options}
+                        />
                       </MDBox>
                     </Card>
                   </Grid>
                   <Grid item xs={12}>
                     <Card>
                       <MDBox p={2}>
-                        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+                        <MDTypography
+                          variant="h6"
+                          color={darkMode ? "white" : "textPrimary"}
+                        >
                           Release Frequency Trends
                         </MDTypography>
-                        <Line data={releaseFrequencyChart.data} options={releaseFrequencyChart.options} />
+                        <Line
+                          data={releaseFrequencyChart.data}
+                          options={releaseFrequencyChart.options}
+                        />
                       </MDBox>
                     </Card>
                   </Grid>

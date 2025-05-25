@@ -39,8 +39,8 @@ function Unauthorized() {
                 Unauthorized Access
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={4}>
-                You don't have permission to access this page. Please log in with appropriate
-                credentials or contact your administrator.
+                You don't have permission to access this page. Please log in
+                with appropriate credentials or contact your administrator.
               </Typography>
               <Button
                 variant="contained"

@@ -11,7 +11,14 @@ import {
   Legend,
 } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const ExpenseProfitScatterPlot = ({ title, description, data, date }) => {
   const chartData = {
@@ -34,7 +41,11 @@ const ExpenseProfitScatterPlot = ({ title, description, data, date }) => {
     responsive: true,
     scales: {
       x: { title: { display: true, text: "Expense" } },
-      y: { title: { display: true, text: "Profit Margin (%)" }, min: 0, max: 100 },
+      y: {
+        title: { display: true, text: "Profit Margin (%)" },
+        min: 0,
+        max: 100,
+      },
     },
     plugins: {
       legend: { display: false },

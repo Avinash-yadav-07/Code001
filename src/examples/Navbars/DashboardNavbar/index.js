@@ -32,7 +32,13 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 function DashboardNavbar({ absolute, light, isMini }) {
   const [navbarType, setNavbarType] = useState("fixed");
   const [controller, dispatch] = useMaterialUIController();
-  const { miniSidenav, transparentNavbar, fixedNavbar, openConfigurator, darkMode } = controller;
+  const {
+    miniSidenav,
+    transparentNavbar,
+    fixedNavbar,
+    openConfigurator,
+    darkMode,
+  } = controller;
   const [openMenu, setOpenMenu] = useState(false);
   const [openAccountMenu, setOpenAccountMenu] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
@@ -45,10 +51,15 @@ function DashboardNavbar({ absolute, light, isMini }) {
       setCurrentUser(user);
       if (user) {
         const fetchEmployeeName = async () => {
-          const q = query(collection(db, "employees"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "employees"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            setEmployeeName(querySnapshot.docs[0].data().name || "Unnamed Employee");
+            setEmployeeName(
+              querySnapshot.docs[0].data().name || "Unnamed Employee"
+            );
           } else {
             setEmployeeName("Unnamed Employee");
           }
@@ -63,7 +74,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
 
   useEffect(() => {
     function handleTransparentNavbar() {
-      setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
+      setTransparentNavbar(
+        dispatch,
+        (fixedNavbar && window.scrollY === 0) || !fixedNavbar
+      );
     }
 
     window.addEventListener("scroll", handleTransparentNavbar);
@@ -72,10 +86,12 @@ function DashboardNavbar({ absolute, light, isMini }) {
   }, [dispatch, fixedNavbar]);
 
   const handleMiniSidenav = () => setMiniSidenav(dispatch, !miniSidenav);
-  const handleConfiguratorOpen = () => setOpenConfigurator(dispatch, !openConfigurator);
+  const handleConfiguratorOpen = () =>
+    setOpenConfigurator(dispatch, !openConfigurator);
   const handleOpenMenu = (event) => setOpenMenu(event.currentTarget);
   const handleCloseMenu = () => setOpenMenu(false);
-  const handleOpenAccountMenu = (event) => setOpenAccountMenu(event.currentTarget);
+  const handleOpenAccountMenu = (event) =>
+    setOpenAccountMenu(event.currentTarget);
   const handleCloseAccountMenu = () => setOpenAccountMenu(false);
 
   const handleSignOut = () => {
@@ -105,8 +121,14 @@ function DashboardNavbar({ absolute, light, isMini }) {
       sx={{ mt: 2 }}
     >
       <NotificationItem icon={<Icon>email</Icon>} title="Check new messages" />
-      <NotificationItem icon={<Icon>podcasts</Icon>} title="Manage Podcast sessions" />
-      <NotificationItem icon={<Icon>shopping_cart</Icon>} title="Payment successfully completed" />
+      <NotificationItem
+        icon={<Icon>podcasts</Icon>}
+        title="Manage Podcast sessions"
+      />
+      <NotificationItem
+        icon={<Icon>shopping_cart</Icon>}
+        title="Payment successfully completed"
+      />
     </Menu>
   );
 
@@ -163,7 +185,9 @@ function DashboardNavbar({ absolute, light, isMini }) {
           md: miniSidenav ? "calc(100% - 112px)" : "calc(100% - 292px)",
         },
         margin: { xs: "0 16px", md: miniSidenav ? "0 16px" : "0 16px" },
-        backgroundColor: darkMode ? "rgba(12, 55, 79, 0.9)" : "rgba(255, 255, 255, 0.9)",
+        backgroundColor: darkMode
+          ? "rgba(12, 55, 79, 0.9)"
+          : "rgba(255, 255, 255, 0.9)",
         backdropFilter: transparentNavbar ? "none" : "blur(10px)",
         padding: "0 8px",
         minHeight: "80px",
@@ -172,7 +196,11 @@ function DashboardNavbar({ absolute, light, isMini }) {
       })}
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
-        <MDBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
+        <MDBox
+          color="inherit"
+          mb={{ xs: 1, md: 0 }}
+          sx={(theme) => navbarRow(theme, { isMini })}
+        >
           <Breadcrumbs
             icon="home"
             title={route[route.length - 1]}

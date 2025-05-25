@@ -57,7 +57,14 @@ ChartJS.register(
 
 // Memoized Filter Controls Component
 const FilterControls = memo(
-  ({ dateRange, setDateRange, selectedTeam, setSelectedTeam, teams, darkMode }) => (
+  ({
+    dateRange,
+    setDateRange,
+    selectedTeam,
+    setSelectedTeam,
+    teams,
+    darkMode,
+  }) => (
     <MDBox
       mt={2}
       sx={{
@@ -115,7 +122,9 @@ const FilterControls = memo(
         </Grid>
         <Grid item xs={12} sm={4} md={3}>
           <FormControl fullWidth sx={{ minWidth: 120 }}>
-            <InputLabel sx={{ color: darkMode ? "#aaa" : "#666" }}>Team</InputLabel>
+            <InputLabel sx={{ color: darkMode ? "#aaa" : "#666" }}>
+              Team
+            </InputLabel>
             <Select
               value={selectedTeam}
               onChange={(e) => setSelectedTeam(e.target.value)}
@@ -215,7 +224,10 @@ const DashboardPage = () => {
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [loadingAccounts, setLoadingAccounts] = useState(true);
   const [error, setError] = useState(null);
-  const [dateRange, setDateRange] = useState({ start: subMonths(new Date(), 6), end: new Date() });
+  const [dateRange, setDateRange] = useState({
+    start: subMonths(new Date(), 6),
+    end: new Date(),
+  });
   const [selectedTeam, setSelectedTeam] = useState("All");
   const [viewMode, setViewMode] = useState("Marketing");
   const [showFilters, setShowFilters] = useState(false);
@@ -248,13 +260,17 @@ const DashboardPage = () => {
           );
           const teamsQuery = collection(db, "teams");
 
-          const [leadsSnapshot, campaignsSnapshot, dealsSnapshot, teamsSnapshot] =
-            await Promise.all([
-              getDocs(leadsQuery).catch(() => ({ docs: [] })),
-              getDocs(campaignsQuery).catch(() => ({ docs: [] })),
-              getDocs(dealsQuery).catch(() => ({ docs: [] })),
-              getDocs(teamsQuery).catch(() => ({ docs: [] })),
-            ]);
+          const [
+            leadsSnapshot,
+            campaignsSnapshot,
+            dealsSnapshot,
+            teamsSnapshot,
+          ] = await Promise.all([
+            getDocs(leadsQuery).catch(() => ({ docs: [] })),
+            getDocs(campaignsQuery).catch(() => ({ docs: [] })),
+            getDocs(dealsQuery).catch(() => ({ docs: [] })),
+            getDocs(teamsQuery).catch(() => ({ docs: [] })),
+          ]);
 
           const fetchedLeads = leadsSnapshot.docs.map((doc) => ({
             id: doc.id,
@@ -266,8 +282,14 @@ const DashboardPage = () => {
             ...doc.data(),
             createdAt: doc.data().createdAt?.toDate?.() || null,
           }));
-          const fetchedDeals = dealsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          const fetchedTeams = teamsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          const fetchedDeals = dealsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          const fetchedTeams = teamsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
 
           const filteredLeads =
             selectedTeam !== "All"
@@ -275,7 +297,9 @@ const DashboardPage = () => {
               : fetchedLeads;
           const filteredCampaigns =
             selectedTeam !== "All"
-              ? fetchedCampaigns.filter((campaign) => campaign.team === selectedTeam)
+              ? fetchedCampaigns.filter(
+                  (campaign) => campaign.team === selectedTeam
+                )
               : fetchedCampaigns;
           const filteredDeals =
             selectedTeam !== "All"
@@ -345,11 +369,19 @@ const DashboardPage = () => {
 
   // Memoized data processing for Marketing view (unchanged)
   const mqls = useMemo(
-    () => leads.reduce((sum, lead) => sum + (Number(lead.marketingQualifiedLeads) || 0), 0),
+    () =>
+      leads.reduce(
+        (sum, lead) => sum + (Number(lead.marketingQualifiedLeads) || 0),
+        0
+      ),
     [leads]
   );
   const sqls = useMemo(
-    () => leads.reduce((sum, lead) => sum + (Number(lead.salesQualifiedLeads) || 0), 0),
+    () =>
+      leads.reduce(
+        (sum, lead) => sum + (Number(lead.salesQualifiedLeads) || 0),
+        0
+      ),
     [leads]
   );
   const conversions = useMemo(
@@ -383,7 +415,9 @@ const DashboardPage = () => {
           data:
             channels.length > 0
               ? channels.map((channel) => {
-                  const channelLeads = leads.filter((lead) => lead.channel === channel);
+                  const channelLeads = leads.filter(
+                    (lead) => lead.channel === channel
+                  );
                   const totalSpend = channelLeads.reduce(
                     (sum, lead) => sum + (Number(lead.spend) || 0),
                     0
@@ -411,7 +445,9 @@ const DashboardPage = () => {
           data:
             channels.length > 0
               ? channels.map((channel) => {
-                  const channelLeads = leads.filter((lead) => lead.channel === channel);
+                  const channelLeads = leads.filter(
+                    (lead) => lead.channel === channel
+                  );
                   const totalLeads = channelLeads.reduce(
                     (sum, lead) => sum + (Number(lead.leads) || 0),
                     0
@@ -420,7 +456,9 @@ const DashboardPage = () => {
                     (sum, lead) => sum + (Number(lead.conversions) || 0),
                     0
                   );
-                  return totalLeads > 0 ? (totalConversions / totalLeads) * 100 : 0;
+                  return totalLeads > 0
+                    ? (totalConversions / totalLeads) * 100
+                    : 0;
                 })
               : [0],
           backgroundColor: "#66BB6A",
@@ -432,7 +470,10 @@ const DashboardPage = () => {
 
   const roiData = useMemo(
     () => ({
-      labels: campaigns.length > 0 ? campaigns.map((c) => c.name || "Unnamed") : ["No Data"],
+      labels:
+        campaigns.length > 0
+          ? campaigns.map((c) => c.name || "Unnamed")
+          : ["No Data"],
       datasets: [
         {
           label: "ROI (%)",
@@ -464,12 +505,16 @@ const DashboardPage = () => {
           data:
             campaignTypes.length > 0
               ? campaignTypes.map((type) => {
-                  const typeCampaigns = campaigns.filter((c) => c.type === type);
+                  const typeCampaigns = campaigns.filter(
+                    (c) => c.type === type
+                  );
                   const totalCTR = typeCampaigns.reduce(
                     (sum, c) => sum + (Number(c.clickThroughRate) || 0),
                     0
                   );
-                  return typeCampaigns.length > 0 ? totalCTR / typeCampaigns.length : 0;
+                  return typeCampaigns.length > 0
+                    ? totalCTR / typeCampaigns.length
+                    : 0;
                 })
               : [0],
           backgroundColor: "#AB47BC",
@@ -497,7 +542,9 @@ const DashboardPage = () => {
       datasets: [
         {
           label: "Deals by Stage",
-          data: stages.map((stage) => deals.filter((deal) => deal.stage === stage).length),
+          data: stages.map(
+            (stage) => deals.filter((deal) => deal.stage === stage).length
+          ),
           backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"],
         },
       ],
@@ -505,8 +552,14 @@ const DashboardPage = () => {
     [deals]
   );
 
-  const totalLeads = useMemo(() => deals.filter((deal) => deal.stage === "Lead").length, [deals]);
-  const closedWon = useMemo(() => deals.filter((deal) => deal.outcome === "Won").length, [deals]);
+  const totalLeads = useMemo(
+    () => deals.filter((deal) => deal.stage === "Lead").length,
+    [deals]
+  );
+  const closedWon = useMemo(
+    () => deals.filter((deal) => deal.outcome === "Won").length,
+    [deals]
+  );
   const conversionRate = useMemo(
     () => (totalLeads > 0 ? (closedWon / totalLeads) * 100 : 0),
     [totalLeads, closedWon]
@@ -520,7 +573,10 @@ const DashboardPage = () => {
           label: "Average Deal Size ($)",
           data: stages.map((stage) => {
             const stageDeals = deals.filter((deal) => deal.stage === stage);
-            const totalValue = stageDeals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
+            const totalValue = stageDeals.reduce(
+              (sum, deal) => sum + (Number(deal.value) || 0),
+              0
+            );
             return stageDeals.length > 0 ? totalValue / stageDeals.length : 0;
           }),
           backgroundColor: "#42A5F5",
@@ -536,19 +592,28 @@ const DashboardPage = () => {
         const teamDeals = deals.filter(
           (deal) => deal.team === team.teamName && deal.outcome === "Won"
         );
-        const revenue = teamDeals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
-        return { team: team.teamName || "Unknown", revenue, quota: Number(team.quota) || 0 };
+        const revenue = teamDeals.reduce(
+          (sum, deal) => sum + (Number(deal.value) || 0),
+          0
+        );
+        return {
+          team: team.teamName || "Unknown",
+          revenue,
+          quota: Number(team.quota) || 0,
+        };
       }),
     [teams, deals]
   );
 
   const revenueVsQuotaData = useMemo(
     () => ({
-      labels: teamRevenue.length > 0 ? teamRevenue.map((t) => t.team) : ["No Data"],
+      labels:
+        teamRevenue.length > 0 ? teamRevenue.map((t) => t.team) : ["No Data"],
       datasets: [
         {
           label: "Revenue ($)",
-          data: teamRevenue.length > 0 ? teamRevenue.map((t) => t.revenue) : [0],
+          data:
+            teamRevenue.length > 0 ? teamRevenue.map((t) => t.revenue) : [0],
           backgroundColor: "#66BB6A",
         },
         {
@@ -565,7 +630,10 @@ const DashboardPage = () => {
     () =>
       viewMode === "Sales"
         ? {
-            labels: teamRevenue.length > 0 ? teamRevenue.map((t) => t.team) : ["No Data"],
+            labels:
+              teamRevenue.length > 0
+                ? teamRevenue.map((t) => t.team)
+                : ["No Data"],
             datasets: [
               {
                 label: "Avg Cycle (days)",
@@ -573,15 +641,19 @@ const DashboardPage = () => {
                   teamRevenue.length > 0
                     ? teamRevenue.map((t) => {
                         const teamDeals = deals.filter(
-                          (deal) => deal.team === t.team && deal.outcome === "Won"
+                          (deal) =>
+                            deal.team === t.team && deal.outcome === "Won"
                         );
                         const cycleLengths = teamDeals.map((deal) => {
                           const entered = new Date(deal.dateEntered);
-                          const closed = deal.dateClosed ? new Date(deal.dateClosed) : new Date();
+                          const closed = deal.dateClosed
+                            ? new Date(deal.dateClosed)
+                            : new Date();
                           return (closed - entered) / (1000 * 60 * 60 * 24);
                         });
                         return cycleLengths.length > 0
-                          ? cycleLengths.reduce((sum, len) => sum + len, 0) / cycleLengths.length
+                          ? cycleLengths.reduce((sum, len) => sum + len, 0) /
+                              cycleLengths.length
                           : 0;
                       })
                     : [0],
@@ -597,15 +669,22 @@ const DashboardPage = () => {
     () =>
       viewMode === "Sales"
         ? {
-            labels: teamRevenue.length > 0 ? teamRevenue.map((t) => t.team) : ["No Data"],
+            labels:
+              teamRevenue.length > 0
+                ? teamRevenue.map((t) => t.team)
+                : ["No Data"],
             datasets: [
               {
                 label: "Win Rate (%)",
                 data:
                   teamRevenue.length > 0
                     ? teamRevenue.map((t) => {
-                        const teamDeals = deals.filter((deal) => deal.team === t.team);
-                        const won = teamDeals.filter((deal) => deal.outcome === "Won").length;
+                        const teamDeals = deals.filter(
+                          (deal) => deal.team === t.team
+                        );
+                        const won = teamDeals.filter(
+                          (deal) => deal.outcome === "Won"
+                        ).length;
                         const total = teamDeals.length;
                         return total > 0 ? (won / total) * 100 : 0;
                       })
@@ -623,7 +702,12 @@ const DashboardPage = () => {
   if (loading || loadingProjects || loadingAccounts) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading Dashboard...
@@ -711,14 +795,19 @@ const DashboardPage = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.95)" : "rgba(255, 255, 255, 0.95)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.95)"
+            : "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "64px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
+          },
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
@@ -741,7 +830,9 @@ const DashboardPage = () => {
               textAlign: "center",
               fontFamily: "'Poppins', 'Roboto', sans-serif",
               letterSpacing: "-0.02em",
-              textShadow: darkMode ? "0 2px 4px rgba(0,0,0,0.3)" : "0 2px 4px rgba(0,0,0,0.1)",
+              textShadow: darkMode
+                ? "0 2px 4px rgba(0,0,0,0.3)"
+                : "0 2px 4px rgba(0,0,0,0.1)",
             }}
           >
             Marketing & Sales Dashboard
@@ -749,9 +840,21 @@ const DashboardPage = () => {
         </motion.div>
 
         {/* Radio Buttons and Settings Button */}
-        <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
-          <MDBox mb={3} display="flex" alignItems="center" sx={{ flexWrap: "wrap" }}>
-            <Box className="mydict" sx={{ mr: 1, py: 1, px: 1, transform: "scale(0.85)" }}>
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={sectionVariants}
+        >
+          <MDBox
+            mb={3}
+            display="flex"
+            alignItems="center"
+            sx={{ flexWrap: "wrap" }}
+          >
+            <Box
+              className="mydict"
+              sx={{ mr: 1, py: 1, px: 1, transform: "scale(0.85)" }}
+            >
               <div>
                 <label>
                   <input
@@ -803,7 +906,11 @@ const DashboardPage = () => {
           {/* A. Lead Generation Funnel (Unchanged) */}
           {viewMode === "Marketing" && (
             <Grid item xs={12}>
-              <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={sectionVariants}
+              >
                 <Paper
                   elevation={3}
                   sx={{
@@ -832,7 +939,9 @@ const DashboardPage = () => {
                     </MDTypography>
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </MDBox>
@@ -869,13 +978,19 @@ const DashboardPage = () => {
                                     indexAxis: "y",
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -884,7 +999,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -936,13 +1053,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -951,7 +1074,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1003,13 +1128,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1018,7 +1149,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1055,7 +1188,11 @@ const DashboardPage = () => {
           {/* B. Marketing Campaign Performance (Unchanged) */}
           {viewMode === "Marketing" && (
             <Grid item xs={12}>
-              <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={sectionVariants}
+              >
                 <Paper
                   elevation={3}
                   sx={{
@@ -1084,7 +1221,9 @@ const DashboardPage = () => {
                     </MDTypography>
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </MDBox>
@@ -1120,13 +1259,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1135,7 +1280,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1187,13 +1334,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1202,7 +1355,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1243,7 +1398,8 @@ const DashboardPage = () => {
                               <Box
                                 sx={{
                                   padding: (theme) => theme.spacing(2),
-                                  borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+                                  borderBottom: (theme) =>
+                                    `1px solid ${theme.palette.divider}`,
                                 }}
                               >
                                 <MDTypography
@@ -1263,7 +1419,8 @@ const DashboardPage = () => {
                                       padding: (theme) => theme.spacing(1.5, 2),
                                       borderRadius: "8px",
                                       marginBottom: "8px",
-                                      backgroundColor: (theme) => theme.palette.background.default,
+                                      backgroundColor: (theme) =>
+                                        theme.palette.background.default,
                                       boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
                                     }}
                                   >
@@ -1273,18 +1430,26 @@ const DashboardPage = () => {
                                         fontWeight="medium"
                                         color="text.primary"
                                         noWrap
-                                        sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                                        sx={{
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                        }}
                                       >
                                         {campaign.name || "Unnamed"}
                                       </MDTypography>
                                     </Box>
-                                    <Box sx={{ width: "15%", textAlign: "right" }}>
+                                    <Box
+                                      sx={{ width: "15%", textAlign: "right" }}
+                                    >
                                       <MDTypography
                                         variant="body2"
                                         color="success.main"
                                         fontWeight="bold"
                                       >
-                                        ${Number(campaign.revenue)?.toLocaleString() || "0"}
+                                        $
+                                        {Number(
+                                          campaign.revenue
+                                        )?.toLocaleString() || "0"}
                                       </MDTypography>
                                     </Box>
                                     <Box sx={{ width: "25%", marginLeft: 2 }}>
@@ -1292,7 +1457,10 @@ const DashboardPage = () => {
                                         variant="body2"
                                         color="text.secondary"
                                         noWrap
-                                        sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                                        sx={{
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                        }}
                                       >
                                         Project: {campaign.project || "N/A"}
                                       </MDTypography>
@@ -1302,7 +1470,10 @@ const DashboardPage = () => {
                                         variant="body2"
                                         color="text.secondary"
                                         noWrap
-                                        sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                                        sx={{
+                                          overflow: "hidden",
+                                          textOverflow: "ellipsis",
+                                        }}
                                       >
                                         Account: {campaign.account || "N/A"}
                                       </MDTypography>
@@ -1311,7 +1482,11 @@ const DashboardPage = () => {
                                 ))}
                                 {topCampaigns.length === 0 && (
                                   <ListItem
-                                    sx={{ textAlign: "center", py: 2, color: "text.secondary" }}
+                                    sx={{
+                                      textAlign: "center",
+                                      py: 2,
+                                      color: "text.secondary",
+                                    }}
                                   >
                                     No top campaigns available.
                                   </ListItem>
@@ -1331,7 +1506,11 @@ const DashboardPage = () => {
           {/* C. Sales Pipeline Overview (Aligned with ManageSales) */}
           {viewMode === "Sales" && (
             <Grid item xs={12}>
-              <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={sectionVariants}
+              >
                 <Paper
                   elevation={3}
                   sx={{
@@ -1360,7 +1539,9 @@ const DashboardPage = () => {
                     </MDTypography>
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </MDBox>
@@ -1405,13 +1586,19 @@ const DashboardPage = () => {
                                     indexAxis: "y",
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1420,7 +1607,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1480,13 +1669,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1495,7 +1690,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1547,7 +1744,11 @@ const DashboardPage = () => {
                               >
                                 Overall Conversion Rate
                               </MDTypography>
-                              <Grid container spacing={2} sx={{ height: "calc(100% - 40px)" }}>
+                              <Grid
+                                container
+                                spacing={2}
+                                sx={{ height: "calc(100% - 40px)" }}
+                              >
                                 <Grid
                                   item
                                   xs={12}
@@ -1603,7 +1804,11 @@ const DashboardPage = () => {
           {/* D. Team-Wise Sales Metrics (Aligned with ManageSales) */}
           {viewMode === "Sales" && (
             <Grid item xs={12}>
-              <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={sectionVariants}
+              >
                 <Paper
                   elevation={3}
                   sx={{
@@ -1632,7 +1837,9 @@ const DashboardPage = () => {
                     </MDTypography>
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </MDBox>
@@ -1676,13 +1883,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1691,7 +1904,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1751,13 +1966,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1766,7 +1987,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1826,13 +2049,19 @@ const DashboardPage = () => {
                                     ...chartOptions,
                                     plugins: {
                                       ...chartOptions.plugins,
-                                      legend: { labels: { color: darkMode ? "#fff" : "#333" } },
+                                      legend: {
+                                        labels: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
+                                      },
                                     },
                                     scales: {
                                       ...chartOptions.scales,
                                       x: {
                                         ...chartOptions.scales.x,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"
@@ -1841,7 +2070,9 @@ const DashboardPage = () => {
                                       },
                                       y: {
                                         ...chartOptions.scales.y,
-                                        ticks: { color: darkMode ? "#fff" : "#333" },
+                                        ticks: {
+                                          color: darkMode ? "#fff" : "#333",
+                                        },
                                         grid: {
                                           color: darkMode
                                             ? "rgba(255,255,255,0.1)"

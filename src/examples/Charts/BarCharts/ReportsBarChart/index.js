@@ -97,7 +97,9 @@ function ReportsBarChart({
               variant="h6"
               color={profitLoss >= 0 ? "success.main" : "error.main"} // Green for profit, red for loss
             >
-              {profitLoss >= 0 ? `Profit: $${profitLoss}` : `Loss: $${Math.abs(profitLoss)}`}
+              {profitLoss >= 0
+                ? `Profit: $${profitLoss}`
+                : `Loss: $${Math.abs(profitLoss)}`}
             </Typography>
           </MDBox>
         )}

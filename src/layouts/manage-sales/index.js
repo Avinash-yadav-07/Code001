@@ -58,7 +58,10 @@ const ManageSales = () => {
   const [accounts, setAccounts] = useState([]);
   const [teams, setTeams] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
   const [userRoles, setUserRoles] = useState([]);
@@ -103,7 +106,10 @@ const ManageSales = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
@@ -226,9 +232,11 @@ const ManageSales = () => {
   }, [salesData, searchTerm, dateRange]);
 
   const isReadOnly =
-    userRoles.includes("ManageSales:read") && !userRoles.includes("ManageSales:full access");
+    userRoles.includes("ManageSales:read") &&
+    !userRoles.includes("ManageSales:full access");
   const hasAccess =
-    userRoles.includes("ManageSales:read") || userRoles.includes("ManageSales:full access");
+    userRoles.includes("ManageSales:read") ||
+    userRoles.includes("ManageSales:full access");
 
   const handleDialogOpen = (type, data = null) => {
     if (isReadOnly) return;
@@ -308,7 +316,10 @@ const ManageSales = () => {
       return "Upsell Revenue must be a non-negative number";
     }
     const crossSellRevenue = Number(dealForm.crossSellRevenue);
-    if (dealForm.crossSellRevenue && (isNaN(crossSellRevenue) || crossSellRevenue < 0)) {
+    if (
+      dealForm.crossSellRevenue &&
+      (isNaN(crossSellRevenue) || crossSellRevenue < 0)
+    ) {
       return "Cross-Sell Revenue must be a non-negative number";
     }
     return "";
@@ -329,7 +340,10 @@ const ManageSales = () => {
 
     try {
       setIsSubmitting(true);
-      const dealIdExists = await checkDuplicateDealId(dealForm.dealId, editData?.id);
+      const dealIdExists = await checkDuplicateDealId(
+        dealForm.dealId,
+        editData?.id
+      );
       if (dealIdExists) {
         setDealFormError("Deal ID already exists");
         setIsSubmitting(false);
@@ -340,7 +354,8 @@ const ManageSales = () => {
         dealId: dealForm.dealId.trim(),
         stage: dealForm.stage,
         value: Number(dealForm.value) || 0,
-        dateEntered: dealForm.dateEntered || new Date().toISOString().split("T")[0],
+        dateEntered:
+          dealForm.dateEntered || new Date().toISOString().split("T")[0],
         dateClosed: dealForm.dateClosed || "",
         team: dealForm.team || "All",
         salesperson: dealForm.salesperson?.trim() || "",
@@ -420,7 +435,9 @@ const ManageSales = () => {
     if (isReadOnly || !deleteItem) return;
     try {
       setIsSubmitting(true);
-      await deleteDoc(doc(db, deleteItem.type === "deal" ? "deals" : "teams", deleteItem.id));
+      await deleteDoc(
+        doc(db, deleteItem.type === "deal" ? "deals" : "teams", deleteItem.id)
+      );
       await fetchSalesData();
       setConfirmDeleteOpen(false);
       setDeleteItem(null);
@@ -483,11 +500,16 @@ const ManageSales = () => {
 
     const totalLeads = deals.filter((deal) => deal.stage === "Lead").length;
     const closedWon = deals.filter((deal) => deal.outcome === "Won").length;
-    const leadConversionRate = totalLeads > 0 ? (closedWon / totalLeads) * 100 : 0;
+    const leadConversionRate =
+      totalLeads > 0 ? (closedWon / totalLeads) * 100 : 0;
 
     const closedDeals = deals.filter((deal) => deal.outcome === "Won");
-    const totalRevenue = closedDeals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
-    const averageDealSize = closedDeals.length > 0 ? totalRevenue / closedDeals.length : 0;
+    const totalRevenue = closedDeals.reduce(
+      (sum, deal) => sum + (Number(deal.value) || 0),
+      0
+    );
+    const averageDealSize =
+      closedDeals.length > 0 ? totalRevenue / closedDeals.length : 0;
 
     const salesCycleLengths = closedDeals.map((deal) => {
       const entered = new Date(deal.dateEntered);
@@ -496,19 +518,32 @@ const ManageSales = () => {
     });
     const averageSalesCycle =
       salesCycleLengths.length > 0
-        ? salesCycleLengths.reduce((sum, len) => sum + len, 0) / salesCycleLengths.length
+        ? salesCycleLengths.reduce((sum, len) => sum + len, 0) /
+          salesCycleLengths.length
         : 0;
 
     const teamMetrics = teamsData.map((team) => {
       const teamDeals = deals.filter((deal) => deal.team === team.teamName);
-      const teamClosedWon = teamDeals.filter((deal) => deal.outcome === "Won").length;
-      const teamRevenue = teamDeals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
-      const winRate = teamDeals.length > 0 ? (teamClosedWon / teamDeals.length) * 100 : 0;
-      const quotaAttainment = team.quota > 0 ? (teamRevenue / team.quota) * 100 : 0;
+      const teamClosedWon = teamDeals.filter(
+        (deal) => deal.outcome === "Won"
+      ).length;
+      const teamRevenue = teamDeals.reduce(
+        (sum, deal) => sum + (Number(deal.value) || 0),
+        0
+      );
+      const winRate =
+        teamDeals.length > 0 ? (teamClosedWon / teamDeals.length) * 100 : 0;
+      const quotaAttainment =
+        team.quota > 0 ? (teamRevenue / team.quota) * 100 : 0;
       return { teamName: team.teamName, winRate, quotaAttainment };
     });
 
-    return { leadConversionRate, averageDealSize, averageSalesCycle, teamMetrics };
+    return {
+      leadConversionRate,
+      averageDealSize,
+      averageSalesCycle,
+      teamMetrics,
+    };
   };
 
   const renderSalesCard = (data) => {
@@ -541,7 +576,11 @@ const ManageSales = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor:
-                  data.team && data.team !== "All" ? "#4caf50" : darkMode ? "#757575" : "#f5f5f5",
+                  data.team && data.team !== "All"
+                    ? "#4caf50"
+                    : darkMode
+                    ? "#757575"
+                    : "#f5f5f5",
                 borderRadius: "8px 0 0 8px",
                 marginRight: "16px",
                 boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
@@ -550,7 +589,11 @@ const ManageSales = () => {
               <MDTypography
                 variant="body2"
                 color={darkMode ? "white" : "white"}
-                sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: "1rem",
+                  textTransform: "uppercase",
+                }}
               >
                 {data.team && data.team !== "All" ? data.team : "No Team"}
               </MDTypography>
@@ -562,51 +605,94 @@ const ManageSales = () => {
                 {isDeal ? (
                   <>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Deal ID:</strong> {data.dealId || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Stage:</strong> {data.stage || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Value:</strong> ${Number(data.value)?.toLocaleString() || "0"}
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
+                        <strong>Value:</strong> $
+                        {Number(data.value)?.toLocaleString() || "0"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Client Category:</strong> {data.clientCategory || "N/A"}
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
+                        <strong>Client Category:</strong>{" "}
+                        {data.clientCategory || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Region:</strong> {data.region || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Product:</strong> {data.product || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Upsell Revenue:</strong> $
                         {Number(data.upsellRevenue)?.toLocaleString() || "0"}
                       </MDTypography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Cross-Sell Revenue:</strong> $
                         {Number(data.crossSellRevenue)?.toLocaleString() || "0"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Project:</strong> {data.project || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Account:</strong> {data.account || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Salesperson:</strong> {data.salesperson || "N/A"}
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
+                        <strong>Salesperson:</strong>{" "}
+                        {data.salesperson || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Outcome:</strong> {data.outcome || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Sales Cycle:</strong>{" "}
                         {data.dateEntered && data.dateClosed
                           ? `${Math.round(
-                              (new Date(data.dateClosed) - new Date(data.dateEntered)) /
+                              (new Date(data.dateClosed) -
+                                new Date(data.dateEntered)) /
                                 (1000 * 60 * 60 * 24)
                             )} days`
                           : "N/A"}
@@ -616,26 +702,42 @@ const ManageSales = () => {
                 ) : (
                   <>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Team Name:</strong> {data.teamName || "N/A"}
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Quota:</strong> ${Number(data.quota)?.toLocaleString() || "0"}
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
+                        <strong>Quota:</strong> $
+                        {Number(data.quota)?.toLocaleString() || "0"}
                       </MDTypography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Quota Attainment:</strong>{" "}
                         {(
-                          teamMetrics?.find((tm) => tm.teamName === data.teamName)
-                            ?.quotaAttainment ?? 0
+                          teamMetrics?.find(
+                            (tm) => tm.teamName === data.teamName
+                          )?.quotaAttainment ?? 0
                         ).toFixed(2)}
                         %
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textSecondary"}
+                      >
                         <strong>Win Rate:</strong>{" "}
                         {(
-                          teamMetrics?.find((tm) => tm.teamName === data.teamName)?.winRate ?? 0
+                          teamMetrics?.find(
+                            (tm) => tm.teamName === data.teamName
+                          )?.winRate ?? 0
                         ).toFixed(2)}
                         %
                       </MDTypography>
@@ -653,7 +755,11 @@ const ManageSales = () => {
                 >
                   <Icon fontSize="medium">edit</Icon> Edit
                 </MDButton>
-                <MDButton variant="gradient" color="error" onClick={() => handleDelete(data)}>
+                <MDButton
+                  variant="gradient"
+                  color="error"
+                  onClick={() => handleDelete(data)}
+                >
                   <Icon fontSize="medium">delete</Icon> Delete
                 </MDButton>
               </CardActions>
@@ -667,7 +773,12 @@ const ManageSales = () => {
   if (loadingRoles || loadingData || loadingProjects || loadingAccounts) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -680,7 +791,8 @@ const ManageSales = () => {
     return <Navigate to="/unauthorized" />;
   }
 
-  const { leadConversionRate, averageDealSize, averageSalesCycle } = calculateSalesMetrics();
+  const { leadConversionRate, averageDealSize, averageSalesCycle } =
+    calculateSalesMetrics();
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -695,14 +807,19 @@ const ManageSales = () => {
           light={!darkMode}
           isMini={false}
           sx={{
-            backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+            backgroundColor: darkMode
+              ? "rgba(33, 33, 33, 0.9)"
+              : "rgba(255, 255, 255, 0.9)",
             backdropFilter: "blur(10px)",
             zIndex: 1100,
             padding: "0 16px",
             minHeight: "60px",
             top: "8px",
             left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+            width: {
+              xs: "100%",
+              md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
+            },
           }}
         />
         <MDBox
@@ -710,7 +827,9 @@ const ManageSales = () => {
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
             marginTop: { xs: "140px", md: "100px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
             minHeight: "calc(100vh - 80px)",
             paddingTop: { xs: "32px", md: "24px" },
             zIndex: 1000,
@@ -774,32 +893,50 @@ const ManageSales = () => {
                           backgroundColor: darkMode ? "#424242" : "#fff",
                           color: darkMode ? "white" : "black",
                         },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                        "& .MuiInputLabel-root": {
+                          color: darkMode ? "white" : "black",
+                        },
                       }}
                     />
                   </Box>
                   <Box display="flex" gap={2} alignItems="center">
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchSalesData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Filter by Date">
                       <IconButton onClick={() => setOpenDateFilterDialog(true)}>
-                        <CalendarTodayIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <CalendarTodayIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </Box>
                 </MDBox>
                 <MDBox px={2} pb={2}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Lead Conversion Rate:</strong> {leadConversionRate.toFixed(2)}%
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
+                    <strong>Lead Conversion Rate:</strong>{" "}
+                    {leadConversionRate.toFixed(2)}%
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Average Deal Size:</strong> ${averageDealSize.toFixed(2)}
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
+                    <strong>Average Deal Size:</strong> $
+                    {averageDealSize.toFixed(2)}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Average Sales Cycle:</strong> {averageSalesCycle.toFixed(2)} days
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
+                    <strong>Average Sales Cycle:</strong>{" "}
+                    {averageSalesCycle.toFixed(2)} days
                   </MDTypography>
                 </MDBox>
                 <Grid container spacing={3} sx={{ padding: "16px" }}>
@@ -823,7 +960,9 @@ const ManageSales = () => {
         <Box
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
             zIndex: 1100,
           }}
         >
@@ -840,7 +979,9 @@ const ManageSales = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -877,7 +1018,9 @@ const ManageSales = () => {
                   onClick={handleSubmitDeal}
                   color="primary"
                   disabled={isSubmitting}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+                  startIcon={
+                    isSubmitting ? <CircularProgress size={20} /> : null
+                  }
                 >
                   {editData ? "Update Deal" : "Save Deal"}
                 </Button>
@@ -892,7 +1035,9 @@ const ManageSales = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -905,7 +1050,11 @@ const ManageSales = () => {
                     {teamFormError}
                   </MDTypography>
                 )}
-                <TeamForm teamForm={teamForm} setTeamForm={setTeamForm} darkMode={darkMode} />
+                <TeamForm
+                  teamForm={teamForm}
+                  setTeamForm={setTeamForm}
+                  darkMode={darkMode}
+                />
               </DialogContent>
               <DialogActions>
                 <Button
@@ -919,7 +1068,9 @@ const ManageSales = () => {
                   onClick={handleSubmitTeam}
                   color="primary"
                   disabled={isSubmitting}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+                  startIcon={
+                    isSubmitting ? <CircularProgress size={20} /> : null
+                  }
                 >
                   {editData ? "Update Team" : "Save Team"}
                 </Button>
@@ -932,7 +1083,9 @@ const ManageSales = () => {
               onClose={() => setConfirmDeleteOpen(false)}
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -951,7 +1104,9 @@ const ManageSales = () => {
                   onClick={handleDeleteConfirm}
                   color="error"
                   disabled={isSubmitting || !deleteItem}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
+                  startIcon={
+                    isSubmitting ? <CircularProgress size={20} /> : null
+                  }
                 >
                   Delete
                 </Button>
@@ -964,7 +1119,9 @@ const ManageSales = () => {
               onClose={() => setOpenDateFilterDialog(false)}
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -1012,14 +1169,20 @@ const ManageSales = () => {
                     <DatePicker
                       label="Start Date"
                       value={dateRange.startDate}
-                      onChange={(newValue) => setDateRange({ ...dateRange, startDate: newValue })}
+                      onChange={(newValue) =>
+                        setDateRange({ ...dateRange, startDate: newValue })
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           fullWidth
                           sx={{
-                            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-                            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                            "& .MuiInputBase-input": {
+                              color: darkMode ? "white" : "black",
+                            },
+                            "& .MuiInputLabel-root": {
+                              color: darkMode ? "white" : "black",
+                            },
                           }}
                         />
                       )}
@@ -1029,14 +1192,20 @@ const ManageSales = () => {
                     <DatePicker
                       label="End Date"
                       value={dateRange.endDate}
-                      onChange={(newValue) => setDateRange({ ...dateRange, endDate: newValue })}
+                      onChange={(newValue) =>
+                        setDateRange({ ...dateRange, endDate: newValue })
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           fullWidth
                           sx={{
-                            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-                            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                            "& .MuiInputBase-input": {
+                              color: darkMode ? "white" : "black",
+                            },
+                            "& .MuiInputLabel-root": {
+                              color: darkMode ? "white" : "black",
+                            },
                           }}
                         />
                       )}
@@ -1134,7 +1303,9 @@ const DealForm = ({
           label="Date Entered"
           type="date"
           value={dealForm.dateEntered}
-          onChange={(e) => setDealForm({ ...dealForm, dateEntered: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, dateEntered: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1148,7 +1319,9 @@ const DealForm = ({
           label="Date Closed"
           type="date"
           value={dealForm.dateClosed}
-          onChange={(e) => setDealForm({ ...dealForm, dateClosed: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, dateClosed: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1184,7 +1357,9 @@ const DealForm = ({
           fullWidth
           label="Salesperson"
           value={dealForm.salesperson}
-          onChange={(e) => setDealForm({ ...dealForm, salesperson: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, salesperson: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1197,7 +1372,9 @@ const DealForm = ({
           fullWidth
           label="Outcome"
           value={dealForm.outcome}
-          onChange={(e) => setDealForm({ ...dealForm, outcome: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, outcome: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1220,7 +1397,9 @@ const DealForm = ({
           fullWidth
           label="Client Category"
           value={dealForm.clientCategory}
-          onChange={(e) => setDealForm({ ...dealForm, clientCategory: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, clientCategory: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1254,7 +1433,9 @@ const DealForm = ({
           fullWidth
           label="Product"
           value={dealForm.product}
-          onChange={(e) => setDealForm({ ...dealForm, product: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, product: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1267,7 +1448,9 @@ const DealForm = ({
           label="Upsell Revenue ($)"
           type="number"
           value={dealForm.upsellRevenue}
-          onChange={(e) => setDealForm({ ...dealForm, upsellRevenue: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, upsellRevenue: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1281,7 +1464,9 @@ const DealForm = ({
           label="Cross-Sell Revenue ($)"
           type="number"
           value={dealForm.crossSellRevenue}
-          onChange={(e) => setDealForm({ ...dealForm, crossSellRevenue: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, crossSellRevenue: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1295,7 +1480,9 @@ const DealForm = ({
           fullWidth
           label="Project"
           value={dealForm.project}
-          onChange={(e) => setDealForm({ ...dealForm, project: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, project: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1318,7 +1505,9 @@ const DealForm = ({
           fullWidth
           label="Account"
           value={dealForm.account}
-          onChange={(e) => setDealForm({ ...dealForm, account: e.target.value })}
+          onChange={(e) =>
+            setDealForm({ ...dealForm, account: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1348,7 +1537,9 @@ const TeamForm = ({ teamForm, setTeamForm, darkMode }) => {
           fullWidth
           label="Team Name"
           value={teamForm.teamName}
-          onChange={(e) => setTeamForm({ ...teamForm, teamName: e.target.value })}
+          onChange={(e) =>
+            setTeamForm({ ...teamForm, teamName: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },

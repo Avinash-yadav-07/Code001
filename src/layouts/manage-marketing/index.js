@@ -53,7 +53,10 @@ const ManageMarketing = () => {
   const [marketingData, setMarketingData] = useState([]);
   const [filteredMarketingData, setFilteredMarketingData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateRange, setDateRange] = useState({ startDate: null, endDate: null });
+  const [dateRange, setDateRange] = useState({
+    startDate: null,
+    endDate: null,
+  });
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
   const [userRoles, setUserRoles] = useState([]);
@@ -101,7 +104,10 @@ const ManageMarketing = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
@@ -226,7 +232,8 @@ const ManageMarketing = () => {
     userRoles.includes("ManageMarketing:read") &&
     !userRoles.includes("ManageMarketing:full access");
   const hasAccess =
-    userRoles.includes("ManageMarketing:read") || userRoles.includes("ManageMarketing:full access");
+    userRoles.includes("ManageMarketing:read") ||
+    userRoles.includes("ManageMarketing:full access");
 
   const handleDialogOpen = (type, data = null) => {
     if (isReadOnly) return;
@@ -235,7 +242,8 @@ const ManageMarketing = () => {
         setLeadForm({
           channel: data.channel || "",
           leads: data.leads?.toString() || "",
-          marketingQualifiedLeads: data.marketingQualifiedLeads?.toString() || "",
+          marketingQualifiedLeads:
+            data.marketingQualifiedLeads?.toString() || "",
           salesQualifiedLeads: data.salesQualifiedLeads?.toString() || "",
           conversions: data.conversions?.toString() || "",
           spend: data.spend?.toString() || "",
@@ -294,7 +302,10 @@ const ManageMarketing = () => {
         salesQualifiedLeads: Number(leadForm.salesQualifiedLeads) || 0,
         conversions: Number(leadForm.conversions) || 0,
         spend: Number(leadForm.spend) || 0,
-        team: leadForm.team === "Custom" ? leadForm.customTeam : leadForm.team || "All",
+        team:
+          leadForm.team === "Custom"
+            ? leadForm.customTeam
+            : leadForm.team || "All",
         project: leadForm.project || "N/A",
         account: leadForm.account || "N/A",
         createdAt: new Date(),
@@ -321,7 +332,10 @@ const ManageMarketing = () => {
         clickThroughRate: Number(campaignForm.clickThroughRate) || 0,
         likes: Number(campaignForm.likes) || 0,
         impressions: Number(campaignForm.impressions) || 0,
-        team: campaignForm.team === "Custom" ? campaignForm.customTeam : campaignForm.team || "All",
+        team:
+          campaignForm.team === "Custom"
+            ? campaignForm.customTeam
+            : campaignForm.team || "All",
         project: campaignForm.project || "N/A",
         account: campaignForm.account || "N/A",
         createdAt: new Date(),
@@ -347,7 +361,13 @@ const ManageMarketing = () => {
   const handleDeleteConfirm = async () => {
     if (!deleteItem) return;
     try {
-      await deleteDoc(doc(db, deleteItem.type === "lead" ? "leads" : "campaigns", deleteItem.id));
+      await deleteDoc(
+        doc(
+          db,
+          deleteItem.type === "lead" ? "leads" : "campaigns",
+          deleteItem.id
+        )
+      );
       await fetchMarketingData();
       setConfirmDeleteOpen(false);
       setDeleteItem(null);
@@ -419,95 +439,175 @@ const ManageMarketing = () => {
             {data.type === "lead" ? (
               <>
                 <Grid item xs={12} sm={6}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Channel:</strong> {data.channel || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Leads:</strong> {data.leads || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Marketing Qualified Leads (MQLs):</strong>{" "}
                     {data.marketingQualifiedLeads || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Sales Qualified Leads (SQLs):</strong> {data.salesQualifiedLeads || 0}
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
+                    <strong>Sales Qualified Leads (SQLs):</strong>{" "}
+                    {data.salesQualifiedLeads || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Conversions:</strong> {data.conversions || 0}
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Spend:</strong> ${data.spend || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Team:</strong> {data.team || "All"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Project:</strong> {data.project || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Account:</strong> {data.account || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>
-                      Marketing Qualified Leads (MQLs) → Sales Qualified Leads (SQLs):
+                      Marketing Qualified Leads (MQLs) → Sales Qualified Leads
+                      (SQLs):
                     </strong>{" "}
                     {data.marketingQualifiedLeads
                       ? `${Math.round(
-                          (data.salesQualifiedLeads / data.marketingQualifiedLeads) * 100
+                          (data.salesQualifiedLeads /
+                            data.marketingQualifiedLeads) *
+                            100
                         )}%`
                       : "0%"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Cost Per Lead (CPL):</strong>{" "}
-                    {data.leads ? `$${Math.round(data.spend / data.leads)}` : "$0"}
+                    {data.leads
+                      ? `$${Math.round(data.spend / data.leads)}`
+                      : "$0"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Conversion Rate:</strong>{" "}
-                    {data.leads ? `${Math.round((data.conversions / data.leads) * 100)}%` : "0%"}
+                    {data.leads
+                      ? `${Math.round((data.conversions / data.leads) * 100)}%`
+                      : "0%"}
                   </MDTypography>
                 </Grid>
               </>
             ) : (
               <>
                 <Grid item xs={12} sm={6}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Name:</strong> {data.name || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Type:</strong> {data.type || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Cost:</strong> ${data.cost || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Revenue:</strong> ${data.revenue || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Click-Through Rate (CTR):</strong> {data.clickThroughRate || 0}%
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
+                    <strong>Click-Through Rate (CTR):</strong>{" "}
+                    {data.clickThroughRate || 0}%
                   </MDTypography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Likes:</strong> {data.likes || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Impressions:</strong> {data.impressions || 0}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Team:</strong> {data.team || "All"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Project:</strong> {data.project || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>Account:</strong> {data.account || "N/A"}
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                  <MDTypography
+                    variant="body2"
+                    color={darkMode ? "white" : "textSecondary"}
+                  >
                     <strong>ROI:</strong>{" "}
                     {data.cost
-                      ? `${Math.round(((data.revenue - data.cost) / data.cost) * 100)}%`
+                      ? `${Math.round(
+                          ((data.revenue - data.cost) / data.cost) * 100
+                        )}%`
                       : "0%"}
                   </MDTypography>
                 </Grid>
@@ -524,7 +624,11 @@ const ManageMarketing = () => {
             >
               <Icon fontSize="medium">edit</Icon> Edit
             </MDButton>
-            <MDButton variant="gradient" color="error" onClick={() => handleDelete(data)}>
+            <MDButton
+              variant="gradient"
+              color="error"
+              onClick={() => handleDelete(data)}
+            >
               <Icon fontSize="medium">delete</Icon> Delete
             </MDButton>
           </CardActions>
@@ -536,7 +640,12 @@ const ManageMarketing = () => {
   if (loadingRoles || loadingData || loadingProjects || loadingAccounts) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -562,14 +671,19 @@ const ManageMarketing = () => {
           light={!darkMode}
           isMini={false}
           sx={{
-            backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+            backgroundColor: darkMode
+              ? "rgba(33, 33, 33, 0.9)"
+              : "rgba(255, 255, 255, 0.9)",
             backdropFilter: "blur(10px)",
             zIndex: 1100,
             padding: "0 16px",
             minHeight: "60px",
             top: "8px",
             left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+            width: {
+              xs: "100%",
+              md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
+            },
           }}
         />
         <MDBox
@@ -577,7 +691,9 @@ const ManageMarketing = () => {
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
             marginTop: { xs: "140px", md: "100px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
             minHeight: "calc(100vh - 80px)",
             paddingTop: { xs: "32px", md: "24px" },
             zIndex: 1000,
@@ -641,19 +757,25 @@ const ManageMarketing = () => {
                           backgroundColor: darkMode ? "#424242" : "#fff",
                           color: darkMode ? "white" : "black",
                         },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                        "& .MuiInputLabel-root": {
+                          color: darkMode ? "white" : "black",
+                        },
                       }}
                     />
                   </Box>
                   <Box display="flex" gap={2} alignItems="center">
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchMarketingData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Filter by Date">
                       <IconButton onClick={() => setOpenDateFilterDialog(true)}>
-                        <CalendarTodayIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <CalendarTodayIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
                   </Box>
@@ -679,7 +801,9 @@ const ManageMarketing = () => {
         <Box
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode
+              ? "background.default"
+              : "background.paper",
             zIndex: 1100,
           }}
         >
@@ -696,7 +820,9 @@ const ManageMarketing = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -735,7 +861,9 @@ const ManageMarketing = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -772,12 +900,15 @@ const ManageMarketing = () => {
               onClose={() => setConfirmDeleteOpen(false)}
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
               <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Want to delete {deleteItem?.type === "lead" ? "lead" : "campaign"}?
+                Want to delete{" "}
+                {deleteItem?.type === "lead" ? "lead" : "campaign"}?
               </DialogTitle>
               <DialogActions>
                 <Button
@@ -798,7 +929,9 @@ const ManageMarketing = () => {
               onClose={() => setOpenDateFilterDialog(false)}
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
+                  backgroundColor: darkMode
+                    ? "background.default"
+                    : "background.paper",
                 },
               }}
             >
@@ -811,14 +944,20 @@ const ManageMarketing = () => {
                     <DatePicker
                       label="Start Date"
                       value={dateRange.startDate}
-                      onChange={(newValue) => setDateRange({ ...dateRange, startDate: newValue })}
+                      onChange={(newValue) =>
+                        setDateRange({ ...dateRange, startDate: newValue })
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           fullWidth
                           sx={{
-                            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-                            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                            "& .MuiInputBase-input": {
+                              color: darkMode ? "white" : "black",
+                            },
+                            "& .MuiInputLabel-root": {
+                              color: darkMode ? "white" : "black",
+                            },
                           }}
                         />
                       )}
@@ -828,14 +967,20 @@ const ManageMarketing = () => {
                     <DatePicker
                       label="End Date"
                       value={dateRange.endDate}
-                      onChange={(newValue) => setDateRange({ ...dateRange, endDate: newValue })}
+                      onChange={(newValue) =>
+                        setDateRange({ ...dateRange, endDate: newValue })
+                      }
                       renderInput={(params) => (
                         <TextField
                           {...params}
                           fullWidth
                           sx={{
-                            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-                            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                            "& .MuiInputBase-input": {
+                              color: darkMode ? "white" : "black",
+                            },
+                            "& .MuiInputLabel-root": {
+                              color: darkMode ? "white" : "black",
+                            },
                           }}
                         />
                       )}
@@ -863,7 +1008,15 @@ const ManageMarketing = () => {
 };
 
 // LeadForm Component
-const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, darkMode }) => {
+const LeadForm = ({
+  leadForm,
+  setLeadForm,
+  channels,
+  teams,
+  projects,
+  accounts,
+  darkMode,
+}) => {
   return (
     <Grid container spacing={2} sx={{ pt: 2 }}>
       <Grid item xs={12} sm={6}>
@@ -872,7 +1025,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           fullWidth
           label="Channel"
           value={leadForm.channel}
-          onChange={(e) => setLeadForm({ ...leadForm, channel: e.target.value })}
+          onChange={(e) =>
+            setLeadForm({ ...leadForm, channel: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -908,7 +1063,12 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           label="Marketing Qualified Leads (MQLs)"
           type="number"
           value={leadForm.marketingQualifiedLeads}
-          onChange={(e) => setLeadForm({ ...leadForm, marketingQualifiedLeads: e.target.value })}
+          onChange={(e) =>
+            setLeadForm({
+              ...leadForm,
+              marketingQualifiedLeads: e.target.value,
+            })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -921,7 +1081,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           label="Sales Qualified Leads (SQLs)"
           type="number"
           value={leadForm.salesQualifiedLeads}
-          onChange={(e) => setLeadForm({ ...leadForm, salesQualifiedLeads: e.target.value })}
+          onChange={(e) =>
+            setLeadForm({ ...leadForm, salesQualifiedLeads: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -934,7 +1096,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           label="Conversions"
           type="number"
           value={leadForm.conversions}
-          onChange={(e) => setLeadForm({ ...leadForm, conversions: e.target.value })}
+          onChange={(e) =>
+            setLeadForm({ ...leadForm, conversions: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -960,7 +1124,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           fullWidth
           label="Team"
           value={leadForm.team}
-          onChange={(e) => setLeadForm({ ...leadForm, team: e.target.value, customTeam: "" })}
+          onChange={(e) =>
+            setLeadForm({ ...leadForm, team: e.target.value, customTeam: "" })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -983,7 +1149,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
             fullWidth
             label="Custom Team Name"
             value={leadForm.customTeam}
-            onChange={(e) => setLeadForm({ ...leadForm, customTeam: e.target.value })}
+            onChange={(e) =>
+              setLeadForm({ ...leadForm, customTeam: e.target.value })
+            }
             sx={{
               "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
               "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -997,7 +1165,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           fullWidth
           label="Project"
           value={leadForm.project}
-          onChange={(e) => setLeadForm({ ...leadForm, project: e.target.value })}
+          onChange={(e) =>
+            setLeadForm({ ...leadForm, project: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1020,7 +1190,9 @@ const LeadForm = ({ leadForm, setLeadForm, channels, teams, projects, accounts, 
           fullWidth
           label="Account"
           value={leadForm.account}
-          onChange={(e) => setLeadForm({ ...leadForm, account: e.target.value })}
+          onChange={(e) =>
+            setLeadForm({ ...leadForm, account: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1058,7 +1230,9 @@ const CampaignForm = ({
           fullWidth
           label="Campaign Name"
           value={campaignForm.name}
-          onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, name: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1071,7 +1245,9 @@ const CampaignForm = ({
           fullWidth
           label="Campaign Type"
           value={campaignForm.type}
-          onChange={(e) => setCampaignForm({ ...campaignForm, type: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, type: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1094,7 +1270,9 @@ const CampaignForm = ({
           label="Cost"
           type="number"
           value={campaignForm.cost}
-          onChange={(e) => setCampaignForm({ ...campaignForm, cost: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, cost: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1107,7 +1285,9 @@ const CampaignForm = ({
           label="Revenue"
           type="number"
           value={campaignForm.revenue}
-          onChange={(e) => setCampaignForm({ ...campaignForm, revenue: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, revenue: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1120,7 +1300,12 @@ const CampaignForm = ({
           label="Click-Through Rate (CTR)"
           type="number"
           value={campaignForm.clickThroughRate}
-          onChange={(e) => setCampaignForm({ ...campaignForm, clickThroughRate: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({
+              ...campaignForm,
+              clickThroughRate: e.target.value,
+            })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1133,7 +1318,9 @@ const CampaignForm = ({
           label="Likes"
           type="number"
           value={campaignForm.likes}
-          onChange={(e) => setCampaignForm({ ...campaignForm, likes: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, likes: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1146,7 +1333,9 @@ const CampaignForm = ({
           label="Impressions"
           type="number"
           value={campaignForm.impressions}
-          onChange={(e) => setCampaignForm({ ...campaignForm, impressions: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, impressions: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1160,7 +1349,11 @@ const CampaignForm = ({
           label="Team"
           value={campaignForm.team}
           onChange={(e) =>
-            setCampaignForm({ ...campaignForm, team: e.target.value, customTeam: "" })
+            setCampaignForm({
+              ...campaignForm,
+              team: e.target.value,
+              customTeam: "",
+            })
           }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
@@ -1184,7 +1377,9 @@ const CampaignForm = ({
             fullWidth
             label="Custom Team Name"
             value={campaignForm.customTeam}
-            onChange={(e) => setCampaignForm({ ...campaignForm, customTeam: e.target.value })}
+            onChange={(e) =>
+              setCampaignForm({ ...campaignForm, customTeam: e.target.value })
+            }
             sx={{
               "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
               "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1198,7 +1393,9 @@ const CampaignForm = ({
           fullWidth
           label="Project"
           value={campaignForm.project}
-          onChange={(e) => setCampaignForm({ ...campaignForm, project: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, project: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
@@ -1221,7 +1418,9 @@ const CampaignForm = ({
           fullWidth
           label="Account"
           value={campaignForm.account}
-          onChange={(e) => setCampaignForm({ ...campaignForm, account: e.target.value })}
+          onChange={(e) =>
+            setCampaignForm({ ...campaignForm, account: e.target.value })
+          }
           sx={{
             "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
             "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },

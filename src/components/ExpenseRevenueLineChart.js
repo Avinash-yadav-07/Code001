@@ -12,7 +12,14 @@ import {
 } from "chart.js";
 
 // Registering the chart elements
-ChartJS.register(CategoryScale, LinearScale, LineElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const ExpenseRevenueLineChart = ({ title, description, data, date }) => {
   const chartData = {

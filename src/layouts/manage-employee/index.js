@@ -71,7 +71,12 @@ const generateEmployeeId = (name) => {
 };
 
 // Check if an ID is unique in Firestore
-const checkUniqueId = async (collectionName, field, value, excludeDocId = null) => {
+const checkUniqueId = async (
+  collectionName,
+  field,
+  value,
+  excludeDocId = null
+) => {
   try {
     const q = query(collection(db, collectionName), where(field, "==", value));
     const querySnapshot = await getDocs(q);
@@ -128,7 +133,10 @@ const ManageEmployee = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
@@ -151,9 +159,11 @@ const ManageEmployee = () => {
   }, []);
 
   const isReadOnly =
-    userRoles.includes("ManageEmployee:read") && !userRoles.includes("ManageEmployee:full access");
+    userRoles.includes("ManageEmployee:read") &&
+    !userRoles.includes("ManageEmployee:full access");
   const hasAccess =
-    userRoles.includes("ManageEmployee:read") || userRoles.includes("ManageEmployee:full access");
+    userRoles.includes("ManageEmployee:read") ||
+    userRoles.includes("ManageEmployee:full access");
 
   // Fetch employees
   useEffect(() => {
@@ -233,7 +243,12 @@ const ManageEmployee = () => {
   // DesignationDept Component
   const DesignationDept = ({ designation, department }) => (
     <MDBox lineHeight={1} textAlign="left">
-      <MDTypography display="block" variant="caption" color="text" fontWeight="medium">
+      <MDTypography
+        display="block"
+        variant="caption"
+        color="text"
+        fontWeight="medium"
+      >
         {designation}
       </MDTypography>
       <MDTypography variant="caption">{department}</MDTypography>
@@ -297,7 +312,10 @@ const ManageEmployee = () => {
         const workbook = XLSX.read(data, { type: "array" });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "", blankrows: false });
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+          defval: "",
+          blankrows: false,
+        });
 
         const validRoles = roles.map((r) => r.toLowerCase());
 
@@ -310,9 +328,13 @@ const ManageEmployee = () => {
           if (cleanName.includes("phone")) return "Phone";
           if (cleanName.includes("department")) return "Department";
           if (cleanName.includes("designation")) return "Designation";
-          if (cleanName.includes("joiningdate") || cleanName.includes("joining"))
+          if (
+            cleanName.includes("joiningdate") ||
+            cleanName.includes("joining")
+          )
             return "Joining Date";
-          if (cleanName.includes("exitdate") || cleanName.includes("exit")) return "Exit Date";
+          if (cleanName.includes("exitdate") || cleanName.includes("exit"))
+            return "Exit Date";
           if (cleanName.includes("salary")) return "Salary";
           if (cleanName.includes("status")) return "Status";
           if (cleanName.includes("roles")) return "Roles";
@@ -337,7 +359,10 @@ const ManageEmployee = () => {
             !employee["Joining Date"]?.trim() ||
             !employee["Status"]?.trim()
           ) {
-            console.error("Missing required fields in employee:", employee["Name"]);
+            console.error(
+              "Missing required fields in employee:",
+              employee["Name"]
+            );
             alert(
               `Missing required fields for employee ${
                 employee["Name"] || "unknown"
@@ -348,15 +373,22 @@ const ManageEmployee = () => {
 
           // Validate email format
           if (!isValidEmail(employee["Email"])) {
-            console.error("Invalid email format for employee:", employee["Name"]);
-            alert(`Invalid email format "${employee["Email"]}" for employee ${employee["Name"]}.`);
+            console.error(
+              "Invalid email format for employee:",
+              employee["Name"]
+            );
+            alert(
+              `Invalid email format "${employee["Email"]}" for employee ${employee["Name"]}.`
+            );
             return;
           }
 
           // Validate department
           const normalizedDepartment = employee["Department"].trim();
           if (
-            !departments.map((d) => d.toLowerCase()).includes(normalizedDepartment.toLowerCase())
+            !departments
+              .map((d) => d.toLowerCase())
+              .includes(normalizedDepartment.toLowerCase())
           ) {
             console.error("Invalid department for employee:", employee["Name"]);
             alert(
@@ -367,16 +399,25 @@ const ManageEmployee = () => {
 
           // Validate status
           const normalizedStatus = employee["Status"].trim();
-          if (!statuses.map((s) => s.toLowerCase()).includes(normalizedStatus.toLowerCase())) {
+          if (
+            !statuses
+              .map((s) => s.toLowerCase())
+              .includes(normalizedStatus.toLowerCase())
+          ) {
             console.error("Invalid status for employee:", employee["Name"]);
-            alert(`Invalid status "${employee["Status"]}" for employee ${employee["Name"]}.`);
+            alert(
+              `Invalid status "${employee["Status"]}" for employee ${employee["Name"]}.`
+            );
             return;
           }
 
           // Validate joining date format (YYYY-MM-DD)
           const joiningDateRegex = /^\d{4}-\d{2}-\d{2}$/;
           if (!joiningDateRegex.test(employee["Joining Date"])) {
-            console.error("Invalid joining date format for employee:", employee["Name"]);
+            console.error(
+              "Invalid joining date format for employee:",
+              employee["Name"]
+            );
             alert(
               `Invalid joining date format "${employee["Joining Date"]}" for employee ${employee["Name"]}. Use YYYY-MM-DD.`
             );
@@ -384,8 +425,14 @@ const ManageEmployee = () => {
           }
 
           // Validate exit date format if provided
-          if (employee["Exit Date"] && !joiningDateRegex.test(employee["Exit Date"])) {
-            console.error("Invalid exit date format for employee:", employee["Name"]);
+          if (
+            employee["Exit Date"] &&
+            !joiningDateRegex.test(employee["Exit Date"])
+          ) {
+            console.error(
+              "Invalid exit date format for employee:",
+              employee["Name"]
+            );
             alert(
               `Invalid exit date format "${employee["Exit Date"]}" for employee ${employee["Name"]}. Use YYYY-MM-DD.`
             );
@@ -395,7 +442,9 @@ const ManageEmployee = () => {
           // Validate salary if provided
           if (employee["Salary"] && isNaN(Number(employee["Salary"]))) {
             console.error("Invalid salary for employee:", employee["Name"]);
-            alert(`Invalid salary "${employee["Salary"]}" for employee ${employee["Name"]}.`);
+            alert(
+              `Invalid salary "${employee["Salary"]}" for employee ${employee["Name"]}.`
+            );
             return;
           }
 
@@ -415,15 +464,24 @@ const ManageEmployee = () => {
           const maxAttempts = 10;
 
           while (attempts < maxAttempts) {
-            const isEmployeeIdUnique = await checkUniqueId("employees", "employeeId", employeeId);
+            const isEmployeeIdUnique = await checkUniqueId(
+              "employees",
+              "employeeId",
+              employeeId
+            );
             if (isEmployeeIdUnique) break;
             employeeId = generateEmployeeId(employee["Name"]);
             attempts++;
           }
 
           if (attempts >= maxAttempts) {
-            console.error("Could not generate unique ID for employee:", employee["Name"]);
-            alert("Failed to generate unique ID for some employees. Please try again.");
+            console.error(
+              "Could not generate unique ID for employee:",
+              employee["Name"]
+            );
+            alert(
+              "Failed to generate unique ID for some employees. Please try again."
+            );
             return;
           }
 
@@ -434,12 +492,19 @@ const ManageEmployee = () => {
             employee["Joining Date"].split("-").reverse().join("")
           ).catch((error) => {
             if (error.code === "auth/email-already-in-use") {
-              console.error("Email already in use for employee:", employee["Name"]);
+              console.error(
+                "Email already in use for employee:",
+                employee["Name"]
+              );
               alert(
                 `Email "${employee["Email"]}" is already registered for employee ${employee["Name"]}. Please use a different email.`
               );
             } else {
-              console.error("Error creating user for employee:", employee["Name"], error);
+              console.error(
+                "Error creating user for employee:",
+                employee["Name"],
+                error
+              );
               alert(
                 `Failed to create user for employee ${employee["Name"]}. Error: ${error.message}`
               );
@@ -461,7 +526,9 @@ const ManageEmployee = () => {
             designation: employee["Designation"].trim(),
             joiningDate: employee["Joining Date"].trim(),
             exitDate: employee["Exit Date"]?.trim() || "",
-            salary: employee["Salary"] ? Number(employee["Salary"]).toString() : "",
+            salary: employee["Salary"]
+              ? Number(employee["Salary"]).toString()
+              : "",
             status: normalizedStatus,
             roles: employeeRoles,
             uid: user.uid,
@@ -469,8 +536,14 @@ const ManageEmployee = () => {
 
           // Save employee to Firestore
           try {
-            const docRef = await addDoc(collection(db, "employees"), newEmployee);
-            setEmployees((prev) => [...prev, { id: docRef.id, ...newEmployee }]);
+            const docRef = await addDoc(
+              collection(db, "employees"),
+              newEmployee
+            );
+            setEmployees((prev) => [
+              ...prev,
+              { id: docRef.id, ...newEmployee },
+            ]);
 
             // Store roles in Firestore under the 'users' collection
             await setDoc(doc(db, "users", user.uid), {
@@ -480,7 +553,9 @@ const ManageEmployee = () => {
           } catch (error) {
             console.error("Error adding employee from Excel:", error);
             alert(
-              `Failed to add employee ${employee["Name"] || "unknown"}. Error: ${error.message}`
+              `Failed to add employee ${
+                employee["Name"] || "unknown"
+              }. Error: ${error.message}`
             );
             return;
           }
@@ -587,7 +662,8 @@ const ManageEmployee = () => {
     if (!designation.trim()) newErrors.designation = "Designation is required";
     if (!joiningDate) newErrors.joiningDate = "Joining Date is required";
     if (!status) newErrors.status = "Status is required";
-    if (salary && isNaN(Number(salary))) newErrors.salary = "Salary must be a number";
+    if (salary && isNaN(Number(salary)))
+      newErrors.salary = "Salary must be a number";
     if (exitDate && !/^\d{4}-\d{2}-\d{2}$/.test(exitDate))
       newErrors.exitDate = "Exit Date must be in YYYY-MM-DD format";
 
@@ -602,13 +678,19 @@ const ManageEmployee = () => {
   };
 
   const confirmUpdate = async () => {
-    let employeeId = editingEmployee ? editingEmployee.employeeId : generateEmployeeId(name);
+    let employeeId = editingEmployee
+      ? editingEmployee.employeeId
+      : generateEmployeeId(name);
     let attempts = 0;
     const maxAttempts = 10;
 
     if (!editingEmployee) {
       while (attempts < maxAttempts) {
-        const isEmployeeIdUnique = await checkUniqueId("employees", "employeeId", employeeId);
+        const isEmployeeIdUnique = await checkUniqueId(
+          "employees",
+          "employeeId",
+          employeeId
+        );
         if (isEmployeeIdUnique) break;
         employeeId = generateEmployeeId(name);
         attempts++;
@@ -639,10 +721,15 @@ const ManageEmployee = () => {
       };
 
       try {
-        await updateDoc(doc(db, "employees", editingEmployee.id), updatedEmployee);
+        await updateDoc(
+          doc(db, "employees", editingEmployee.id),
+          updatedEmployee
+        );
         setEmployees(
           employees.map((emp) =>
-            emp.id === editingEmployee.id ? { id: emp.id, ...updatedEmployee } : emp
+            emp.id === editingEmployee.id
+              ? { id: emp.id, ...updatedEmployee }
+              : emp
           )
         );
 
@@ -669,7 +756,9 @@ const ManageEmployee = () => {
           joiningDate.split("-").reverse().join("")
         ).catch((error) => {
           if (error.code === "auth/email-already-in-use") {
-            alert("This email is already registered. Please use a different email.");
+            alert(
+              "This email is already registered. Please use a different email."
+            );
           } else {
             console.error("Error creating user:", error);
             alert(`Failed to create user. Error: ${error.message}`);
@@ -794,10 +883,17 @@ const ManageEmployee = () => {
     ],
     rows: paginatedEmployees.map((employee) => ({
       employee: (
-        <Employee name={employee.name} employeeId={employee.employeeId} email={employee.email} />
+        <Employee
+          name={employee.name}
+          employeeId={employee.employeeId}
+          email={employee.email}
+        />
       ),
       designation: (
-        <DesignationDept designation={employee.designation} department={employee.department} />
+        <DesignationDept
+          designation={employee.designation}
+          department={employee.department}
+        />
       ),
       status: <StatusBadge status={employee.status} />,
       joined: (
@@ -834,7 +930,12 @@ const ManageEmployee = () => {
   if (loadingRoles) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -847,7 +948,12 @@ const ManageEmployee = () => {
   if (!hasAccess) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           You do not have permission to view this page.
@@ -860,7 +966,12 @@ const ManageEmployee = () => {
   if (fetchError) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
       >
         <MDTypography variant="h6" color="error">
           {fetchError}
@@ -881,14 +992,19 @@ const ManageEmployee = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.9)"
+            : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+          },
         }}
       />
       <Box
@@ -921,7 +1037,15 @@ const ManageEmployee = () => {
               </MDBox>
               <MDBox pt={2} pb={2} px={2}>
                 {!isReadOnly && (
-                  <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center", flexWrap: "wrap" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      gap: 2,
+                      mb: 2,
+                      alignItems: "center",
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <Button
                       variant="gradient"
                       color={darkMode ? "dark" : "info"}
@@ -940,7 +1064,9 @@ const ManageEmployee = () => {
                       Add Employee
                     </Button>
                     <FormControl sx={{ minWidth: 150 }}>
-                      <InputLabel id="excel-options-label">Excel Options</InputLabel>
+                      <InputLabel id="excel-options-label">
+                        Excel Options
+                      </InputLabel>
                       <Select
                         labelId="excel-options-label"
                         value={excelOption}
@@ -970,7 +1096,9 @@ const ManageEmployee = () => {
                         </MenuItem>
                         <MenuItem value="upload">Upload Excel</MenuItem>
                         <MenuItem value="download">Download Excel</MenuItem>
-                        <MenuItem value="downloadDummy">Download Dummy Excel</MenuItem>
+                        <MenuItem value="downloadDummy">
+                          Download Dummy Excel
+                        </MenuItem>
                       </Select>
                     </FormControl>
                     <input
@@ -1066,9 +1194,12 @@ const ManageEmployee = () => {
                   showTotalEntries={false}
                   noEndBorder
                   canSearch
-                  onSearch={(query) => setSearchQuery(query.trim().toLowerCase())}
+                  onSearch={(query) =>
+                    setSearchQuery(query.trim().toLowerCase())
+                  }
                   searchProps={{
-                    onChange: (e) => setSearchQuery(e.target.value.trim().toLowerCase()),
+                    onChange: (e) =>
+                      setSearchQuery(e.target.value.trim().toLowerCase()),
                     placeholder: "Search employees...",
                   }}
                 />
@@ -1085,21 +1216,43 @@ const ManageEmployee = () => {
                   >
                     {"<"}
                   </Button>
-                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  {Array.from(
+                    { length: totalPages },
+                    (_, index) => index + 1
+                  ).map((page) => (
                     <Button
                       key={page}
                       onClick={() => handlePageChange(page)}
                       sx={{
                         mx: 0.5,
-                        backgroundColor: currentPage === page ? (darkMode ? "#0288d1" : "info.main") : (darkMode ? "#424242" : "#e0e0e0"),
-                        color: currentPage === page ? "#ffffff" : (darkMode ? "#ffffff" : "#000000"),
+                        backgroundColor:
+                          currentPage === page
+                            ? darkMode
+                              ? "#0288d1"
+                              : "info.main"
+                            : darkMode
+                            ? "#424242"
+                            : "#e0e0e0",
+                        color:
+                          currentPage === page
+                            ? "#ffffff"
+                            : darkMode
+                            ? "#ffffff"
+                            : "#000000",
                         borderRadius: "50%",
                         minWidth: "36px",
                         height: "36px",
                         fontWeight: "bold",
                         fontSize: "14px",
                         "&:hover": {
-                          backgroundColor: currentPage === page ? (darkMode ? "#0277bd" : "info.dark") : (darkMode ? "#616161" : "#bdbdbd"),
+                          backgroundColor:
+                            currentPage === page
+                              ? darkMode
+                                ? "#0277bd"
+                                : "info.dark"
+                              : darkMode
+                              ? "#616161"
+                              : "#bdbdbd",
                         },
                       }}
                     >
@@ -1163,10 +1316,18 @@ const ManageEmployee = () => {
                 { label: "Department", value: selectedEmployee.department },
                 { label: "Designation", value: selectedEmployee.designation },
                 { label: "Joining Date", value: selectedEmployee.joiningDate },
-                { label: "Exit Date", value: selectedEmployee.exitDate || "N/A" },
+                {
+                  label: "Exit Date",
+                  value: selectedEmployee.exitDate || "N/A",
+                },
                 { label: "Salary", value: selectedEmployee.salary || "N/A" },
                 { label: "Status", value: selectedEmployee.status },
-                { label: "Roles", value: selectedEmployee.roles ? selectedEmployee.roles.join(", ") : "N/A" },
+                {
+                  label: "Roles",
+                  value: selectedEmployee.roles
+                    ? selectedEmployee.roles.join(", ")
+                    : "N/A",
+                },
               ].map(({ label, value }) => (
                 <Grid item xs={12} sm={6} key={label}>
                   <MDTypography
@@ -1233,7 +1394,10 @@ const ManageEmployee = () => {
                   Name*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.name ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.name ? "red" : "#ddd",
+                  }}
                   type="text"
                   id="name"
                   value={name}
@@ -1242,14 +1406,19 @@ const ManageEmployee = () => {
                   required
                 />
                 {errors.name && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.name}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.name}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="email">
                   Email*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.email ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.email ? "red" : "#ddd",
+                  }}
                   type="email"
                   id="email"
                   value={email}
@@ -1258,7 +1427,9 @@ const ManageEmployee = () => {
                   required
                 />
                 {errors.email && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.email}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.email}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="phone">
@@ -1277,7 +1448,10 @@ const ManageEmployee = () => {
                   Department*
                 </label>
                 <select
-                  style={{ ...selectStyle, borderColor: errors.department ? "red" : "#ddd" }}
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.department ? "red" : "#ddd",
+                  }}
                   id="department"
                   value={department}
                   onChange={(e) => setDepartment(e.target.value)}
@@ -1293,14 +1467,19 @@ const ManageEmployee = () => {
                   ))}
                 </select>
                 {errors.department && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.department}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.department}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="designation">
                   Designation*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.designation ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.designation ? "red" : "#ddd",
+                  }}
                   type="text"
                   id="designation"
                   value={designation}
@@ -1309,14 +1488,19 @@ const ManageEmployee = () => {
                   required
                 />
                 {errors.designation && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.designation}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.designation}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="joiningDate">
                   Joining Date*
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.joiningDate ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.joiningDate ? "red" : "#ddd",
+                  }}
                   type="date"
                   id="joiningDate"
                   value={joiningDate}
@@ -1324,28 +1508,38 @@ const ManageEmployee = () => {
                   required
                 />
                 {errors.joiningDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.joiningDate}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.joiningDate}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="exitDate">
                   Exit Date
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.exitDate ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.exitDate ? "red" : "#ddd",
+                  }}
                   type="date"
                   id="exitDate"
                   value={exitDate}
                   onChange={(e) => setExitDate(e.target.value)}
                 />
                 {errors.exitDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.exitDate}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.exitDate}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="salary">
                   Salary
                 </label>
                 <input
-                  style={{ ...inputStyle, borderColor: errors.salary ? "red" : "#ddd" }}
+                  style={{
+                    ...inputStyle,
+                    borderColor: errors.salary ? "red" : "#ddd",
+                  }}
                   type="number"
                   id="salary"
                   value={salary}
@@ -1353,14 +1547,19 @@ const ManageEmployee = () => {
                   placeholder="Enter Salary"
                 />
                 {errors.salary && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.salary}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.salary}
+                  </span>
                 )}
 
                 <label style={labelStyle} htmlFor="status">
                   Status*
                 </label>
                 <select
-                  style={{ ...selectStyle, borderColor: errors.status ? "red" : "#ddd" }}
+                  style={{
+                    ...selectStyle,
+                    borderColor: errors.status ? "red" : "#ddd",
+                  }}
                   id="status"
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
@@ -1376,7 +1575,9 @@ const ManageEmployee = () => {
                   ))}
                 </select>
                 {errors.status && (
-                  <span style={{ color: "red", fontSize: "12px" }}>{errors.status}</span>
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {errors.status}
+                  </span>
                 )}
 
                 <label style={labelStyle}>Roles</label>
@@ -1390,14 +1591,19 @@ const ManageEmployee = () => {
                   }}
                 >
                   {roles.map((role) => (
-                    <Box key={role} sx={{ display: "flex", alignItems: "center" }}>
+                    <Box
+                      key={role}
+                      sx={{ display: "flex", alignItems: "center" }}
+                    >
                       <input
                         type="checkbox"
                         checked={selectedRoles.includes(role)}
                         onChange={(e) => {
                           const checked = e.target.checked;
                           setSelectedRoles((prev) =>
-                            checked ? [...prev, role] : prev.filter((r) => r !== role)
+                            checked
+                              ? [...prev, role]
+                              : prev.filter((r) => r !== role)
                           );
                         }}
                       />
@@ -1408,7 +1614,9 @@ const ManageEmployee = () => {
               </form>
             </fieldset>
           </DialogContent>
-          <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+          <DialogActions
+            sx={{ padding: "16px 24px", justifyContent: "center" }}
+          >
             <button style={buttonStyle} onClick={handleClose}>
               Cancel
             </button>
@@ -1425,7 +1633,9 @@ const ManageEmployee = () => {
           onClose={() => setConfirmUpdateOpen(false)}
           sx={{
             "& .MuiDialog-paper": {
-              backgroundColor: darkMode ? "background.default" : "background.paper",
+              backgroundColor: darkMode
+                ? "background.default"
+                : "background.paper",
               borderRadius: "12px",
             },
           }}
@@ -1445,7 +1655,9 @@ const ManageEmployee = () => {
                 borderRadius: "8px",
                 border: darkMode ? "1px solid #ffffff" : "1px solid #000000",
                 "&:hover": {
-                  backgroundColor: darkMode ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.1)",
+                  backgroundColor: darkMode
+                    ? "rgba(255,255,255,0.2)"
+                    : "rgba(0,0,0,0.1)",
                   color: darkMode ? "#ffffff" : "#000000",
                 },
               }}

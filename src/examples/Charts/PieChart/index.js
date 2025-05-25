@@ -62,14 +62,24 @@ function PieChart({ title, description, data, onClick, isActive }) {
         boxShadow: isActive ? "0 4px 8px rgba(0, 0, 0, 0.2)" : "none", // Add shadow for active card
       }}
     >
-      <MDBox py={2} pr={2} pl={2} flexGrow={1} display="flex" flexDirection="column">
+      <MDBox
+        py={2}
+        pr={2}
+        pl={2}
+        flexGrow={1}
+        display="flex"
+        flexDirection="column"
+      >
         {title && <MDTypography variant="h6">{title}</MDTypography>}
         {description && (
           <MDTypography component="div" variant="button" color="text">
             {description}
           </MDTypography>
         )}
-        <div ref={chartRef} style={{ width: "100%", flexGrow: 1, minHeight: "300px" }} />
+        <div
+          ref={chartRef}
+          style={{ width: "100%", flexGrow: 1, minHeight: "300px" }}
+        />
       </MDBox>
     </Card>
   );

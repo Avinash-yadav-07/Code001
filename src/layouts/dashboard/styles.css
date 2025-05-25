@@ -60,7 +60,8 @@
 
 .custom-checkbox .checkmark,
 .custom-checkbox input[type="checkbox"]:checked + .checkmark {
-  transition: background-color 1.3s, border-color 1.3s, color 1.3s, transform 0.3s;
+  transition: background-color 1.3s, border-color 1.3s, color 1.3s,
+    transform 0.3s;
 }
 
 /* Radio Button Styles */

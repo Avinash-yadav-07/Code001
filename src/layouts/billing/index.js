@@ -22,7 +22,13 @@ import {
   TextField,
 } from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
-import { collection, getDocs, query, where, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
 import {
   Bar,
   Line,
@@ -46,7 +52,15 @@ import Footer from "examples/Footer";
 import { useMaterialUIController } from "context";
 import { Navigate } from "react-router-dom";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { format, eachMonthOfInterval, startOfMonth, endOfMonth, startOfYear, endOfYear, parse } from "date-fns";
+import {
+  format,
+  eachMonthOfInterval,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  parse,
+} from "date-fns";
 import { motion } from "framer-motion";
 
 // Register Chart.js components
@@ -86,7 +100,10 @@ const CustomerDashboard = () => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
-          const q = query(collection(db, "users"), where("email", "==", user.email));
+          const q = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             const userDoc = querySnapshot.docs[0].data();
@@ -168,7 +185,9 @@ const CustomerDashboard = () => {
           : null,
       }));
 
-      const cancellationSnapshot = await getDocs(collection(db, "cancellations"));
+      const cancellationSnapshot = await getDocs(
+        collection(db, "cancellations")
+      );
       const cancellationData = cancellationSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -205,19 +224,23 @@ const CustomerDashboard = () => {
 
   // Real-time listener for customerMetrics
   useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "customerMetrics"), (snapshot) => {
-      const metricsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        metricDate: doc.data().metricDate?.toDate
-          ? doc.data().metricDate.toDate()
-          : new Date(doc.data().metricDate),
-      }));
-      setCustomerMetrics(metricsData);
-      console.log("Real-time metrics updated:", metricsData);
-    }, (error) => {
-      console.error("Error in real-time metrics listener:", error);
-    });
+    const unsubscribe = onSnapshot(
+      collection(db, "customerMetrics"),
+      (snapshot) => {
+        const metricsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          metricDate: doc.data().metricDate?.toDate
+            ? doc.data().metricDate.toDate()
+            : new Date(doc.data().metricDate),
+        }));
+        setCustomerMetrics(metricsData);
+        console.log("Real-time metrics updated:", metricsData);
+      },
+      (error) => {
+        console.error("Error in real-time metrics listener:", error);
+      }
+    );
 
     return () => unsubscribe();
   }, []);
@@ -226,8 +249,8 @@ const CustomerDashboard = () => {
     const currentYear = new Date().getFullYear(); // 2025
     const startDate = startOfYear(new Date(currentYear, 0, 1)); // Jan 1, 2025
     const endDate = endOfYear(new Date(currentYear, 11, 31)); // Dec 31, 2025
-    let months = eachMonthOfInterval({ start: startDate, end: endDate }).map((date) =>
-      format(date, "MMM yyyy")
+    let months = eachMonthOfInterval({ start: startDate, end: endDate }).map(
+      (date) => format(date, "MMM yyyy")
     );
 
     let filteredCustomers = customers;
@@ -254,10 +277,15 @@ const CustomerDashboard = () => {
         (u) => u.planUpgradeDate >= monthStart && u.planUpgradeDate <= monthEnd
       );
       filteredCancellations = cancellations.filter(
-        (c) => c.cancellationDate >= monthStart && c.cancellationDate <= monthEnd
+        (c) =>
+          c.cancellationDate >= monthStart && c.cancellationDate <= monthEnd
       );
       months = [format(selectedDate, "MMM yyyy")];
-    } else if (dateFilterType === "custom" && customStartDate && customEndDate) {
+    } else if (
+      dateFilterType === "custom" &&
+      customStartDate &&
+      customEndDate
+    ) {
       filteredCustomers = customers.filter(
         (c) => c.createdAt >= customStartDate && c.createdAt <= customEndDate
       );
@@ -268,19 +296,26 @@ const CustomerDashboard = () => {
         (t) => t.createdAt >= customStartDate && t.createdAt <= customEndDate
       );
       filteredUpgrades = upgrades.filter(
-        (u) => u.planUpgradeDate >= customStartDate && u.planUpgradeDate <= customEndDate
+        (u) =>
+          u.planUpgradeDate >= customStartDate &&
+          u.planUpgradeDate <= customEndDate
       );
       filteredCancellations = cancellations.filter(
-        (c) => c.cancellationDate >= customStartDate && c.cancellationDate <= customEndDate
+        (c) =>
+          c.cancellationDate >= customStartDate &&
+          c.cancellationDate <= customEndDate
       );
-      months = eachMonthOfInterval({ start: customStartDate, end: customEndDate }).map((date) =>
-        format(date, "MMM yyyy")
-      );
+      months = eachMonthOfInterval({
+        start: customStartDate,
+        end: customEndDate,
+      }).map((date) => format(date, "MMM yyyy"));
     }
 
     // Apply project ID filtering
     filteredCustomers = selectedProjectIds.length
-      ? filteredCustomers.filter((c) => c.projectIds?.some((pid) => selectedProjectIds.includes(pid)))
+      ? filteredCustomers.filter((c) =>
+          c.projectIds?.some((pid) => selectedProjectIds.includes(pid))
+        )
       : filteredCustomers;
     filteredMetrics = selectedProjectIds.length
       ? filteredMetrics.filter((m) =>
@@ -288,10 +323,14 @@ const CustomerDashboard = () => {
         )
       : filteredMetrics;
     filteredSupportTickets = selectedProjectIds.length
-      ? filteredSupportTickets.filter((t) => t.projectIds?.some((pid) => selectedProjectIds.includes(pid)))
+      ? filteredSupportTickets.filter((t) =>
+          t.projectIds?.some((pid) => selectedProjectIds.includes(pid))
+        )
       : filteredSupportTickets;
     filteredUpgrades = selectedProjectIds.length
-      ? filteredUpgrades.filter((u) => u.projectIds?.some((pid) => selectedProjectIds.includes(pid)))
+      ? filteredUpgrades.filter((u) =>
+          u.projectIds?.some((pid) => selectedProjectIds.includes(pid))
+        )
       : filteredUpgrades;
     filteredCancellations = selectedProjectIds.length
       ? filteredCancellations.filter((c) =>
@@ -320,7 +359,9 @@ const CustomerDashboard = () => {
       const monthStart = startOfMonth(parsedMonth);
       const monthEnd = endOfMonth(parsedMonth);
 
-      console.log(`Processing month: ${month}, Start: ${monthStart}, End: ${monthEnd}`);
+      console.log(
+        `Processing month: ${month}, Start: ${monthStart}, End: ${monthEnd}`
+      );
 
       // Filter metrics for the month
       const monthMetrics = filteredMetrics.filter(
@@ -339,7 +380,9 @@ const CustomerDashboard = () => {
       npsData.push(avgNps);
       csatData.push(avgCsat);
 
-      console.log(`Month: ${month}, NPS: ${avgNps}, CSAT: ${avgCsat}, Metrics count: ${monthMetrics.length}`);
+      console.log(
+        `Month: ${month}, NPS: ${avgNps}, CSAT: ${avgCsat}, Metrics count: ${monthMetrics.length}`
+      );
 
       // Existing logic for other metrics
       const monthCustomers = filteredCustomers.filter(
@@ -359,7 +402,9 @@ const CustomerDashboard = () => {
           can.cancellationDate &&
           can.cancellationDate >= monthStart &&
           can.cancellationDate <= monthEnd &&
-          filteredCustomers.some((c) => c.customerId === can.customerId && c.status === "inactive")
+          filteredCustomers.some(
+            (c) => c.customerId === can.customerId && c.status === "inactive"
+          )
       ).length;
       const churnRate = (churnedCustomers / count) * 100;
       churnData.push(churnRate);
@@ -387,14 +432,22 @@ const CustomerDashboard = () => {
       productAdoptionData.push(0);
     });
 
-    const churnReasonsCount = { Price: 0, Service: 0, Features: 0, Other: 0, None: 0 };
+    const churnReasonsCount = {
+      Price: 0,
+      Service: 0,
+      Features: 0,
+      Other: 0,
+      None: 0,
+    };
     filteredCancellations.forEach((c) => {
       const reason = c.churnReason || "None";
       if (churnReasonsCount.hasOwnProperty(reason)) {
         churnReasonsCount[reason]++;
       }
     });
-    const totalChurnReasons = Object.values(churnReasonsCount).reduce((sum, count) => sum + count, 0) || 1;
+    const totalChurnReasons =
+      Object.values(churnReasonsCount).reduce((sum, count) => sum + count, 0) ||
+      1;
     const churnReasonData = Object.keys(churnReasonsCount).map((reason) => ({
       reason,
       percentage: (churnReasonsCount[reason] / totalChurnReasons) * 100,
@@ -402,7 +455,9 @@ const CustomerDashboard = () => {
 
     const features = ["Core", "Advanced", "Integrations"];
     const productAdoptionByFeature = features.map((feature) => {
-      const featureUsers = filteredCustomers.filter((c) => c.feature === feature).length;
+      const featureUsers = filteredCustomers.filter(
+        (c) => c.feature === feature
+      ).length;
       const totalCustomers = filteredCustomers.length || 1;
       return {
         feature,
@@ -410,12 +465,14 @@ const CustomerDashboard = () => {
       };
     });
 
-    const issuesByProject = projects.map((project) => {
-      const ticketCount = filteredSupportTickets.filter((t) =>
-        t.projectIds.includes(project.projectId)
-      ).length;
-      return { project: project.projectId, count: ticketCount };
-    }).filter((p) => p.count > 0);
+    const issuesByProject = projects
+      .map((project) => {
+        const ticketCount = filteredSupportTickets.filter((t) =>
+          t.projectIds.includes(project.projectId)
+        ).length;
+        return { project: project.projectId, count: ticketCount };
+      })
+      .filter((p) => p.count > 0);
 
     const resolutionStatus = {
       resolved: filteredSupportTickets.filter((t) => t.resolvedDate).length,
@@ -423,13 +480,16 @@ const CustomerDashboard = () => {
     };
 
     const revenueLostData = churnData.map((churn, idx) => {
-      const monthStart = startOfMonth(parse(months[idx], "MMM yyyy", new Date()));
+      const monthStart = startOfMonth(
+        parse(months[idx], "MMM yyyy", new Date())
+      );
       const monthEnd = endOfMonth(parse(months[idx], "MMM yyyy", new Date()));
       const monthCustomers = filteredCustomers.filter(
         (c) => c.createdAt >= monthStart && c.createdAt <= monthEnd
       );
       const avgCltv = monthCustomers.length
-        ? monthCustomers.reduce((sum, c) => sum + (c.cltv || 0), 0) / monthCustomers.length
+        ? monthCustomers.reduce((sum, c) => sum + (c.cltv || 0), 0) /
+          monthCustomers.length
         : 0;
       return (churn / 100) * avgCltv;
     });
@@ -499,8 +559,15 @@ const CustomerDashboard = () => {
     },
     scales: {
       x: {
-        ticks: { color: darkMode ? "#ffffff" : "#333333", maxRotation: 45, minRotation: 45 },
-        grid: { color: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", display: false },
+        ticks: {
+          color: darkMode ? "#ffffff" : "#333333",
+          maxRotation: 45,
+          minRotation: 45,
+        },
+        grid: {
+          color: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
+          display: false,
+        },
       },
       y: {
         ticks: { color: darkMode ? "#ffffff" : "#333333" },
@@ -525,7 +592,8 @@ const CustomerDashboard = () => {
       ...chartOptions.scales,
       y: {
         ...chartOptions.scales.y,
-        suggestedMax: Math.max(...productAdoptionByFeature.map(f => f.rate)) * 1.1 || 100,
+        suggestedMax:
+          Math.max(...productAdoptionByFeature.map((f) => f.rate)) * 1.1 || 100,
       },
     },
   };
@@ -536,7 +604,8 @@ const CustomerDashboard = () => {
       ...chartOptions.scales,
       y: {
         ...chartOptions.scales.y,
-        suggestedMax: Math.max(...issuesByProject.map(p => p.count)) * 1.1 || 10,
+        suggestedMax:
+          Math.max(...issuesByProject.map((p) => p.count)) * 1.1 || 10,
       },
     },
   };
@@ -547,7 +616,8 @@ const CustomerDashboard = () => {
       ...chartOptions.scales,
       y: {
         ...chartOptions.scales.y,
-        suggestedMax: Math.max(...churnReasonData.map(r => r.percentage)) * 1.1 || 100,
+        suggestedMax:
+          Math.max(...churnReasonData.map((r) => r.percentage)) * 1.1 || 100,
       },
     },
   };
@@ -731,22 +801,34 @@ const CustomerDashboard = () => {
 
   if (loadingRoles || loadingData) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>Loading...</MDTypography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+          Loading...
+        </MDTypography>
       </Box>
     );
   }
 
-  if (!userRoles.includes("ManageCustomer:read") && !userRoles.includes("ManageCustomer:full access")) {
+  if (
+    !userRoles.includes("ManageCustomer:read") &&
+    !userRoles.includes("ManageCustomer:full access")
+  ) {
     return <Navigate to="/unauthorized" />;
   }
 
   const titleVariants = {
     hidden: { opacity: 0, y: -20 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { duration: 0.6, ease: "easeOut" } 
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
     },
   };
 
@@ -761,7 +843,11 @@ const CustomerDashboard = () => {
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
   };
 
   return (
@@ -777,14 +863,19 @@ const CustomerDashboard = () => {
         light={!darkMode}
         isMini={false}
         sx={{
-          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.95)" : "rgba(255, 255, 255, 0.95)",
+          backgroundColor: darkMode
+            ? "rgba(33, 33, 33, 0.95)"
+            : "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "64px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+          width: {
+            xs: "100%",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
+          },
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
@@ -797,9 +888,20 @@ const CustomerDashboard = () => {
           mx: "auto",
         }}
       >
-        <MDBox display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <motion.div initial="hidden" animate="visible" variants={titleVariants}>
-            <MDBox sx={{ overflow: "hidden", whiteSpace: "nowrap", flexGrow: 1 }}>
+        <MDBox
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={2}
+        >
+          <motion.div
+            initial="hidden"
+            animate="visible"
+            variants={titleVariants}
+          >
+            <MDBox
+              sx={{ overflow: "hidden", whiteSpace: "nowrap", flexGrow: 1 }}
+            >
               <motion.div
                 animate={{ x: ["0%", "-100%"] }}
                 transition={{
@@ -839,7 +941,7 @@ const CustomerDashboard = () => {
                 ? "0 4px 12px rgba(0,0,0,0.4)"
                 : "0 4px 12px rgba(0,0,0,0.1)",
               transition: "all 0.3s ease",
-              '&:hover': {
+              "&:hover": {
                 transform: "translateY(-2px)",
                 boxShadow: darkMode
                   ? "0 6px 16px rgba(0,0,0,0.5)"
@@ -856,7 +958,7 @@ const CustomerDashboard = () => {
                   color: darkMode ? "#ffffff" : "#333333",
                   fontWeight: 500,
                   fontSize: "0.9rem",
-                  '&.Mui-focused': { color: darkMode ? "#ffffff" : "#1976d2" },
+                  "&.Mui-focused": { color: darkMode ? "#ffffff" : "#1976d2" },
                 }}
               >
                 Date Filter
@@ -871,31 +973,50 @@ const CustomerDashboard = () => {
                   fontSize: "0.9rem",
                   backgroundColor: darkMode ? "#424242" : "#f5f5f5",
                   borderRadius: "8px",
-                  '& .MuiSvgIcon-root': { color: darkMode ? "#ffffff" : "#333333" },
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)",
+                  "& .MuiSvgIcon-root": {
+                    color: darkMode ? "#ffffff" : "#333333",
                   },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: darkMode
+                      ? "rgba(255,255,255,0.3)"
+                      : "rgba(0,0,0,0.2)",
+                  },
+                  "&:hover .MuiOutlinedInput-notchedOutline": {
                     borderColor: darkMode ? "#ffffff" : "#1976d2",
                   },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                     borderColor: darkMode ? "#4fc3f7" : "#1976d2",
                   },
                 }}
               >
-                <MenuItem value="all" sx={{ color: darkMode ? "#ffffff" : "#333333", backgroundColor: darkMode ? "#424242" : "#ffffff" }}>
+                <MenuItem
+                  value="all"
+                  sx={{
+                    color: darkMode ? "#ffffff" : "#333333",
+                    backgroundColor: darkMode ? "#424242" : "#ffffff",
+                  }}
+                >
                   All Dates
                 </MenuItem>
                 {monthOptions.map((option) => (
                   <MenuItem
                     key={option.value}
                     value={option.value}
-                    sx={{ color: darkMode ? "#ffffff" : "#333333", backgroundColor: darkMode ? "#424242" : "#ffffff" }}
+                    sx={{
+                      color: darkMode ? "#ffffff" : "#333333",
+                      backgroundColor: darkMode ? "#424242" : "#ffffff",
+                    }}
                   >
                     {option.label}
                   </MenuItem>
                 ))}
-                <MenuItem value="custom" sx={{ color: darkMode ? "#ffffff" : "#333333", backgroundColor: darkMode ? "#424242" : "#ffffff" }}>
+                <MenuItem
+                  value="custom"
+                  sx={{
+                    color: darkMode ? "#ffffff" : "#333333",
+                    backgroundColor: darkMode ? "#424242" : "#ffffff",
+                  }}
+                >
                   Custom Range
                 </MenuItem>
               </Select>
@@ -915,7 +1036,7 @@ const CustomerDashboard = () => {
                   fontSize: "0.85rem",
                   px: 1.5,
                   py: 0.4,
-                  '&:hover': {
+                  "&:hover": {
                     background: darkMode
                       ? "linear-gradient(45deg, #1b5e20 30%, #4caf50 90%)"
                       : "linear-gradient(45deg, #2e7d32 30%, #66bb6a 90%)",
@@ -938,46 +1059,58 @@ const CustomerDashboard = () => {
                     ? "0 8px 24px rgba(0,0,0,0.5)"
                     : "0 8px 24px rgba(0,0,0,0.2)",
                   width: "350px",
-                  border: darkMode ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.1)",
+                  border: darkMode
+                    ? "1px solid rgba(255,255,255,0.1)"
+                    : "1px solid rgba(0,0,0,0.1)",
                 },
               }}
             >
-              <DialogTitle sx={{ 
-                color: darkMode ? "#ffffff" : "#333333",
-                fontWeight: 600,
-                background: darkMode 
-                  ? "linear-gradient(135deg, #333 0%, #424242 100%)" 
-                  : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
-                borderRadius: "16px 16px 0 0",
-                py: 2,
-                textAlign: "center",
-                fontSize: "1.2rem",
-                letterSpacing: "0.02em",
-              }}>
+              <DialogTitle
+                sx={{
+                  color: darkMode ? "#ffffff" : "#333333",
+                  fontWeight: 600,
+                  background: darkMode
+                    ? "linear-gradient(135deg, #333 0%, #424242 100%)"
+                    : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+                  borderRadius: "16px 16px 0 0",
+                  py: 2,
+                  textAlign: "center",
+                  fontSize: "1.2rem",
+                  letterSpacing: "0.02em",
+                }}
+              >
                 Select Date Range
               </DialogTitle>
-              <DialogContent sx={{ 
-                p: 3, 
-                display: "flex", 
-                flexDirection: "column", 
-                gap: 2,
-                background: darkMode ? "#2a2a2a" : "white",
-                borderTop: darkMode ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.05)",
-              }}>
+              <DialogContent
+                sx={{
+                  p: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 2,
+                  background: darkMode ? "#2a2a2a" : "white",
+                  borderTop: darkMode
+                    ? "1px solid rgba(255,255,255,0.1)"
+                    : "1px solid rgba(0,0,0,0.05)",
+                }}
+              >
                 <TextField
                   label="Start Date"
                   type="date"
-                  value={customStartDate ? customStartDate.toISOString().split("T")[0] : ""}
+                  value={
+                    customStartDate
+                      ? customStartDate.toISOString().split("T")[0]
+                      : ""
+                  }
                   onChange={(e) => setCustomStartDate(new Date(e.target.value))}
                   InputLabelProps={{ shrink: true }}
                   sx={{
-                    input: { 
+                    input: {
                       color: darkMode ? "#ffffff" : "#333333",
                       backgroundColor: darkMode ? "#424242" : "#f5f5f5",
                       borderRadius: "8px",
                       padding: "8px 12px",
                     },
-                    "& .MuiInputLabel-root": { 
+                    "& .MuiInputLabel-root": {
                       color: darkMode ? "#ffffff" : "#333333",
                       fontWeight: 500,
                       fontSize: "0.9rem",
@@ -987,7 +1120,9 @@ const CustomerDashboard = () => {
                     },
                     "& .MuiOutlinedInput-root": {
                       "& fieldset": {
-                        borderColor: darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)",
+                        borderColor: darkMode
+                          ? "rgba(255,255,255,0.3)"
+                          : "rgba(0,0,0,0.2)",
                         borderRadius: "8px",
                       },
                       "&:hover fieldset": {
@@ -1002,17 +1137,21 @@ const CustomerDashboard = () => {
                 <TextField
                   label="End Date"
                   type="date"
-                  value={customEndDate ? customEndDate.toISOString().split("T")[0] : ""}
+                  value={
+                    customEndDate
+                      ? customEndDate.toISOString().split("T")[0]
+                      : ""
+                  }
                   onChange={(e) => setCustomEndDate(new Date(e.target.value))}
                   InputLabelProps={{ shrink: true }}
                   sx={{
-                    input: { 
+                    input: {
                       color: darkMode ? "#ffffff" : "#333333",
                       backgroundColor: darkMode ? "#424242" : "#f5f5f5",
                       borderRadius: "8px",
                       padding: "8px 12px",
                     },
-                    "& .MuiInputLabel-root": { 
+                    "& .MuiInputLabel-root": {
                       color: darkMode ? "#ffffff" : "#333333",
                       fontWeight: 500,
                       fontSize: "0.9rem",
@@ -1022,7 +1161,9 @@ const CustomerDashboard = () => {
                     },
                     "& .MuiOutlinedInput-root": {
                       "& fieldset": {
-                        borderColor: darkMode ? "rgba(255,255,255,0.3)" : "rgba(0,0,0,0.2)",
+                        borderColor: darkMode
+                          ? "rgba(255,255,255,0.3)"
+                          : "rgba(0,0,0,0.2)",
                         borderRadius: "8px",
                       },
                       "&:hover fieldset": {
@@ -1035,30 +1176,34 @@ const CustomerDashboard = () => {
                   }}
                 />
               </DialogContent>
-              <DialogActions sx={{ 
-                background: darkMode 
-                  ? "linear-gradient(135deg, #333 0%, #424242 100%)" 
-                  : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
-                borderTop: darkMode ? "1px solid rgba(255,255,255,0.1)" : "1px solid rgba(0,0,0,0.05)",
-                borderRadius: "0 0 16px 16px",
-                py: 1.5,
-                px: 3,
-              }}>
+              <DialogActions
+                sx={{
+                  background: darkMode
+                    ? "linear-gradient(135deg, #333 0%, #424242 100%)"
+                    : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+                  borderTop: darkMode
+                    ? "1px solid rgba(255,255,255,0.1)"
+                    : "1px solid rgba(0,0,0,0.05)",
+                  borderRadius: "0 0 16px 16px",
+                  py: 1.5,
+                  px: 3,
+                }}
+              >
                 <Button
                   onClick={() => setDatePickerOpen(false)}
-                  sx={{ 
+                  sx={{
                     color: "#ffffff",
                     textTransform: "none",
                     fontWeight: 500,
                     borderRadius: "8px",
                     px: 3,
                     py: 0.5,
-                    background: darkMode 
-                      ? "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)" 
+                    background: darkMode
+                      ? "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)"
                       : "linear-gradient(45deg, #e53935 30%, #ef5350 90%)",
-                    '&:hover': {
-                      background: darkMode 
-                        ? "linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)" 
+                    "&:hover": {
+                      background: darkMode
+                        ? "linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)"
                         : "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)",
                     },
                     transition: "all 0.2s ease",
@@ -1066,8 +1211,8 @@ const CustomerDashboard = () => {
                 >
                   Cancel
                 </Button>
-                <Button 
-                  onClick={() => setDatePickerOpen(false)} 
+                <Button
+                  onClick={() => setDatePickerOpen(false)}
                   sx={{
                     background: darkMode
                       ? "linear-gradient(45deg, #0288d1 30%, #4fc3f7 90%)"
@@ -1078,7 +1223,7 @@ const CustomerDashboard = () => {
                     borderRadius: "8px",
                     px: 3,
                     py: 0.5,
-                    '&:hover': {
+                    "&:hover": {
                       background: darkMode
                         ? "linear-gradient(45deg, #0277bd 30%, #29b6f6 90%)"
                         : "linear-gradient(45deg, #1565c0 30%, #2196f3 90%)",
@@ -1140,9 +1285,11 @@ const CustomerDashboard = () => {
                       }
                       sx={{
                         m: 0.3,
-                        backgroundColor: darkMode && !selectedProjectIds.includes(project.projectId)
-                          ? "#555555"
-                          : undefined,
+                        backgroundColor:
+                          darkMode &&
+                          !selectedProjectIds.includes(project.projectId)
+                            ? "#555555"
+                            : undefined,
                         color: darkMode ? "#ffffff" : undefined,
                         transition: "all 0.3s ease",
                         "&:hover": {
@@ -1162,14 +1309,17 @@ const CustomerDashboard = () => {
                         {selectedProjectIds.map((id) => (
                           <Chip
                             key={id}
-                            label={projects.find((p) => p.projectId === id)?.name || id}
+                            label={
+                              projects.find((p) => p.projectId === id)?.name ||
+                              id
+                            }
                             onDelete={() =>
                               setSelectedProjectIds((prev) =>
                                 prev.filter((pid) => pid !== id)
                               )
                             }
                             color="primary"
-                            sx={{ 
+                            sx={{
                               m: 0.3,
                               color: darkMode ? "#ffffff" : undefined,
                             }}
@@ -1188,7 +1338,8 @@ const CustomerDashboard = () => {
                       color={darkMode ? "#ffffff" : "textPrimary"}
                       sx={{ fontSize: "0.8rem", cursor: "pointer" }}
                     >
-                      {selectedProjectIds.length} Project{selectedProjectIds.length > 1 ? "s" : ""} Selected
+                      {selectedProjectIds.length} Project
+                      {selectedProjectIds.length > 1 ? "s" : ""} Selected
                     </MDTypography>
                   </Tooltip>
                 </MDBox>
@@ -1196,7 +1347,11 @@ const CustomerDashboard = () => {
             </Paper>
           </Grid>
           <Grid item xs={12}>
-            <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={sectionVariants}
+            >
               <Paper
                 elevation={3}
                 sx={{
@@ -1216,12 +1371,18 @@ const CustomerDashboard = () => {
                   alignItems="center"
                   sx={{ background: darkMode ? "#333" : "#e3f2fd" }}
                 >
-                  <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} fontWeight="medium">
+                  <MDTypography
+                    variant="h6"
+                    color={darkMode ? "white" : "textPrimary"}
+                    fontWeight="medium"
+                  >
                     Customer Satisfaction & Retention
                   </MDTypography>
                   <Tooltip title="Refresh Data">
                     <IconButton onClick={fetchData}>
-                      <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                      <RefreshIcon
+                        sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                      />
                     </IconButton>
                   </Tooltip>
                 </MDBox>
@@ -1239,11 +1400,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             NPS & CSAT Trends (Bar)
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="bar" data={npsCsatBarData} options={chartOptions} />
+                            <Chart
+                              type="bar"
+                              data={npsCsatBarData}
+                              options={chartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1259,11 +1428,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             NPS & CSAT Trends (Line)
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="line" data={npsCsatLineData} options={chartOptions} />
+                            <Chart
+                              type="line"
+                              data={npsCsatLineData}
+                              options={chartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1279,7 +1456,11 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Retention vs. Churn Rate
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
@@ -1289,14 +1470,30 @@ const CustomerDashboard = () => {
                               options={{
                                 ...chartOptions,
                                 scales: {
-                                  x: { ticks: { color: darkMode ? "#ffffff" : "#333333" } },
+                                  x: {
+                                    ticks: {
+                                      color: darkMode ? "#ffffff" : "#333333",
+                                    },
+                                  },
                                   y: {
-                                    ticks: { color: darkMode ? "#ffffff" : "#333333" },
-                                    title: { display: true, text: "Retention Rate (%)", color: darkMode ? "#ffffff" : "#333333" },
+                                    ticks: {
+                                      color: darkMode ? "#ffffff" : "#333333",
+                                    },
+                                    title: {
+                                      display: true,
+                                      text: "Retention Rate (%)",
+                                      color: darkMode ? "#ffffff" : "#333333",
+                                    },
                                   },
                                   y1: {
-                                    ticks: { color: darkMode ? "#ffffff" : "#333333" },
-                                    title: { display: true, text: "Churn Rate (%)", color: darkMode ? "#ffffff" : "#333333" },
+                                    ticks: {
+                                      color: darkMode ? "#ffffff" : "#333333",
+                                    },
+                                    title: {
+                                      display: true,
+                                      text: "Churn Rate (%)",
+                                      color: darkMode ? "#ffffff" : "#333333",
+                                    },
                                     position: "right",
                                   },
                                 },
@@ -1317,11 +1514,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Conversion Rate
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="line" data={conversionDataChart} options={chartOptions} />
+                            <Chart
+                              type="line"
+                              data={conversionDataChart}
+                              options={chartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1337,11 +1542,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Product Adoption Rates
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="bar" data={productAdoptionBarData} options={productAdoptionChartOptions} />
+                            <Chart
+                              type="bar"
+                              data={productAdoptionBarData}
+                              options={productAdoptionChartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1386,7 +1599,11 @@ const CustomerDashboard = () => {
           </Grid>
 
           <Grid item xs={12}>
-            <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={sectionVariants}
+            >
               <Paper
                 elevation={3}
                 sx={{
@@ -1406,12 +1623,18 @@ const CustomerDashboard = () => {
                   alignItems="center"
                   sx={{ background: darkMode ? "#333" : "#e3f2fd" }}
                 >
-                  <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} fontWeight="medium">
+                  <MDTypography
+                    variant="h6"
+                    color={darkMode ? "white" : "textPrimary"}
+                    fontWeight="medium"
+                  >
                     Support Performance
                   </MDTypography>
                   <Tooltip title="Refresh Data">
                     <IconButton onClick={fetchData}>
-                      <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                      <RefreshIcon
+                        sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                      />
                     </IconButton>
                   </Tooltip>
                 </MDBox>
@@ -1429,11 +1652,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Issues by Project
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="bar" data={issuesByProjectData} options={issuesByProjectChartOptions} />
+                            <Chart
+                              type="bar"
+                              data={issuesByProjectData}
+                              options={issuesByProjectChartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1449,10 +1680,20 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Resolution Status
                           </MDTypography>
-                          <Box sx={{ height: "calc(100% - 40px)", display: "flex", alignItems: "center" }}>
+                          <Box
+                            sx={{
+                              height: "calc(100% - 40px)",
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
                             <Chart
                               type="pie"
                               data={resolutionStatusData}
@@ -1469,7 +1710,11 @@ const CustomerDashboard = () => {
           </Grid>
 
           <Grid item xs={12}>
-            <motion.div initial="hidden" animate="visible" variants={sectionVariants}>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={sectionVariants}
+            >
               <Paper
                 elevation={3}
                 sx={{
@@ -1489,12 +1734,18 @@ const CustomerDashboard = () => {
                   alignItems="center"
                   sx={{ background: darkMode ? "#333" : "#e3f2fd" }}
                 >
-                  <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} fontWeight="medium">
+                  <MDTypography
+                    variant="h6"
+                    color={darkMode ? "white" : "textPrimary"}
+                    fontWeight="medium"
+                  >
                     Churn Analysis
                   </MDTypography>
                   <Tooltip title="Refresh Data">
                     <IconButton onClick={fetchData}>
-                      <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                      <RefreshIcon
+                        sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                      />
                     </IconButton>
                   </Tooltip>
                 </MDBox>
@@ -1512,11 +1763,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Cohort Churn Rate
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="bar" data={cohortChurnData} options={cohortChurnChartOptions} />
+                            <Chart
+                              type="bar"
+                              data={cohortChurnData}
+                              options={cohortChurnChartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1532,11 +1791,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Revenue Lost to Churn
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="line" data={revenueLostLineData} options={chartOptions} />
+                            <Chart
+                              type="line"
+                              data={revenueLostLineData}
+                              options={chartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>
@@ -1552,11 +1819,19 @@ const CustomerDashboard = () => {
                             overflow: "hidden",
                           }}
                         >
-                          <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} mb={2}>
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                          >
                             Churn Reasons
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
-                            <Chart type="bar" data={churnReasonBarData} options={churnReasonChartOptions} />
+                            <Chart
+                              type="bar"
+                              data={churnReasonBarData}
+                              options={churnReasonChartOptions}
+                            />
                           </Box>
                         </Card>
                       </motion.div>

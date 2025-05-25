@@ -25,7 +25,13 @@ import { useMaterialUIController } from "context";
 
 function SidenavCollapse({ icon, name, active, children, onClick, route }) {
   const [controller] = useMaterialUIController();
-  const { miniSidenav, transparentSidenav, whiteSidenav, darkMode, sidenavColor } = controller;
+  const {
+    miniSidenav,
+    transparentSidenav,
+    whiteSidenav,
+    darkMode,
+    sidenavColor,
+  } = controller;
   const [open, setOpen] = useState(false);
 
   const handleClick = () => {
@@ -49,11 +55,18 @@ function SidenavCollapse({ icon, name, active, children, onClick, route }) {
         >
           <ListItemIcon
             sx={(theme) =>
-              collapseIconBox(theme, { transparentSidenav, whiteSidenav, darkMode, active })
+              collapseIconBox(theme, {
+                transparentSidenav,
+                whiteSidenav,
+                darkMode,
+                active,
+              })
             }
           >
             {typeof icon === "string" ? (
-              <Icon sx={(theme) => collapseIcon(theme, { active })}>{icon}</Icon>
+              <Icon sx={(theme) => collapseIcon(theme, { active })}>
+                {icon}
+              </Icon>
             ) : (
               icon
             )}
@@ -70,7 +83,11 @@ function SidenavCollapse({ icon, name, active, children, onClick, route }) {
               })
             }
           />
-          {children && <Icon sx={{ ml: "auto" }}>{open ? "expand_less" : "expand_more"}</Icon>}
+          {children && (
+            <Icon sx={{ ml: "auto" }}>
+              {open ? "expand_less" : "expand_more"}
+            </Icon>
+          )}
         </MDBox>
       </ListItem>
       {children && (

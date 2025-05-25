@@ -39,7 +39,14 @@ import Footer from "examples/Footer";
 
 // Firebase imports
 import { db, auth } from "firebase.js";
-import { collection, query, where, onSnapshot, getDocs, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 import { onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
 
 // React hooks and Framer Motion
@@ -54,13 +61,25 @@ const cardVariants = {
 
 const chipVariants = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
 };
 
 const dialogVariants = {
   hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2, ease: "easeIn" } },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { duration: 0.3, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.95,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
 };
 
 function ProfilePage() {
@@ -243,7 +262,12 @@ function ProfilePage() {
     return (
       <DashboardLayout>
         <DashboardNavbar />
-        <MDBox display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+        <MDBox
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          minHeight="80vh"
+        >
           <MDTypography variant="h6" color="text">
             Loading...
           </MDTypography>
@@ -291,7 +315,8 @@ function ProfilePage() {
             p: { xs: 2, md: 4 },
             boxShadow: ({ boxShadows: { xl } }) => xl,
             borderRadius: "20px",
-            background: ({ palette: { background } }) => background.card || "white",
+            background: ({ palette: { background } }) =>
+              background.card || "white",
           }}
         >
           {/* User Info Header */}
@@ -323,7 +348,10 @@ function ProfilePage() {
                   onClick={handleEditOpen}
                   sx={{
                     boxShadow: ({ boxShadows: { md } }) => md,
-                    "&:hover": { transform: "scale(1.1)", transition: "transform 0.2s" },
+                    "&:hover": {
+                      transform: "scale(1.1)",
+                      transition: "transform 0.2s",
+                    },
                   }}
                 >
                   <EditIcon />
@@ -332,7 +360,9 @@ function ProfilePage() {
             </Grid>
           </Grid>
 
-          <Divider sx={{ my: 2, background: ({ palette: { grey } }) => grey[200] }} />
+          <Divider
+            sx={{ my: 2, background: ({ palette: { grey } }) => grey[200] }}
+          />
 
           {/* Content Sections */}
           <Grid container spacing={4}>
@@ -394,7 +424,12 @@ function ProfilePage() {
                   )}
                 </Box>
                 {error && (
-                  <MDTypography variant="body2" color="error" mt={2} sx={{ fontWeight: "medium" }}>
+                  <MDTypography
+                    variant="body2"
+                    color="error"
+                    mt={2}
+                    sx={{ fontWeight: "medium" }}
+                  >
                     {error}
                   </MDTypography>
                 )}
@@ -410,77 +445,145 @@ function ProfilePage() {
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Employee ID
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.employeeId || "N/A"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Email
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.email || "N/A"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Email Verified
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.emailVerified ? "Yes" : "No"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Joining Date
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.joiningDate || "N/A"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Designation
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.designation || "N/A"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Department
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.department || "N/A"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12} sm={6}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={0.5}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={0.5}
+                      >
                         Status
                       </MDTypography>
-                      <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                      <MDTypography
+                        variant="body2"
+                        color="text"
+                        sx={{ fontWeight: "regular" }}
+                      >
                         {userData.status || "N/A"}
                       </MDTypography>
                     </MDBox>
                   </Grid>
                   <Grid item xs={12}>
                     <MDBox display="flex" flexDirection="column">
-                      <MDTypography variant="caption" color="text" fontWeight="medium" mb={1}>
+                      <MDTypography
+                        variant="caption"
+                        color="text"
+                        fontWeight="medium"
+                        mb={1}
+                      >
                         Roles
                       </MDTypography>
                       <Stack direction="row" spacing={1} flexWrap="wrap">
@@ -499,7 +602,8 @@ function ProfilePage() {
                                   padding: "4px 8px",
                                   transition: "all 0.2s ease",
                                   "&:hover": {
-                                    bgcolor: ({ palette: { primary } }) => primary.dark,
+                                    bgcolor: ({ palette: { primary } }) =>
+                                      primary.dark,
                                     transform: "scale(1.05)",
                                   },
                                 }}
@@ -507,7 +611,11 @@ function ProfilePage() {
                             </motion.div>
                           ))
                         ) : (
-                          <MDTypography variant="body2" color="text" sx={{ fontWeight: "regular" }}>
+                          <MDTypography
+                            variant="body2"
+                            color="text"
+                            sx={{ fontWeight: "regular" }}
+                          >
                             No roles assigned
                           </MDTypography>
                         )}
@@ -534,8 +642,15 @@ function ProfilePage() {
           },
         }}
       >
-        <motion.div variants={dialogVariants} initial="hidden" animate="visible" exit="exit">
-          <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.25rem" }}>Edit Profile</DialogTitle>
+        <motion.div
+          variants={dialogVariants}
+          initial="hidden"
+          animate="visible"
+          exit="exit"
+        >
+          <DialogTitle sx={{ fontWeight: "bold", fontSize: "1.25rem" }}>
+            Edit Profile
+          </DialogTitle>
           <DialogContent>
             <TextField
               autoFocus
@@ -547,7 +662,10 @@ function ProfilePage() {
               variant="outlined"
               value={formData.designation}
               onChange={handleFormChange}
-              sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+              sx={{
+                mb: 2,
+                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+              }}
             />
             <TextField
               margin="dense"
@@ -558,7 +676,10 @@ function ProfilePage() {
               variant="outlined"
               value={formData.department}
               onChange={handleFormChange}
-              sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: "8px" } }}
+              sx={{
+                mb: 2,
+                "& .MuiOutlinedInput-root": { borderRadius: "8px" },
+              }}
             />
             <Select
               name="status"
@@ -632,4 +753,3 @@ function ProfilePage() {
 }
 
 export default ProfilePage;
-
