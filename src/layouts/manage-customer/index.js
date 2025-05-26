@@ -78,7 +78,7 @@ const ManageCustomer = () => {
   const [userRoles, setUserRoles] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [latestMetrics, setLatestMetrics] = useState({});
-
+  const [formErrors, setFormErrors] = useState({});
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
 
@@ -87,15 +87,16 @@ const ManageCustomer = () => {
   const featureOptions = ["Core", "Advanced", "Integrations"];
 
   // Common styles adapted from provided App.css
+  // Styles adapted from ManageClient
   const formContainerStyle = {
-    backgroundColor: "#fff",
+    backgroundColor: "#f3f6f8",
     borderRadius: "15px",
     boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
     padding: "10px 20px",
     width: "90%",
     maxWidth: "500px",
-    maxHeight: "80vh", // Limit form height to 80% of viewport height
-    overflowY: "auto", // Enable vertical scrolling
+    maxHeight: "80vh",
+    overflowY: "auto",
     textAlign: "center",
     margin: "auto",
     position: "fixed",
@@ -103,9 +104,70 @@ const ManageCustomer = () => {
     left: "50%",
     transform: "translate(-50%, -50%)",
     zIndex: 1200,
-    transition: "transform 0.2s",
   };
 
+  const formStyle = {
+    border: "none",
+  };
+
+  const labelStyle = {
+    fontSize: "15px",
+    display: "block",
+    width: "100%",
+    marginTop: "8px",
+    marginBottom: "5px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const inputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "8px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+  };
+
+  const selectStyle = {
+    display: "block",
+    width: "100%",
+    marginBottom: "15px",
+    padding: "10px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    fontSize: "12px",
+  };
+
+  const checkboxContainerStyle = {
+    display: "block",
+    margin: "0",
+    color: "#333",
+    fontSize: "12px",
+  };
+
+  const buttonStyle = {
+    padding: "15px",
+    borderRadius: "10px",
+    margin: "15px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "16px",
+    fontWeight: "bold",
+  };
+
+  const titleStyle = {
+    fontSize: "x-large",
+    textAlign: "center",
+    color: "#327c35",
+    margin: "10px 0",
+  };
   const formInputStyle = {
     display: "block",
     width: "100%",
@@ -454,24 +516,32 @@ const ManageCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!customerName || !email || !status || !subscriptionTier || !feature) {
-      alert(
-        "Customer Name, Email, Status, Subscription Tier, and Feature are required."
-      );
-      return;
-    }
-    if ((nps && !npsDate) || (npsDate && !nps)) {
-      alert("Both NPS value and NPS Date are required if one is provided.");
-      return;
-    }
-    if ((csat && !csatDate) || (csatDate && !csat)) {
-      alert("Both CSAT value and CSAT Date are required if one is provided.");
-      return;
-    }
-    if ((chs && !chsDate) || (chsDate && !chs)) {
-      alert("Both CHS value and CHS Date are required if one is provided.");
-      return;
-    }
+    const errors = {};
+    if (!customerName) errors.customerName = "Customer Name is required.";
+    if (!email) errors.email = "Email is required.";
+    if (!status) errors.status = "Status is required.";
+    if (!subscriptionTier)
+      errors.subscriptionTier = "Subscription Tier is required.";
+    if (!feature) errors.feature = "Feature is required.";
+    if (nps && !npsDate)
+      errors.npsDate = "NPS Date is required if NPS is provided.";
+    if (npsDate && !nps)
+      errors.nps = "NPS is required if NPS Date is provided.";
+    if (csat && !csatDate)
+      errors.csatDate = "CSAT Date is required if CSAT is provided.";
+    if (csatDate && !csat)
+      errors.csat = "CSAT is required if CSAT Date is provided.";
+    if (chs && !chsDate)
+      errors.chsDate = "CHS Date is required if CHS is provided.";
+    if (chsDate && !chs)
+      errors.chs = "CHS is required if CHS Date is provided.";
+    if (nps && (Number(nps) < 0 || Number(nps) > 100))
+      errors.nps = "NPS must be between 0 and 100.";
+    if (csat && (Number(csat) < 0 || Number(csat) > 100))
+      errors.csat = "CSAT must be between 0 and 100.";
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     const newCustomer = {
       customerId: editingCustomer
@@ -483,7 +553,7 @@ const ManageCustomer = () => {
       address,
       status,
       subscriptionTier,
-      projectIds: projectIds.length > 0 ? projectIds : [],
+      projectIds: projectIds.length > 0 ? projectIds : [], // Stores project names
       signUpDate: signUpDate || new Date(),
       feature,
       cltv: Number(cltv) || 0,
@@ -819,9 +889,11 @@ const ManageCustomer = () => {
     setResponseChannel([]);
   };
 
-  const handleProjectIdChange = (id) => {
+  const handleProjectIdChange = (name) => {
     setProjectIds((prev) =>
-      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
+      prev.includes(name)
+        ? prev.filter((pname) => pname !== name)
+        : [...prev, name]
     );
   };
 
@@ -1195,9 +1267,21 @@ const ManageCustomer = () => {
                                 color={darkMode ? "white" : "textSecondary"}
                                 sx={{ mb: 1 }}
                               >
-                                <span>Project IDs: </span>
+                                <span>Project: </span>
                                 <span style={{ fontWeight: "bold" }}>
-                                  {customer.projectIds?.join(", ") || "None"}
+                                  {Array.isArray(customer.projectIds) &&
+                                  customer.projectIds.length > 0
+                                    ? customer.projectIds
+                                        .map((name) => {
+                                          const project = projects.find(
+                                            (p) => p.name === name
+                                          );
+                                          return project
+                                            ? `${project.name} (${project.projectId})`
+                                            : name;
+                                        })
+                                        .join(", ")
+                                    : "None"}
                                 </span>
                               </MDTypography>
                               <MDTypography
@@ -1398,212 +1482,359 @@ const ManageCustomer = () => {
       {!isReadOnly && (
         <>
           <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
-            <form onSubmit={handleSubmit}>
-              <Typography sx={formHeadingStyle}>
-                {editingCustomer ? "Edit Customer" : "Add Customer"}
-              </Typography>
-              <label style={formLabelStyle}>Customer Name*</label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Enter Customer Name"
-                required
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Email*</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter Email"
-                required
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Phone</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="Enter Phone Number"
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Address</label>
-              <input
-                type="text"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter Address"
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Status*</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                required
-                style={formSelectStyle}
-              >
-                <option value="" disabled>
-                  Select Status
-                </option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-              <label style={formLabelStyle}>Subscription Tier*</label>
-              <select
-                value={subscriptionTier}
-                onChange={(e) => setSubscriptionTier(e.target.value)}
-                required
-                style={formSelectStyle}
-              >
-                <option value="" disabled>
-                  Select Tier
-                </option>
-                <option value="free">Free</option>
-                <option value="premium">Premium</option>
-              </select>
-              <label style={formLabelStyle}>Feature*</label>
-              <select
-                value={feature}
-                onChange={(e) => setFeature(e.target.value)}
-                required
-                style={formSelectStyle}
-              >
-                <option value="" disabled>
-                  Select Feature
-                </option>
-                {featureOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <label style={formLabelStyle}>Project IDs</label>
-              <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
-                {projects.map((project) => (
-                  <div
-                    key={project.projectId}
-                    style={{ textAlign: "left", marginBottom: "4px" }}
-                  >
-                    <input
-                      type="checkbox"
-                      id={project.projectId}
-                      checked={projectIds.includes(project.projectId)}
-                      onChange={() => handleProjectIdChange(project.projectId)}
-                      style={formCheckboxStyle}
-                    />
-                    <label
-                      htmlFor={project.projectId}
-                      style={{
-                        ...formLabelStyle,
-                        display: "inline",
-                        marginLeft: "5px",
-                        fontWeight: "normal",
-                      }}
-                    >
-                      {project.projectId} - {project.name}
-                    </label>
-                  </div>
-                ))}
-              </Box>
-              <label style={formLabelStyle}>Sign-Up Date</label>
-              <input
-                type="date"
-                value={signUpDate ? signUpDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setSignUpDate(
-                    e.target.value ? new Date(e.target.value) : null
-                  )
-                }
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Net Promoter Score (0-100)</label>
-              <input
-                type="number"
-                value={nps}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  if (value >= 0 && value <= 100) setNps(e.target.value);
-                }}
-                placeholder="Enter NPS (0-100)"
-                min="0"
-                max="100"
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>NPS Date{!!nps && "*"}</label>
-              <input
-                type="date"
-                value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setNpsDate(e.target.value ? new Date(e.target.value) : null)
-                }
-                required={!!nps}
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>
-                Customer Satisfaction Score (0-100)
-              </label>
-              <input
-                type="number"
-                value={csat}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  if (value >= 0 && value <= 100) setCsat(e.target.value);
-                }}
-                placeholder="Enter CSAT (0-100)"
-                min="0"
-                max="100"
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>CSAT Date{!!csat && "*"}</label>
-              <input
-                type="date"
-                value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setCsatDate(e.target.value ? new Date(e.target.value) : null)
-                }
-                required={!!csat}
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Customer Health Score</label>
-              <input
-                type="number"
-                value={chs}
-                onChange={(e) => setChs(e.target.value)}
-                placeholder="Enter CHS"
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>CHS Date{!!chs && "*"}</label>
-              <input
-                type="date"
-                value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setChsDate(e.target.value ? new Date(e.target.value) : null)
-                }
-                required={!!chs}
-                style={formInputStyle}
-              />
-              <label style={formLabelStyle}>Customer Lifetime Value</label>
-              <input
-                type="number"
-                value={cltv}
-                onChange={(e) => setCltv(e.target.value)}
-                placeholder="Enter CLTV"
-                style={formInputStyle}
-              />
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  style={formButtonStyle}
+            <fieldset style={formStyle}>
+              <form onSubmit={handleSubmit}>
+                <Typography sx={titleStyle}>
+                  {editingCustomer ? "Edit Customer" : "Add Customer"}
+                </Typography>
+                <label style={labelStyle} htmlFor="customerName">
+                  Customer Name*
+                </label>
+                <input
+                  type="text"
+                  id="customerName"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Enter Customer Name"
+                  required
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.customerName
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.customerName && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.customerName}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="email">
+                  Email*
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter Email"
+                  required
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.email
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.email && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.email}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="phone">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Enter Phone Number"
+                  style={inputStyle}
+                />
+                <label style={labelStyle} htmlFor="address">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Enter Address"
+                  style={inputStyle}
+                />
+                <label style={labelStyle} htmlFor="status">
+                  Status*
+                </label>
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  required
+                  style={{
+                    ...selectStyle,
+                    border: formErrors.status
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
                 >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Save
-                </button>
-              </Box>
-            </form>
+                  <option value="" disabled>
+                    Select Status
+                  </option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                {formErrors.status && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.status}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="subscriptionTier">
+                  Subscription Tier*
+                </label>
+                <select
+                  id="subscriptionTier"
+                  value={subscriptionTier}
+                  onChange={(e) => setSubscriptionTier(e.target.value)}
+                  required
+                  style={{
+                    ...selectStyle,
+                    border: formErrors.subscriptionTier
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                >
+                  <option value="" disabled>
+                    Select Tier
+                  </option>
+                  <option value="free">Free</option>
+                  <option value="premium">Premium</option>
+                </select>
+                {formErrors.subscriptionTier && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.subscriptionTier}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="feature">
+                  Feature*
+                </label>
+                <select
+                  id="feature"
+                  value={feature}
+                  onChange={(e) => setFeature(e.target.value)}
+                  required
+                  style={{
+                    ...selectStyle,
+                    border: formErrors.feature
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                >
+                  <option value="" disabled>
+                    Select Feature
+                  </option>
+                  {featureOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                {formErrors.feature && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.feature}
+                  </span>
+                )}
+                <label style={labelStyle}>Projects</label>
+                <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
+                  {projects.map((project) => (
+                    <div key={project.projectId} style={checkboxContainerStyle}>
+                      <input
+                        type="checkbox"
+                        id={project.projectId}
+                        checked={projectIds.includes(project.name)}
+                        onChange={() => handleProjectIdChange(project.name)}
+                        style={{ marginRight: "5px" }}
+                      />
+                      <label
+                        htmlFor={project.projectId}
+                        style={{ fontSize: "12px", color: "#333" }}
+                      >
+                        {project.name}
+                      </label>
+                    </div>
+                  ))}
+                </Box>
+                <label style={labelStyle} htmlFor="signUpDate">
+                  Sign-Up Date
+                </label>
+                <input
+                  type="date"
+                  id="signUpDate"
+                  value={
+                    signUpDate ? signUpDate.toISOString().split("T")[0] : ""
+                  }
+                  onChange={(e) =>
+                    setSignUpDate(
+                      e.target.value ? new Date(e.target.value) : null
+                    )
+                  }
+                  style={inputStyle}
+                />
+                <label style={labelStyle} htmlFor="nps">
+                  Net Promoter Score (0-100)
+                </label>
+                <input
+                  type="number"
+                  id="nps"
+                  value={nps}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value >= 0 && value <= 100) setNps(e.target.value);
+                  }}
+                  placeholder="Enter NPS (0-100)"
+                  min="0"
+                  max="100"
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.nps ? "1px solid red" : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.nps && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.nps}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="npsDate">
+                  NPS Date{!!nps && "*"}
+                </label>
+                <input
+                  type="date"
+                  id="npsDate"
+                  value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
+                  onChange={(e) =>
+                    setNpsDate(e.target.value ? new Date(e.target.value) : null)
+                  }
+                  required={!!nps}
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.npsDate
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.npsDate && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.npsDate}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="csat">
+                  Customer Satisfaction Score (0-100)
+                </label>
+                <input
+                  type="number"
+                  id="csat"
+                  value={csat}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (value >= 0 && value <= 100) setCsat(e.target.value);
+                  }}
+                  placeholder="Enter CSAT (0-100)"
+                  min="0"
+                  max="100"
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.csat
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.csat && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.csat}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="csatDate">
+                  CSAT Date{!!csat && "*"}
+                </label>
+                <input
+                  type="date"
+                  id="csatDate"
+                  value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
+                  onChange={(e) =>
+                    setCsatDate(
+                      e.target.value ? new Date(e.target.value) : null
+                    )
+                  }
+                  required={!!csat}
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.csatDate
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.csatDate && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.csatDate}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="chs">
+                  Customer Health Score
+                </label>
+                <input
+                  type="number"
+                  id="chs"
+                  value={chs}
+                  onChange={(e) => setChs(e.target.value)}
+                  placeholder="Enter CHS"
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.chs ? "1px solid red" : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.chs && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.chs}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="chsDate">
+                  CHS Date{!!chs && "*"}
+                </label>
+                <input
+                  type="date"
+                  id="chsDate"
+                  value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
+                  onChange={(e) =>
+                    setChsDate(e.target.value ? new Date(e.target.value) : null)
+                  }
+                  required={!!chs}
+                  style={{
+                    ...inputStyle,
+                    border: formErrors.chsDate
+                      ? "1px solid red"
+                      : "1px solid #ddd",
+                  }}
+                />
+                {formErrors.chsDate && (
+                  <span style={{ color: "red", fontSize: "12px" }}>
+                    {formErrors.chsDate}
+                  </span>
+                )}
+                <label style={labelStyle} htmlFor="cltv">
+                  Customer Lifetime Value
+                </label>
+                <input
+                  type="number"
+                  id="cltv"
+                  value={cltv}
+                  onChange={(e) => setCltv(e.target.value)}
+                  placeholder="Enter CLTV"
+                  style={inputStyle}
+                />
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    style={buttonStyle}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" style={buttonStyle}>
+                    Save
+                  </button>
+                </Box>
+              </form>
+            </fieldset>
           </Box>
 
           <Box

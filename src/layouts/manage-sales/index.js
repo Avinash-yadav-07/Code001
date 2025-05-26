@@ -794,6 +794,72 @@ const ManageSales = () => {
   const { leadConversionRate, averageDealSize, averageSalesCycle } =
     calculateSalesMetrics();
 
+  // Styles for form elements (from ManageClient)
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "500px",
+    textAlign: "center",
+    margin: "auto",
+  };
+
+  const formStyle = {
+    border: "none",
+  };
+
+  const labelStyle = {
+    fontSize: "15px",
+    display: "block",
+    width: "100%",
+    marginTop: "8px",
+    marginBottom: "5px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const inputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "8px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+  };
+
+  const selectStyle = {
+    display: "block",
+    width: "100%",
+    marginBottom: "15px",
+    padding: "10px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    fontSize: "12px",
+  };
+
+  const buttonStyle = {
+    padding: "15px",
+    borderRadius: "10px",
+    margin: "15px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "16px",
+    fontWeight: "bold",
+  };
+
+  const titleStyle = {
+    fontSize: "x-large",
+    textAlign: "center",
+    color: "#327c35",
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box
@@ -936,7 +1002,7 @@ const ManageSales = () => {
                     color={darkMode ? "white" : "textSecondary"}
                   >
                     <strong>Average Sales Cycle:</strong>{" "}
-                    {averageSalesCycle.toFixed(2)} days
+                    {averageSalesCycle.toFixed(0)} days
                   </MDTypography>
                 </MDBox>
                 <Grid container spacing={3} sx={{ padding: "16px" }}>
@@ -979,16 +1045,18 @@ const ManageSales = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode
-                    ? "background.default"
-                    : "background.paper",
+                  backgroundColor: "#f3f3f3",
+                  borderRadius: "15px",
+                  boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+                  width: "500px",
+                  margin: "auto",
                 },
               }}
             >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
+              <DialogTitle sx={{ ...titleStyle }}>
                 {editData ? "Edit Deal" : "Add Deal"}
               </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
+              <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
                 {dealFormError && (
                   <MDTypography color="error" mb={2}>
                     {dealFormError}
@@ -1004,26 +1072,35 @@ const ManageSales = () => {
                   projects={projects}
                   accounts={accounts}
                   darkMode={darkMode}
+                  formStyle={formStyle}
+                  labelStyle={labelStyle}
+                  inputStyle={inputStyle}
+                  selectStyle={selectStyle}
                 />
               </DialogContent>
-              <DialogActions>
-                <Button
+              <DialogActions
+                sx={{ padding: "16px 24px", justifyContent: "center" }}
+              >
+                <button
+                  style={{ ...buttonStyle, opacity: isSubmitting ? 0.7 : 1 }}
                   onClick={() => handleDialogClose("deal")}
-                  sx={{ color: darkMode ? "white" : "black" }}
                   disabled={isSubmitting}
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
+                  style={{ ...buttonStyle, opacity: isSubmitting ? 0.7 : 1 }}
                   onClick={handleSubmitDeal}
-                  color="primary"
                   disabled={isSubmitting}
-                  startIcon={
-                    isSubmitting ? <CircularProgress size={20} /> : null
-                  }
                 >
-                  {editData ? "Update Deal" : "Save Deal"}
-                </Button>
+                  {isSubmitting ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : editData ? (
+                    "Update Deal"
+                  ) : (
+                    "Save Deal"
+                  )}
+                </button>
               </DialogActions>
             </Dialog>
 
@@ -1035,16 +1112,18 @@ const ManageSales = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode
-                    ? "background.default"
-                    : "background.paper",
+                  backgroundColor: "#f3f3f3",
+                  borderRadius: "15px",
+                  boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+                  width: "500px",
+                  margin: "auto",
                 },
               }}
             >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
+              <DialogTitle sx={{ ...titleStyle }}>
                 {editData ? "Edit Team" : "Add Team"}
               </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
+              <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
                 {teamFormError && (
                   <MDTypography color="error" mb={2}>
                     {teamFormError}
@@ -1054,26 +1133,35 @@ const ManageSales = () => {
                   teamForm={teamForm}
                   setTeamForm={setTeamForm}
                   darkMode={darkMode}
+                  formStyle={formStyle}
+                  labelStyle={labelStyle}
+                  inputStyle={inputStyle}
+                  selectStyle={selectStyle}
                 />
               </DialogContent>
-              <DialogActions>
-                <Button
+              <DialogActions
+                sx={{ padding: "16px 24px", justifyContent: "center" }}
+              >
+                <button
+                  style={{ ...buttonStyle, opacity: isSubmitting ? 0.7 : 1 }}
                   onClick={() => handleDialogClose("team")}
-                  sx={{ color: darkMode ? "white" : "black" }}
                   disabled={isSubmitting}
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
+                  style={{ ...buttonStyle, opacity: isSubmitting ? 0.7 : 1 }}
                   onClick={handleSubmitTeam}
-                  color="primary"
                   disabled={isSubmitting}
-                  startIcon={
-                    isSubmitting ? <CircularProgress size={20} /> : null
-                  }
                 >
-                  {editData ? "Update Team" : "Save Team"}
-                </Button>
+                  {isSubmitting ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : editData ? (
+                    "Update Team"
+                  ) : (
+                    "Save Team"
+                  )}
+                </button>
               </DialogActions>
             </Dialog>
 
@@ -1143,7 +1231,7 @@ const ManageSales = () => {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => handlePresetDateFilter(1)}
+                    onClick={() => handlePresetDateFilter(3)}
                     sx={{
                       mr: 1,
                       color: "blue",
@@ -1154,7 +1242,7 @@ const ManageSales = () => {
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => handlePresetDateFilter(1)}
+                    onClick={() => handlePresetDateFilter(6)}
                     sx={{
                       mr: 1,
                       color: "blue",
@@ -1243,325 +1331,297 @@ const DealForm = ({
   projects,
   accounts,
   darkMode,
+  formStyle,
+  labelStyle,
+  inputStyle,
+  selectStyle,
 }) => {
   return (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Deal ID"
+    <fieldset style={formStyle}>
+      <form>
+        <label style={labelStyle} htmlFor="dealId">
+          Deal ID*
+        </label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="dealId"
           value={dealForm.dealId}
           onChange={(e) => setDealForm({ ...dealForm, dealId: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
           required
+          placeholder="Enter Deal ID"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Stage"
+
+        <label style={labelStyle} htmlFor="stage">
+          Stage*
+        </label>
+        <select
+          style={selectStyle}
+          id="stage"
           value={dealForm.stage}
           onChange={(e) => setDealForm({ ...dealForm, stage: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
           required
         >
+          <option value="" disabled>
+            Select Stage
+          </option>
           {stages.map((s) => (
-            <MenuItem key={s} value={s}>
+            <option key={s} value={s}>
               {s}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Value ($)"
+        </select>
+
+        <label style={labelStyle} htmlFor="value">
+          Value ($)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="value"
           value={dealForm.value}
           onChange={(e) => setDealForm({ ...dealForm, value: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
+          placeholder="0"
+          min="0"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Date Entered"
+
+        <label style={labelStyle} htmlFor="dateEntered">
+          Date Entered
+        </label>
+        <input
+          style={inputStyle}
           type="date"
+          id="dateEntered"
           value={dealForm.dateEntered}
           onChange={(e) =>
             setDealForm({ ...dealForm, dateEntered: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputLabelProps={{ shrink: true }}
+          placeholder="Select Date Entered"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Date Closed"
+
+        <label style={labelStyle} htmlFor="dateClosed">
+          Date Closed
+        </label>
+        <input
+          style={inputStyle}
           type="date"
+          id="dateClosed"
           value={dealForm.dateClosed}
           onChange={(e) =>
             setDealForm({ ...dealForm, dateClosed: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputLabelProps={{ shrink: true }}
+          placeholder="Select Date Closed"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Team"
+
+        <label style={labelStyle} htmlFor="team">
+          Team
+        </label>
+        <select
+          style={selectStyle}
+          id="team"
           value={dealForm.team}
           onChange={(e) => setDealForm({ ...dealForm, team: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
         >
-          {teams.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
-            </MenuItem>
+          <option value="">Select Team</option>
+          {teams.map((team) => (
+            <option key={team} value={team}>
+              {team}
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Salesperson"
+        </select>
+
+        <label style={labelStyle} htmlFor="salesperson">
+          Salesperson
+        </label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="salesperson"
           value={dealForm.salesperson}
           onChange={(e) =>
             setDealForm({ ...dealForm, salesperson: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Salesperson"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Outcome"
+
+        <label style={labelStyle} htmlFor="outcome">
+          Outcome
+        </label>
+        <select
+          style={selectStyle}
+          id="outcome"
           value={dealForm.outcome}
           onChange={(e) =>
             setDealForm({ ...dealForm, outcome: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
         >
+          <option value="">Select Outcome</option>
           {outcomes.map((o) => (
-            <MenuItem key={o} value={o}>
+            <option key={o} value={o}>
               {o}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Client Category"
+        </select>
+
+        <label style={labelStyle} htmlFor="clientCategory">
+          Category
+        </label>
+        <select
+          style={selectStyle}
+          id="clientCategory"
           value={dealForm.clientCategory}
           onChange={(e) =>
             setDealForm({ ...dealForm, clientCategory: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
         >
+          <option value="">Select Client Category</option>
           {clientCategories.map((c) => (
-            <MenuItem key={c} value={c}>
+            <option key={c} value={c}>
               {c}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Region"
+        </select>
+
+        <label style={labelStyle} htmlFor="region">
+          Region
+        </label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="region"
           value={dealForm.region}
           onChange={(e) => setDealForm({ ...dealForm, region: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Region"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Product"
+
+        <label style={labelStyle} htmlFor="product">
+          Product
+        </label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="product"
           value={dealForm.product}
           onChange={(e) =>
             setDealForm({ ...dealForm, product: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Product"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Upsell Revenue ($)"
+
+        <label style={labelStyle} htmlFor="upsellRevenue">
+          Upsell Revenue ($)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="upsellRevenue"
           value={dealForm.upsellRevenue}
           onChange={(e) =>
             setDealForm({ ...dealForm, upsellRevenue: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
+          placeholder="0"
+          min="0"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Cross-Sell Revenue ($)"
+
+        <label style={labelStyle} htmlFor="crossSellRevenue">
+          Cross-Sell Revenue ($)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="crossSellRevenue"
           value={dealForm.crossSellRevenue}
           onChange={(e) =>
             setDealForm({ ...dealForm, crossSellRevenue: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
+          placeholder="0"
+          min="0"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Project"
+
+        <label style={labelStyle} htmlFor="project">
+          Project
+        </label>
+        <select
+          style={selectStyle}
+          id="project"
           value={dealForm.project}
           onChange={(e) =>
             setDealForm({ ...dealForm, project: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
         >
-          {projects.map((p) => (
-            <MenuItem key={p.id} value={p.name}>
-              {p.name}
-            </MenuItem>
+          <option value="">Select Project</option>
+          {projects.map((project) => (
+            <option key={project.id} value={project.name}>
+              {project.name}
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Account"
+        </select>
+
+        <label style={labelStyle} htmlFor="account">
+          Account
+        </label>
+        <select
+          style={selectStyle}
+          id="account"
           value={dealForm.account}
           onChange={(e) =>
             setDealForm({ ...dealForm, account: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
         >
-          {accounts.map((a) => (
-            <MenuItem key={a.id} value={a.name}>
-              {a.name}
-            </MenuItem>
+          <option value="">Select Account</option>
+          {accounts.map((account) => (
+            <option key={account.id} value={account.name}>
+              {account.name}
+            </option>
           ))}
-        </TextField>
-      </Grid>
-    </Grid>
+        </select>
+      </form>
+    </fieldset>
   );
 };
 
 // TeamForm Component
-const TeamForm = ({ teamForm, setTeamForm, darkMode }) => {
+const TeamForm = ({
+  teamForm,
+  setTeamForm,
+  darkMode,
+  formStyle,
+  labelStyle,
+  inputStyle,
+  selectStyle,
+}) => {
   return (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Team Name"
+    <fieldset style={formStyle}>
+      <form>
+        <label style={labelStyle} htmlFor="teamName">
+          Team Name*
+        </label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="teamName"
           value={teamForm.teamName}
           onChange={(e) =>
             setTeamForm({ ...teamForm, teamName: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
           required
+          placeholder="Enter Team Name"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Quota ($)"
+
+        <label style={labelStyle} htmlFor="quota">
+          Quota ($)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="quota"
           value={teamForm.quota}
           onChange={(e) => setTeamForm({ ...teamForm, quota: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
+          placeholder="0"
+          min="0"
         />
-      </Grid>
-    </Grid>
+      </form>
+    </fieldset>
   );
 };
 
@@ -1602,6 +1662,10 @@ DealForm.propTypes = {
     })
   ).isRequired,
   darkMode: PropTypes.bool.isRequired,
+  formStyle: PropTypes.object.isRequired,
+  labelStyle: PropTypes.string.isRequired,
+  inputStyle: PropTypes.string.isRequired,
+  selectStyle: PropTypes.string.isRequired,
 };
 
 TeamForm.propTypes = {
@@ -1611,6 +1675,10 @@ TeamForm.propTypes = {
   }).isRequired,
   setTeamForm: PropTypes.func.isRequired,
   darkMode: PropTypes.bool.isRequired,
+  formStyle: PropTypes.object.isRequired,
+  labelStyle: PropTypes.string.isRequired,
+  inputStyle: PropTypes.string.isRequired,
+  selectStyle: PropTypes.string.isRequired,
 };
 
 export default ManageSales;

@@ -658,6 +658,72 @@ const ManageMarketing = () => {
     return <Navigate to="/unauthorized" />;
   }
 
+  // Styles for form elements (from ManageClient)
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "500px",
+    textAlign: "center",
+    margin: "auto",
+  };
+
+  const formStyle = {
+    border: "none",
+  };
+
+  const labelStyle = {
+    fontSize: "15px",
+    display: "block",
+    width: "100%",
+    marginTop: "8px",
+    marginBottom: "5px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const inputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "8px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+  };
+
+  const selectStyle = {
+    display: "block",
+    width: "100%",
+    marginBottom: "15px",
+    padding: "10px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "5px",
+    fontSize: "12px",
+  };
+
+  const buttonStyle = {
+    padding: "15px",
+    borderRadius: "10px",
+    margin: "15px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "16px",
+    fontWeight: "bold",
+  };
+
+  const titleStyle = {
+    fontSize: "x-large",
+    textAlign: "center",
+    color: "#327c35",
+  };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box
@@ -820,16 +886,18 @@ const ManageMarketing = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode
-                    ? "background.default"
-                    : "background.paper",
+                  backgroundColor: "#f3f3f3",
+                  borderRadius: "15px",
+                  boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+                  width: "500px",
+                  margin: "auto",
                 },
               }}
             >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
+              <DialogTitle sx={{ ...titleStyle }}>
                 {editData ? "Edit Lead" : "Add Lead"}
               </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
+              <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
                 <LeadForm
                   leadForm={leadForm}
                   setLeadForm={setLeadForm}
@@ -838,18 +906,24 @@ const ManageMarketing = () => {
                   projects={projects}
                   accounts={accounts}
                   darkMode={darkMode}
+                  formStyle={formStyle}
+                  labelStyle={labelStyle}
+                  inputStyle={inputStyle}
+                  selectStyle={selectStyle}
                 />
               </DialogContent>
-              <DialogActions>
-                <Button
+              <DialogActions
+                sx={{ padding: "16px 24px", justifyContent: "center" }}
+              >
+                <button
+                  style={buttonStyle}
                   onClick={() => handleDialogClose("lead")}
-                  sx={{ color: darkMode ? "white" : "black" }}
                 >
                   Cancel
-                </Button>
-                <Button onClick={handleSubmitLead} color="primary">
+                </button>
+                <button style={buttonStyle} onClick={handleSubmitLead}>
                   {editData ? "Update Lead" : "Save Lead"}
-                </Button>
+                </button>
               </DialogActions>
             </Dialog>
 
@@ -861,16 +935,18 @@ const ManageMarketing = () => {
               fullWidth
               sx={{
                 "& .MuiDialog-paper": {
-                  backgroundColor: darkMode
-                    ? "background.default"
-                    : "background.paper",
+                  backgroundColor: "#f3f3f3",
+                  borderRadius: "15px",
+                  boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+                  width: "500px",
+                  margin: "auto",
                 },
               }}
             >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
+              <DialogTitle sx={{ ...titleStyle }}>
                 {editData ? "Edit Campaign" : "Add Campaign"}
               </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
+              <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
                 <CampaignForm
                   campaignForm={campaignForm}
                   setCampaignForm={setCampaignForm}
@@ -879,18 +955,24 @@ const ManageMarketing = () => {
                   projects={projects}
                   accounts={accounts}
                   darkMode={darkMode}
+                  formStyle={formStyle}
+                  labelStyle={labelStyle}
+                  inputStyle={inputStyle}
+                  selectStyle={selectStyle}
                 />
               </DialogContent>
-              <DialogActions>
-                <Button
+              <DialogActions
+                sx={{ padding: "16px 24px", justifyContent: "center" }}
+              >
+                <button
+                  style={buttonStyle}
                   onClick={() => handleDialogClose("campaign")}
-                  sx={{ color: darkMode ? "white" : "black" }}
                 >
                   Cancel
-                </Button>
-                <Button onClick={handleSubmitCampaign} color="primary">
+                </button>
+                <button style={buttonStyle} onClick={handleSubmitCampaign}>
                   {editData ? "Update Campaign" : "Save Campaign"}
-                </Button>
+                </button>
               </DialogActions>
             </Dialog>
 
@@ -1016,52 +1098,55 @@ const LeadForm = ({
   projects,
   accounts,
   darkMode,
+  formStyle,
+  labelStyle,
+  inputStyle,
+  selectStyle,
 }) => {
   return (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Channel"
+    <fieldset style={formStyle}>
+      <form action="#" method="get">
+        <label style={labelStyle} htmlFor="channel">
+          Channel*
+        </label>
+        <select
+          style={selectStyle}
+          id="channel"
           value={leadForm.channel}
           onChange={(e) =>
             setLeadForm({ ...leadForm, channel: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Channel
+          </option>
           {channels.map((channel) => (
-            <MenuItem key={channel} value={channel}>
+            <option key={channel} value={channel}>
               {channel}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Leads"
+        </select>
+
+        <label style={labelStyle} htmlFor="leads">
+          Leads
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="leads"
           value={leadForm.leads}
           onChange={(e) => setLeadForm({ ...leadForm, leads: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Leads"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Marketing Qualified Leads (MQLs)"
+
+        <label style={labelStyle} htmlFor="marketingQualifiedLeads">
+          Marketing Qualified Leads (MQLs)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="marketingQualifiedLeads"
           value={leadForm.marketingQualifiedLeads}
           onChange={(e) =>
             setLeadForm({
@@ -1069,147 +1154,134 @@ const LeadForm = ({
               marketingQualifiedLeads: e.target.value,
             })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter MQLs"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Sales Qualified Leads (SQLs)"
+
+        <label style={labelStyle} htmlFor="salesQualifiedLeads">
+          Sales Qualified Leads (SQLs)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="salesQualifiedLeads"
           value={leadForm.salesQualifiedLeads}
           onChange={(e) =>
             setLeadForm({ ...leadForm, salesQualifiedLeads: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter SQLs"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Conversions"
+
+        <label style={labelStyle} htmlFor="conversions">
+          Conversions
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="conversions"
           value={leadForm.conversions}
           onChange={(e) =>
             setLeadForm({ ...leadForm, conversions: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Conversions"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Spend"
+
+        <label style={labelStyle} htmlFor="spend">
+          Spend
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="spend"
           value={leadForm.spend}
           onChange={(e) => setLeadForm({ ...leadForm, spend: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Spend"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Team"
+
+        <label style={labelStyle} htmlFor="team">
+          Team*
+        </label>
+        <select
+          style={selectStyle}
+          id="team"
           value={leadForm.team}
           onChange={(e) =>
             setLeadForm({ ...leadForm, team: e.target.value, customTeam: "" })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Team
+          </option>
           {teams.map((team) => (
-            <MenuItem key={team} value={team}>
+            <option key={team} value={team}>
               {team}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      {leadForm.team === "Custom" && (
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Custom Team Name"
-            value={leadForm.customTeam}
-            onChange={(e) =>
-              setLeadForm({ ...leadForm, customTeam: e.target.value })
-            }
-            sx={{
-              "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-              "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            }}
-          />
-        </Grid>
-      )}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Project"
+        </select>
+
+        {leadForm.team === "Custom" && (
+          <>
+            <label style={labelStyle} htmlFor="customTeam">
+              Custom Team Name
+            </label>
+            <input
+              style={inputStyle}
+              type="text"
+              id="customTeam"
+              value={leadForm.customTeam}
+              onChange={(e) =>
+                setLeadForm({ ...leadForm, customTeam: e.target.value })
+              }
+              placeholder="Enter Custom Team Name"
+            />
+          </>
+        )}
+
+        <label style={labelStyle} htmlFor="project">
+          Project*
+        </label>
+        <select
+          style={selectStyle}
+          id="project"
           value={leadForm.project}
           onChange={(e) =>
             setLeadForm({ ...leadForm, project: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Project
+          </option>
           {projects.map((project) => (
-            <MenuItem key={project.id} value={project.name}>
+            <option key={project.id} value={project.name}>
               {project.name}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Account"
+        </select>
+
+        <label style={labelStyle} htmlFor="account">
+          Account*
+        </label>
+        <select
+          style={selectStyle}
+          id="account"
           value={leadForm.account}
           onChange={(e) =>
             setLeadForm({ ...leadForm, account: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Account
+          </option>
           {accounts.map((account) => (
-            <MenuItem key={account.id} value={account.name}>
+            <option key={account.id} value={account.name}>
               {account.name}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-    </Grid>
+        </select>
+      </form>
+    </fieldset>
   );
 };
 
@@ -1222,83 +1294,86 @@ const CampaignForm = ({
   projects,
   accounts,
   darkMode,
+  formStyle,
+  labelStyle,
+  inputStyle,
+  selectStyle,
 }) => {
   return (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Campaign Name"
+    <fieldset style={formStyle}>
+      <form action="#" method="get">
+        <label style={labelStyle} htmlFor="name">
+          Campaign Name*
+        </label>
+        <input
+          style={inputStyle}
+          type="text"
+          id="name"
           value={campaignForm.name}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, name: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Campaign Name"
+          required
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Campaign Type"
+
+        <label style={labelStyle} htmlFor="type">
+          Campaign Type*
+        </label>
+        <select
+          style={selectStyle}
+          id="type"
           value={campaignForm.type}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, type: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Campaign Type
+          </option>
           {campaignTypes.map((type) => (
-            <MenuItem key={type} value={type}>
+            <option key={type} value={type}>
               {type}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Cost"
+        </select>
+
+        <label style={labelStyle} htmlFor="cost">
+          Cost
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="cost"
           value={campaignForm.cost}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, cost: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Cost"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Revenue"
+
+        <label style={labelStyle} htmlFor="revenue">
+          Revenue
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="revenue"
           value={campaignForm.revenue}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, revenue: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Revenue"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Click-Through Rate (CTR)"
+
+        <label style={labelStyle} htmlFor="clickThroughRate">
+          Click-Through Rate (CTR)
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="clickThroughRate"
           value={campaignForm.clickThroughRate}
           onChange={(e) =>
             setCampaignForm({
@@ -1306,47 +1381,43 @@ const CampaignForm = ({
               clickThroughRate: e.target.value,
             })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter CTR"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Likes"
+
+        <label style={labelStyle} htmlFor="likes">
+          Likes
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="likes"
           value={campaignForm.likes}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, likes: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Likes"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Impressions"
+
+        <label style={labelStyle} htmlFor="impressions">
+          Impressions
+        </label>
+        <input
+          style={inputStyle}
           type="number"
+          id="impressions"
           value={campaignForm.impressions}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, impressions: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
+          placeholder="Enter Impressions"
         />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Team"
+
+        <label style={labelStyle} htmlFor="team">
+          Team*
+        </label>
+        <select
+          style={selectStyle}
+          id="team"
           value={campaignForm.team}
           onChange={(e) =>
             setCampaignForm({
@@ -1355,89 +1426,81 @@ const CampaignForm = ({
               customTeam: "",
             })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Team
+          </option>
           {teams.map((team) => (
-            <MenuItem key={team} value={team}>
+            <option key={team} value={team}>
               {team}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      {campaignForm.team === "Custom" && (
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Custom Team Name"
-            value={campaignForm.customTeam}
-            onChange={(e) =>
-              setCampaignForm({ ...campaignForm, customTeam: e.target.value })
-            }
-            sx={{
-              "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-              "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            }}
-          />
-        </Grid>
-      )}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Project"
+        </select>
+
+        {campaignForm.team === "Custom" && (
+          <>
+            <label style={labelStyle} htmlFor="customTeam">
+              Custom Team Name
+            </label>
+            <input
+              style={inputStyle}
+              type="text"
+              id="customTeam"
+              value={campaignForm.customTeam}
+              onChange={(e) =>
+                setCampaignForm({ ...campaignForm, customTeam: e.target.value })
+              }
+              placeholder="Enter Custom Team Name"
+            />
+          </>
+        )}
+
+        <label style={labelStyle} htmlFor="project">
+          Project*
+        </label>
+        <select
+          style={selectStyle}
+          id="project"
           value={campaignForm.project}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, project: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Project
+          </option>
           {projects.map((project) => (
-            <MenuItem key={project.id} value={project.name}>
+            <option key={project.id} value={project.name}>
               {project.name}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Account"
+        </select>
+
+        <label style={labelStyle} htmlFor="account">
+          Account*
+        </label>
+        <select
+          style={selectStyle}
+          id="account"
           value={campaignForm.account}
           onChange={(e) =>
             setCampaignForm({ ...campaignForm, account: e.target.value })
           }
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
+          required
         >
+          <option value="" disabled>
+            Select Account
+          </option>
           {accounts.map((account) => (
-            <MenuItem key={account.id} value={account.name}>
+            <option key={account.id} value={account.name}>
               {account.name}
-            </MenuItem>
+            </option>
           ))}
-        </TextField>
-      </Grid>
-    </Grid>
+        </select>
+      </form>
+    </fieldset>
   );
 };
 
@@ -1473,6 +1536,10 @@ LeadForm.propTypes = {
     })
   ).isRequired,
   darkMode: PropTypes.bool.isRequired,
+  formStyle: PropTypes.object.isRequired,
+  labelStyle: PropTypes.object.isRequired,
+  inputStyle: PropTypes.object.isRequired,
+  selectStyle: PropTypes.object.isRequired,
 };
 
 CampaignForm.propTypes = {
@@ -1505,6 +1572,10 @@ CampaignForm.propTypes = {
     })
   ).isRequired,
   darkMode: PropTypes.bool.isRequired,
+  formStyle: PropTypes.object.isRequired,
+  labelStyle: PropTypes.object.isRequired,
+  inputStyle: PropTypes.object.isRequired,
+  selectStyle: PropTypes.object.isRequired,
 };
 
 export default ManageMarketing;
