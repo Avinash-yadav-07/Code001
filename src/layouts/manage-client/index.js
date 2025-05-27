@@ -19,6 +19,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  CardActions,
 } from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
 import {
@@ -129,6 +130,80 @@ const ManageClient = () => {
   const [userRoles, setUserRoles] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [excelOption, setExcelOption] = useState("");
+
+  // Styles adapted from ManageCustomer
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    textAlign: "center",
+    margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
+  };
+
+  const formInputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "6px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px",
+  };
+
+  const formSelectStyle = {
+    ...formInputStyle,
+    padding: "8px",
+    borderRadius: "5px",
+    height: "32px",
+  };
+
+  const formCheckboxStyle = {
+    display: "inline",
+    width: "auto",
+    marginRight: "5px",
+  };
+
+  const formLabelStyle = {
+    fontSize: "14px",
+    display: "block",
+    width: "100%",
+    marginTop: "6px",
+    marginBottom: "4px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const formButtonStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    margin: "10px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "14px",
+  };
+
+  const formHeadingStyle = {
+    fontSize: "large",
+    textAlign: "center",
+    color: "#327c35",
+    margin: "10px 0",
+  };
 
   // Fetch user roles from Firestore
   useEffect(() => {
@@ -855,86 +930,6 @@ const ManageClient = () => {
     setErrors({});
   };
 
-  // Styles for form elements
-  const formContainerStyle = {
-    backgroundColor: "#fff",
-    borderRadius: "15px",
-    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-    padding: "10px 20px",
-    width: "500px",
-    textAlign: "center",
-    margin: "auto",
-  };
-
-  const formStyle = {
-    border: "none",
-  };
-
-  const labelStyle = {
-    fontSize: "15px",
-    display: "block",
-    width: "100%",
-    marginTop: "8px",
-    marginBottom: "5px",
-    textAlign: "left",
-    color: "#555",
-    fontWeight: "bold",
-  };
-
-  const inputStyle = {
-    display: "block",
-    width: "100%",
-    padding: "8px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
-    fontSize: "12px",
-  };
-
-  const selectStyle = {
-    display: "block",
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-  };
-
-  const checkboxContainerStyle = {
-    display: "block",
-    width: "100%",
-    maxHeight: "150px",
-    overflowY: "auto",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-    backgroundColor: "#fff",
-  };
-
-  const buttonStyle = {
-    padding: "15px",
-    borderRadius: "10px",
-    margin: "15px",
-    border: "none",
-    color: "white",
-    cursor: "pointer",
-    backgroundColor: "#4caf50",
-    width: "40%",
-    fontSize: "16px",
-    fontWeight: "bold",
-  };
-
-  const titleStyle = {
-    fontSize: "x-large",
-    textAlign: "center",
-    color: "#327c35",
-  };
-
   // Handle project selection change
   const handleProjectChange = (projectId) => {
     setSelectedProjects((prev) =>
@@ -1002,14 +997,13 @@ const ManageClient = () => {
   return (
     <Box
       sx={{
-        backgroundColor: darkMode ? "background.default" : "background.paper",
+        backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         minHeight: "100vh",
       }}
     >
       <DashboardNavbar
         absolute
         light={!darkMode}
-        isMini={false}
         sx={{
           backgroundColor: darkMode
             ? "rgba(33, 33, 33, 0.9)"
@@ -1019,22 +1013,23 @@ const ManageClient = () => {
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
-          left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           width: {
             xs: "100%",
-            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
           },
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       />
       <MDBox
         p={3}
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           marginTop: { xs: "140px", md: "100px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           minHeight: "calc(100vh - 80px)",
           paddingTop: { xs: "32px", md: "24px" },
-          zIndex: 1000,
         }}
       >
         <Grid container spacing={3}>
@@ -1050,37 +1045,36 @@ const ManageClient = () => {
                 borderRadius="lg"
                 coloredShadow={darkMode ? "dark" : "info"}
               >
-                <MDTypography variant="h6" color={darkMode ? "white" : "black"}>
+                <MDTypography variant="h6" color="white">
                   Client Management
                 </MDTypography>
               </MDBox>
-              <MDBox pt={2} pb={2} px={2}>
+              <MDBox
+                pt={3}
+                pb={2}
+                px={2}
+                display="flex"
+                flexDirection={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "stretch", sm: "center" }}
+                gap={2}
+                justifyContent="space-between"
+              >
                 {!isReadOnly && (
                   <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      mb: 1,
-                      alignItems: "center",
-                    }}
+                    display="flex"
+                    flexDirection={{ xs: "column", sm: "row" }}
+                    gap={2}
+                    width={{ xs: "100%", sm: "auto" }}
                   >
-                    <Button
+                    <MDButton
                       variant="gradient"
                       color={darkMode ? "dark" : "info"}
                       onClick={handleClickOpen}
                       startIcon={<AddIcon />}
-                      sx={{
-                        textTransform: "none",
-                        fontWeight: "medium",
-                        boxShadow: 3,
-                        "&:hover": {
-                          boxShadow: 6,
-                          backgroundColor: darkMode ? "grey.700" : "info.dark",
-                        },
-                      }}
+                      fullWidth={{ xs: true, sm: false }}
                     >
                       Add Client
-                    </Button>
+                    </MDButton>
                     <FormControl sx={{ minWidth: 150 }}>
                       <InputLabel id="excel-options-label">
                         Excel Options
@@ -1091,7 +1085,7 @@ const ManageClient = () => {
                         onChange={handleExcelOptionChange}
                         label="Excel Options"
                         sx={{
-                          height: "36px",
+                          height: "40px",
                           "& .MuiSelect-select": {
                             padding: "8px",
                           },
@@ -1117,7 +1111,7 @@ const ManageClient = () => {
                   </Box>
                 )}
               </MDBox>
-              <Grid container spacing={2} sx={{ padding: "12px" }}>
+              <Grid container spacing={3} sx={{ padding: "16px" }}>
                 {clients.map((client) => (
                   <Grid item xs={12} key={client.id}>
                     <Card
@@ -1127,36 +1121,56 @@ const ManageClient = () => {
                           : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
                         borderRadius: "12px",
                         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                        padding: "16px",
+                        padding: "20px",
                         transition: "0.3s ease-in-out",
                         "&:hover": {
                           boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
                           transform: "scale(1.02)",
                         },
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
                       }}
                     >
-                      <CardContent
+                      <Box
                         sx={{
-                          padding: 0,
-                          "&:last-child": { paddingBottom: 0 },
+                          width: { xs: "100%", sm: "120px" },
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor:
+                            client.status === "Active"
+                              ? "#4caf50"
+                              : darkMode
+                              ? "#90A4AE"
+                              : "#B0BEC5",
+                          borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+                          marginRight: { sm: "16px" },
+                          marginBottom: { xs: "16px", sm: 0 },
+                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
                         }}
                       >
-                        <MDBox>
-                          <Typography
-                            variant="h5"
-                            sx={{
-                              fontWeight: "bold",
-                              color: darkMode ? "#fff" : "#333",
-                              mb: 2,
-                            }}
-                          >
-                            {client.name}
-                          </Typography>
+                        <MDTypography
+                          variant="body2"
+                          color="white"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: "1rem",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {client.status}
+                        </MDTypography>
+                      </Box>
+                      <Box
+                        sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}
+                      >
+                        <CardContent>
                           <Grid container spacing={2}>
-                            <Grid item xs={12} sm={4}>
+                            <Grid item xs={12} sm={6}>
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
                               >
                                 <span>Client ID: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1166,7 +1180,17 @@ const ManageClient = () => {
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                display="block"
+                                sx={{ mb: 1 }}
+                              >
+                                <span>Name: </span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {client.name}
+                                </span>
+                              </MDTypography>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
                               >
                                 <span>Email: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1176,18 +1200,39 @@ const ManageClient = () => {
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                display="block"
+                                sx={{ mb: 1 }}
                               >
                                 <span>Phone: </span>
                                 <span style={{ fontWeight: "bold" }}>
                                   {client.phone || "N/A"}
                                 </span>
                               </MDTypography>
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
+                                <span>Address: </span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {client.address || "N/A"}
+                                </span>
+                              </MDTypography>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
+                              >
+                                <span>Industry: </span>
+                                <span style={{ fontWeight: "bold" }}>
+                                  {client.industry || "N/A"}
+                                </span>
+                              </MDTypography>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                              <MDTypography
+                                variant="body2"
+                                color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
                               >
                                 <span>Contract ID: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1197,7 +1242,7 @@ const ManageClient = () => {
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                display="block"
+                                sx={{ mb: 1 }}
                               >
                                 <span>Start: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1207,18 +1252,17 @@ const ManageClient = () => {
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                display="block"
+                                sx={{ mb: 1 }}
                               >
                                 <span>End: </span>
                                 <span style={{ fontWeight: "bold" }}>
                                   {formatTimestamp(client.contractEndDate)}
                                 </span>
                               </MDTypography>
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
+                                sx={{ mb: 1 }}
                               >
                                 <span>Amount: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1228,37 +1272,17 @@ const ManageClient = () => {
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                display="block"
+                                sx={{ mb: 1 }}
                               >
                                 <span>Status: </span>
-                                <Chip
-                                  label={client.status}
-                                  size="small"
-                                  sx={{
-                                    backgroundColor:
-                                      client.status === "Active"
-                                        ? "#4CAF50"
-                                        : "#F44336",
-                                    color: "#fff",
-                                    fontSize: "12px",
-                                    height: "24px",
-                                  }}
-                                />
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                display="block"
-                              >
-                                <span>Industry: </span>
                                 <span style={{ fontWeight: "bold" }}>
-                                  {client.industry || "N/A"}
+                                  {client.status}
                                 </span>
                               </MDTypography>
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                display="block"
+                                sx={{ mb: 1 }}
                               >
                                 <span>Projects: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1279,12 +1303,10 @@ const ManageClient = () => {
                                     : "No projects assigned"}
                                 </span>
                               </MDTypography>
-                            </Grid>
-                            <Grid item xs={12}>
                               <MDTypography
                                 variant="body2"
                                 color={darkMode ? "white" : "textSecondary"}
-                                mt={1}
+                                sx={{ mb: 1 }}
                               >
                                 <span>Metrics: </span>
                                 <span style={{ fontWeight: "bold" }}>
@@ -1295,24 +1317,35 @@ const ManageClient = () => {
                               </MDTypography>
                             </Grid>
                           </Grid>
-                          {!isReadOnly && (
-                            <MDBox
-                              mt={2}
-                              display="flex"
-                              justifyContent="flex-end"
+                        </CardContent>
+                        {!isReadOnly && (
+                          <CardActions
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 1,
+                              justifyContent: { xs: "space-between", sm: "flex-end" },
+                              alignItems: "center",
+                              padding: "8px 16px",
+                            }}
+                          >
+                            <MDButton
+                              variant="gradient"
+                              color={darkMode ? "dark" : "info"}
+                              onClick={() => handleEdit(client)}
+                              sx={{
+                                flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                                minWidth: { xs: "100px", sm: "100px" },
+                                maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                                padding: "8px 16px",
+                                fontSize: "14px",
+                              }}
                             >
-                              <MDButton
-                                variant="gradient"
-                                color={darkMode ? "dark" : "info"}
-                                onClick={() => handleEdit(client)}
-                                size="small"
-                              >
-                                Edit
-                              </MDButton>
-                            </MDBox>
-                          )}
-                        </MDBox>
-                      </CardContent>
+                              Edit
+                            </MDButton>
+                          </CardActions>
+                        )}
+                      </Box>
                     </Card>
                   </Grid>
                 ))}
@@ -1323,439 +1356,335 @@ const ManageClient = () => {
       </MDBox>
       <Box
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          zIndex: 1100,
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         }}
       >
         <Footer />
       </Box>
       {!isReadOnly && (
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          maxWidth="md"
-          fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "#f3f3f3",
-              borderRadius: "15px",
-              boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-              width: "500px",
-              margin: "auto",
-            },
-          }}
-        >
-          <DialogTitle sx={{ ...titleStyle }}>
-            {editingClient ? "Edit Client" : "Add Client"}
-          </DialogTitle>
-          <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
-            <fieldset style={formStyle}>
-              <form action="#" method="get">
-                <label style={labelStyle} htmlFor="name">
-                  Name
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.name ? "red" : "#ddd",
-                  }}
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter Name"
-                  required
-                />
-                {errors.name && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.name}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="email">
-                  Email
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.email ? "red" : "#ddd",
-                  }}
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Email"
-                  required
-                />
-                {errors.email && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.email}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="phone">
-                  Phone
-                </label>
-                <input
-                  style={inputStyle}
-                  type="tel"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter Phone Number"
-                />
-
-                <label style={labelStyle} htmlFor="address">
-                  Address
-                </label>
-                <input
-                  style={inputStyle}
-                  type="text"
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Enter Address"
-                />
-
-                <label style={labelStyle} htmlFor="industry">
-                  Industry*
-                </label>
-                <select
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.industry ? "red" : "#ddd",
-                  }}
-                  id="industry"
-                  value={industry}
-                  onChange={(e) => setIndustry(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Select Industry
+        <>
+          <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              <Typography sx={formHeadingStyle}>
+                {editingClient ? "Edit Client" : "Add Client"}
+              </Typography>
+              <label style={formLabelStyle}>Name*</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter Name"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.name ? "red" : "#ddd",
+                }}
+              />
+              {errors.name && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.name}
+                </span>
+              )}
+              <label style={formLabelStyle}>Email*</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter Email"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.email ? "red" : "#ddd",
+                }}
+              />
+              {errors.email && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.email}
+                </span>
+              )}
+              <label style={formLabelStyle}>Phone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter Phone Number"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Address</label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter Address"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Industry*</label>
+              <select
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                required
+                style={{
+                  ...formSelectStyle,
+                  borderColor: errors.industry ? "red" : "#ddd",
+                }}
+              >
+                <option value="" disabled>
+                  Select Industry
+                </option>
+                {industries.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
                   </option>
-                  {industries.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-                {errors.industry && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.industry}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="contractStartDate">
-                  Contract Start Date*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.contractStartDate ? "red" : "#ddd",
-                  }}
-                  type="date"
-                  id="contractStartDate"
-                  value={contractStartDate}
-                  onChange={(e) => setContractStartDate(e.target.value)}
-                  required
-                />
-                {errors.contractStartDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.contractStartDate}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="contractEndDate">
-                  Contract End Date*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.contractEndDate ? "red" : "#ddd",
-                  }}
-                  type="date"
-                  id="contractEndDate"
-                  value={contractEndDate}
-                  onChange={(e) => setContractEndDate(e.target.value)}
-                  required
-                />
-                {errors.contractEndDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.contractEndDate}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="contractAmount">
-                  Contract Amount*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.contractAmount ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="contractAmount"
-                  value={contractAmount}
-                  onChange={(e) => setContractAmount(e.target.value)}
-                  placeholder="Enter Contract Amount"
-                  required
-                />
-                {errors.contractAmount && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.contractAmount}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="cac">
-                  CAC
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.cac ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="cac"
-                  value={cac}
-                  onChange={(e) => setCac(e.target.value)}
-                  placeholder="Enter CAC"
-                />
-                {errors.cac && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.cac}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="cltv">
-                  CLTV
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.cltv ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="cltv"
-                  value={cltv}
-                  onChange={(e) => setCltv(e.target.value)}
-                  placeholder="Enter CLTV"
-                />
-                {errors.cltv && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.cltv}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="revenueGenerated">
-                  Revenue Generated
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.revenueGenerated ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="revenueGenerated"
-                  value={revenueGenerated}
-                  onChange={(e) => setRevenueGenerated(e.target.value)}
-                  placeholder="Enter Revenue Generated"
-                />
-                {errors.revenueGenerated && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.revenueGenerated}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="oneTimeRevenue">
-                  One-Time Revenue
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.oneTimeRevenue ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="oneTimeRevenue"
-                  value={oneTimeRevenue}
-                  onChange={(e) => setOneTimeRevenue(e.target.value)}
-                  placeholder="Enter One-Time Revenue"
-                />
-                {errors.oneTimeRevenue && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.oneTimeRevenue}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="recurringRevenue">
-                  Recurring Revenue
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.recurringRevenue ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="recurringRevenue"
-                  value={recurringRevenue}
-                  onChange={(e) => setRecurringRevenue(e.target.value)}
-                  placeholder="Enter Recurring Revenue"
-                />
-                {errors.recurringRevenue && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.recurringRevenue}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="status">
-                  Status*
-                </label>
-                <select
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.status ? "red" : "#ddd",
-                  }}
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Select Status
+                ))}
+              </select>
+              {errors.industry && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.industry}
+                </span>
+              )}
+              <label style={formLabelStyle}>Contract Start Date*</label>
+              <input
+                type="date"
+                value={contractStartDate}
+                onChange={(e) => setContractStartDate(e.target.value)}
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.contractStartDate ? "red" : "#ddd",
+                }}
+              />
+              {errors.contractStartDate && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.contractStartDate}
+                </span>
+              )}
+              <label style={formLabelStyle}>Contract End Date*</label>
+              <input
+                type="date"
+                value={contractEndDate}
+                onChange={(e) => setContractEndDate(e.target.value)}
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.contractEndDate ? "red" : "#ddd",
+                }}
+              />
+              {errors.contractEndDate && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.contractEndDate}
+                </span>
+              )}
+              <label style={formLabelStyle}>Contract Amount*</label>
+              <input
+                type="number"
+                value={contractAmount}
+                onChange={(e) => setContractAmount(e.target.value)}
+                placeholder="Enter Contract Amount"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.contractAmount ? "red" : "#ddd",
+                }}
+              />
+              {errors.contractAmount && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.contractAmount}
+                </span>
+              )}
+              <label style={formLabelStyle}>CAC</label>
+              <input
+                type="number"
+                value={cac}
+                onChange={(e) => setCac(e.target.value)}
+                placeholder="Enter CAC"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.cac ? "red" : "#ddd",
+                }}
+              />
+              {errors.cac && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.cac}
+                </span>
+              )}
+              <label style={formLabelStyle}>CLTV</label>
+              <input
+                type="number"
+                value={cltv}
+                onChange={(e) => setCltv(e.target.value)}
+                placeholder="Enter CLTV"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.cltv ? "red" : "#ddd",
+                }}
+              />
+              {errors.cltv && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.cltv}
+                </span>
+              )}
+              <label style={formLabelStyle}>Revenue Generated</label>
+              <input
+                type="number"
+                value={revenueGenerated}
+                onChange={(e) => setRevenueGenerated(e.target.value)}
+                placeholder="Enter Revenue Generated"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.revenueGenerated ? "red" : "#ddd",
+                }}
+              />
+              {errors.revenueGenerated && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.revenueGenerated}
+                </span>
+              )}
+              <label style={formLabelStyle}>One-Time Revenue</label>
+              <input
+                type="number"
+                value={oneTimeRevenue}
+                onChange={(e) => setOneTimeRevenue(e.target.value)}
+                placeholder="Enter One-Time Revenue"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.oneTimeRevenue ? "red" : "#ddd",
+                }}
+              />
+              {errors.oneTimeRevenue && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.oneTimeRevenue}
+                </span>
+              )}
+              <label style={formLabelStyle}>Recurring Revenue</label>
+              <input
+                type="number"
+                value={recurringRevenue}
+                onChange={(e) => setRecurringRevenue(e.target.value)}
+                placeholder="Enter Recurring Revenue"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.recurringRevenue ? "red" : "#ddd",
+                }}
+              />
+              {errors.recurringRevenue && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.recurringRevenue}
+                </span>
+              )}
+              <label style={formLabelStyle}>Status*</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+                style={{
+                  ...formSelectStyle,
+                  borderColor: errors.status ? "red" : "#ddd",
+                }}
+              >
+                <option value="" disabled>
+                  Select Status
+                </option>
+                {statuses.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
                   </option>
-                  {statuses.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                {errors.status && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.status}
-                  </span>
-                )}
-
-                <label style={labelStyle}>Projects</label>
-                {loadingProjects ? (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      py: 2,
-                    }}
-                  >
-                    <CircularProgress size={24} />
-                  </Box>
-                ) : (
-                  <Box sx={checkboxContainerStyle}>
-                    {projects.map((project) => (
-                      <FormControlLabel
-                        key={project.id}
-                        control={
-                          <Checkbox
-                            checked={selectedProjects.includes(
-                              project.projectId
-                            )}
-                            onChange={() =>
-                              handleProjectChange(project.projectId)
-                            }
-                            sx={{
-                              "& .MuiSvgIcon-root": { fontSize: "inline-flex" },
-                            }}
-                          />
-                        }
-                        label={project.name || "Unknown"}
-                        sx={{
-                          display: "block",
-                          margin: "0",
-                          "& .MuiFormControlLabel-label": {
-                            fontSize: "12px",
-                            color: "#333",
-                          },
-                        }}
+                ))}
+              </select>
+              {errors.status && (
+                <span style={{ color: "red", fontSize: "12px" }}>
+                  {errors.status}
+                </span>
+              )}
+              <label style={formLabelStyle}>Projects</label>
+              {loadingProjects ? (
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    py: 2,
+                  }}
+                >
+                  <CircularProgress size={24} />
+                </Box>
+              ) : (
+                <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
+                  {projects.map((project) => (
+                    <Box
+                      key={project.projectId}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        mb: "4px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        id={project.projectId}
+                        checked={selectedProjects.includes(project.projectId)}
+                        onChange={() => handleProjectChange(project.projectId)}
+                        style={formCheckboxStyle}
                       />
-                    ))}
-                  </Box>
-                )}
-                <Typography
-                  variant="caption"
-                  color="textSecondary"
-                  sx={{ display: "block", mt: 1 }}
+                      <label
+                        htmlFor={project.projectId}
+                        style={{
+                          ...formLabelStyle,
+                          display: "inline",
+                          marginLeft: "5px",
+                          fontWeight: "normal",
+                          flex: "1",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {project.projectId} - {project.name}
+                      </label>
+                    </Box>
+                  ))}
+                </Box>
+              )}
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  style={formButtonStyle}
                 >
-                  Click to select or deselect project IDs
-                </Typography>
-              </form>
-            </fieldset>
-          </DialogContent>
-          <DialogActions
-            sx={{ padding: "16px 24px", justifyContent: "center" }}
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Save
+                </button>
+              </Box>
+            </form>
+          </Box>
+          <Box
+            sx={{
+              ...formContainerStyle,
+              display: confirmUpdateOpen ? "block" : "none",
+            }}
           >
-            <button style={buttonStyle} onClick={handleClose}>
-              Cancel
-            </button>
-            <button style={buttonStyle} onClick={handleSubmit}>
-              Save
-            </button>
-          </DialogActions>
-        </Dialog>
-      )}
-      {!isReadOnly && (
-        <Dialog
-          open={confirmUpdateOpen}
-          onClose={() => setConfirmUpdateOpen(false)}
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: darkMode
-                ? "background.default"
-                : "background.paper",
-              borderRadius: "12px",
-            },
-          }}
-        >
-          <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-            Ready to update client details?
-          </DialogTitle>
-          <DialogActions>
-            <Button
-              onClick={() => setConfirmUpdateOpen(false)}
-              sx={{
-                color: darkMode ? "#ffffff" : "#000000",
-                textTransform: "none",
-                fontWeight: "bold",
-                fontSize: "16px",
-                padding: "8px 20px",
-                borderRadius: "8px",
-                border: darkMode ? "1px solid #ffffff" : "1px solid #000000",
-                "&:hover": {
-                  backgroundColor: darkMode
-                    ? "rgba(255,255,255,0.2)"
-                    : "rgba(0,0,0,0.1)",
-                  color: darkMode ? "#ffffff" : "#000000",
-                },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={confirmUpdate}
-              sx={{
-                backgroundColor: darkMode ? "#4fc3f7" : "#1976d2",
-                color: "#ffffff",
-                textTransform: "none",
-                fontWeight: "bold",
-                fontSize: "16px",
-                padding: "8px 20px",
-                borderRadius: "8px",
-                "&:hover": {
-                  backgroundColor: darkMode ? "#29b6f6" : "#1565c0",
-                },
-              }}
-            >
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+            <Typography sx={formHeadingStyle}>
+              Ready to update client details?
+            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                type="button"
+                onClick={() => setConfirmUpdateOpen(false)}
+                style={formButtonStyle}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmUpdate}
+                style={formButtonStyle}
+              >
+                Confirm
+              </button>
+            </Box>
+          </Box>
+        </>
       )}
     </Box>
   );

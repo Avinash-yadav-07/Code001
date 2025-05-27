@@ -2,10 +2,6 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Grid,
   Card,
   Typography,
@@ -40,7 +36,19 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useMaterialUIController } from "context";
 import * as XLSX from "xlsx";
 
-// Initialize secondary Firebase app
+// Note: If the error persists, check the following component files for correct exports:
+// - components/MDBox.js
+// - components/MDTypography.js
+// - components/MDBadge.js
+// - examples/Tables/DataTable.js
+// - examples/Navbars/DashboardNavbar.js
+// - examples/Footer.js
+// Ensure each file has: `export default ComponentName`
+// If named exports are used (e.g., `export const MDBox`), update imports to:
+// import { MDBox } from "components/MDBox";
+// import { MDTypography } from "components/MDTypography";
+// etc.
+
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = getAuth(secondaryApp);
 
@@ -59,18 +67,16 @@ const roles = [
   "ManageClient:full access",
   "ManageMarketing:full access",
   "ManageSales:full access",
-  "ManageCustomer:raed",
+  "ManageCustomer:read",
   "ManageCustomer:full access",
 ];
 
-// Generate unique employee ID
 const generateEmployeeId = (name) => {
   const prefix = name.substring(0, 3).toUpperCase();
   const randomNumber = Math.floor(Math.random() * 900 + 100);
   return `${prefix}-${randomNumber}`;
 };
 
-// Check if an ID is unique in Firestore
 const checkUniqueId = async (
   collectionName,
   field,
@@ -87,7 +93,6 @@ const checkUniqueId = async (
   }
 };
 
-// Validate email format
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
@@ -110,8 +115,6 @@ const ManageEmployee = () => {
   const [fetchError, setFetchError] = useState(null);
   const [excelOption, setExcelOption] = useState("");
   const [errors, setErrors] = useState({});
-
-  // Form states
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -122,12 +125,82 @@ const ManageEmployee = () => {
   const [salary, setSalary] = useState("");
   const [status, setStatus] = useState("");
   const [selectedRoles, setSelectedRoles] = useState([]);
-
-  // Dark mode state
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
 
-  // Fetch user roles from Firestore "users" collection
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    textAlign: "center",
+    margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
+  };
+
+  const formInputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "6px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px",
+  };
+
+  const formSelectStyle = {
+    ...formInputStyle,
+    padding: "8px",
+    borderRadius: "5px",
+    height: "32px",
+  };
+
+  const formCheckboxStyle = {
+    display: "inline",
+    width: "auto",
+    marginRight: "5px",
+  };
+
+  const formLabelStyle = {
+    fontSize: "14px",
+    display: "block",
+    width: "100%",
+    marginTop: "6px",
+    marginBottom: "4px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const formButtonStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    margin: "10px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "14px",
+  };
+
+  const formHeadingStyle = {
+    fontSize: "large",
+    textAlign: "center",
+    color: "#327c35",
+    margin: "10px 0",
+  };
+
   useEffect(() => {
     const fetchUserRoles = async () => {
       const user = auth.currentUser;
@@ -165,7 +238,6 @@ const ManageEmployee = () => {
     userRoles.includes("ManageEmployee:read") ||
     userRoles.includes("ManageEmployee:full access");
 
-  // Fetch employees
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -187,7 +259,6 @@ const ManageEmployee = () => {
     }
   }, [loadingRoles]);
 
-  // Filter and search employees
   const filteredEmployees = employees.filter((employee) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -204,7 +275,6 @@ const ManageEmployee = () => {
     return matchesSearch && matchesFilter;
   });
 
-  // Pagination logic
   const totalItems = filteredEmployees.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -217,7 +287,6 @@ const ManageEmployee = () => {
     }
   };
 
-  // Employee Component
   const Employee = ({ name, employeeId, email }) => (
     <MDBox display="flex" alignItems="center" lineHeight={1}>
       <MDBox ml={0} lineHeight={1.2}>
@@ -240,7 +309,6 @@ const ManageEmployee = () => {
     email: PropTypes.string.isRequired,
   };
 
-  // DesignationDept Component
   const DesignationDept = ({ designation, department }) => (
     <MDBox lineHeight={1} textAlign="left">
       <MDTypography
@@ -260,7 +328,6 @@ const ManageEmployee = () => {
     department: PropTypes.string.isRequired,
   };
 
-  // StatusBadge Component
   const StatusBadge = ({ status }) => {
     const colorMap = {
       Active: "success",
@@ -284,7 +351,6 @@ const ManageEmployee = () => {
     status: PropTypes.string.isRequired,
   };
 
-  // Handle Excel option change
   const handleExcelOptionChange = (event) => {
     const option = event.target.value;
     setExcelOption(option);
@@ -300,7 +366,6 @@ const ManageEmployee = () => {
     setExcelOption("");
   };
 
-  // Handle Excel file upload
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -319,7 +384,6 @@ const ManageEmployee = () => {
 
         const validRoles = roles.map((r) => r.toLowerCase());
 
-        // Normalize column names for Excel import
         const normalizeColumnName = (name) => {
           if (!name) return "";
           const cleanName = name.trim().toLowerCase().replace(/\s+/g, "");
@@ -350,7 +414,6 @@ const ManageEmployee = () => {
         });
 
         for (const employee of normalizedData) {
-          // Validate required fields
           if (
             !employee["Name"]?.trim() ||
             !employee["Email"]?.trim() ||
@@ -371,7 +434,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Validate email format
           if (!isValidEmail(employee["Email"])) {
             console.error(
               "Invalid email format for employee:",
@@ -383,7 +445,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Validate department
           const normalizedDepartment = employee["Department"].trim();
           if (
             !departments
@@ -397,7 +458,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Validate status
           const normalizedStatus = employee["Status"].trim();
           if (
             !statuses
@@ -411,7 +471,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Validate joining date format (YYYY-MM-DD)
           const joiningDateRegex = /^\d{4}-\d{2}-\d{2}$/;
           if (!joiningDateRegex.test(employee["Joining Date"])) {
             console.error(
@@ -424,7 +483,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Validate exit date format if provided
           if (
             employee["Exit Date"] &&
             !joiningDateRegex.test(employee["Exit Date"])
@@ -439,7 +497,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Validate salary if provided
           if (employee["Salary"] && isNaN(Number(employee["Salary"]))) {
             console.error("Invalid salary for employee:", employee["Name"]);
             alert(
@@ -448,7 +505,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Process roles
           let employeeRoles = [];
           if (employee["Roles"]) {
             employeeRoles = employee["Roles"]
@@ -458,7 +514,6 @@ const ManageEmployee = () => {
               .filter((r) => validRoles.includes(r.toLowerCase()));
           }
 
-          // Generate unique employee ID
           let employeeId = generateEmployeeId(employee["Name"]);
           let attempts = 0;
           const maxAttempts = 10;
@@ -485,7 +540,6 @@ const ManageEmployee = () => {
             return;
           }
 
-          // Create Firebase Auth user using secondary auth
           const userCredential = await createUserWithEmailAndPassword(
             secondaryAuth,
             employee["Email"],
@@ -516,7 +570,6 @@ const ManageEmployee = () => {
 
           const user = userCredential.user;
 
-          // Create new employee object
           const newEmployee = {
             employeeId,
             name: employee["Name"].trim(),
@@ -534,7 +587,6 @@ const ManageEmployee = () => {
             uid: user.uid,
           };
 
-          // Save employee to Firestore
           try {
             const docRef = await addDoc(
               collection(db, "employees"),
@@ -545,7 +597,6 @@ const ManageEmployee = () => {
               { id: docRef.id, ...newEmployee },
             ]);
 
-            // Store roles in Firestore under the 'users' collection
             await setDoc(doc(db, "users", user.uid), {
               email: newEmployee.email,
               roles: newEmployee.roles,
@@ -576,7 +627,6 @@ const ManageEmployee = () => {
     }
   };
 
-  // Handle Excel download
   const handleDownloadExcel = () => {
     const exportData = employees.map((employee) => ({
       Name: employee.name,
@@ -597,7 +647,6 @@ const ManageEmployee = () => {
     XLSX.writeFile(workbook, "employees_export.xlsx");
   };
 
-  // Handle dummy Excel download
   const handleDownloadDummyExcel = () => {
     const dummyData = [
       {
@@ -652,7 +701,6 @@ const ManageEmployee = () => {
     resetForm();
   };
 
-  // Validate form inputs
   const validateForm = () => {
     const newErrors = {};
     if (!name.trim()) newErrors.name = "Name is required";
@@ -816,67 +864,10 @@ const ManageEmployee = () => {
     setErrors({});
   };
 
-  // Styles for form elements
-  const formStyle = {
-    border: "none",
-  };
-
-  const labelStyle = {
-    fontSize: "15px",
-    display: "block",
-    width: "100%",
-    marginTop: "8px",
-    marginBottom: "5px",
-    textAlign: "left",
-    color: "#555",
-    fontWeight: "bold",
-  };
-
-  const inputStyle = {
-    display: "block",
-    width: "100%",
-    padding: "8px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
-    fontSize: "12px",
-  };
-
-  const selectStyle = {
-    display: "block",
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-  };
-
-  const buttonStyle = {
-    padding: "15px",
-    borderRadius: "10px",
-    margin: "15px",
-    border: "none",
-    color: "white",
-    cursor: "pointer",
-    backgroundColor: "#4caf50",
-    width: "40%",
-    fontSize: "16px",
-    fontWeight: "bold",
-  };
-
-  const titleStyle = {
-    fontSize: "x-large",
-    textAlign: "center",
-    color: "#327c35",
-  };
-
-  // Define tableData with paginated employees
   const tableData = {
     columns: [
       { Header: "Employee", accessor: "employee", width: "30%", align: "left" },
-      { Header: "Designation & Dept", accessor: "designation", align: "left" },
+      { Header: "Designation & Dept", accessor: "designation", align: "center" },
       { Header: "Status", accessor: "status", align: "center" },
       { Header: "Joined Date", accessor: "joined", align: "center" },
       { Header: "Actions", accessor: "actions", align: "center" },
@@ -897,7 +888,7 @@ const ManageEmployee = () => {
       ),
       status: <StatusBadge status={employee.status} />,
       joined: (
-        <MDTypography variant="caption" color="text" fontWeight="medium">
+        <MDTypography variant="caption" color="text">
           {employee.joiningDate}
         </MDTypography>
       ),
@@ -926,7 +917,6 @@ const ManageEmployee = () => {
     })),
   };
 
-  // Render loading state
   if (loadingRoles) {
     return (
       <Box
@@ -937,14 +927,13 @@ const ManageEmployee = () => {
           height: "100vh",
         }}
       >
-        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+        <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
           Loading...
         </MDTypography>
       </Box>
     );
   }
 
-  // Render access denied
   if (!hasAccess) {
     return (
       <Box
@@ -955,14 +944,13 @@ const ManageEmployee = () => {
           height: "100vh",
         }}
       >
-        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+        <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
           You do not have permission to view this page.
         </MDTypography>
       </Box>
     );
   }
 
-  // Render fetch error
   if (fetchError) {
     return (
       <Box
@@ -983,14 +971,13 @@ const ManageEmployee = () => {
   return (
     <Box
       sx={{
-        backgroundColor: darkMode ? "background.default" : "background.paper",
+        backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         minHeight: "100vh",
       }}
     >
       <DashboardNavbar
         absolute
         light={!darkMode}
-        isMini={false}
         sx={{
           backgroundColor: darkMode
             ? "rgba(33, 33, 33, 0.9)"
@@ -1000,22 +987,23 @@ const ManageEmployee = () => {
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
-          left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           width: {
             xs: "100%",
-            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
           },
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       />
-      <Box
+      <MDBox
         p={3}
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           marginTop: { xs: "140px", md: "100px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           minHeight: "calc(100vh - 80px)",
           paddingTop: { xs: "32px", md: "24px" },
-          zIndex: 1000,
         }}
       >
         <Grid container spacing={3}>
@@ -1031,21 +1019,22 @@ const ManageEmployee = () => {
                 borderRadius="lg"
                 coloredShadow={darkMode ? "dark" : "info"}
               >
-                <MDTypography variant="h6" color={darkMode ? "white" : "black"}>
+                <MDTypography variant="h6" color="white">
                   Employee Management
                 </MDTypography>
               </MDBox>
-              <MDBox pt={2} pb={2} px={2}>
+              <MDBox
+                pt={2}
+                pb={2}
+                px={2}
+                display="flex"
+                flexDirection={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "stretch", sm: "center" }}
+                gap={2}
+                flexWrap="wrap"
+              >
                 {!isReadOnly && (
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      mb: 2,
-                      alignItems: "center",
-                      flexWrap: "wrap",
-                    }}
-                  >
+                  <>
                     <Button
                       variant="gradient"
                       color={darkMode ? "dark" : "info"}
@@ -1059,14 +1048,13 @@ const ManageEmployee = () => {
                           boxShadow: 6,
                           backgroundColor: darkMode ? "grey.700" : "info.dark",
                         },
+                        width: { xs: "100%", sm: "auto" },
                       }}
                     >
                       Add Employee
                     </Button>
-                    <FormControl sx={{ minWidth: 150 }}>
-                      <InputLabel id="excel-options-label">
-                        Excel Options
-                      </InputLabel>
+                    <FormControl sx={{ minWidth: "150px" }}>
+                      <InputLabel id="excel-options-label">Excel Options</InputLabel>
                       <Select
                         labelId="excel-options-label"
                         value={excelOption}
@@ -1074,31 +1062,15 @@ const ManageEmployee = () => {
                         label="Excel Options"
                         sx={{
                           height: "40px",
-                          borderRadius: "8px",
-                          backgroundColor: darkMode ? "#333" : "#fff",
-                          "& .MuiSelect-select": {
-                            padding: "10px",
-                            color: darkMode ? "#fff" : "#000",
-                          },
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: darkMode ? "#555" : "#ccc",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: darkMode ? "#777" : "#888",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: darkMode ? "#0288d1" : "#1976d2",
-                          },
+                          "& .MuiSelect-select": { padding: "8px" },
                         }}
                       >
                         <MenuItem value="" disabled>
                           Select an option
                         </MenuItem>
-                        <MenuItem value="upload">Upload Excel</MenuItem>
+                        <MenuItem value="upload">Upload</MenuItem>
                         <MenuItem value="download">Download Excel</MenuItem>
-                        <MenuItem value="downloadDummy">
-                          Download Dummy Excel
-                        </MenuItem>
+                        <MenuItem value="downloadDummy">Download Dummy</MenuItem>
                       </Select>
                     </FormControl>
                     <input
@@ -1108,7 +1080,7 @@ const ManageEmployee = () => {
                       accept=".xlsx, .xls, .csv"
                       onChange={handleFileUpload}
                     />
-                    <FormControl sx={{ minWidth: 150 }}>
+                    <FormControl sx={{ minWidth: "150px" }}>
                       <InputLabel id="filter-type-label">Filter By</InputLabel>
                       <Select
                         labelId="filter-type-label"
@@ -1120,21 +1092,7 @@ const ManageEmployee = () => {
                         label="Filter By"
                         sx={{
                           height: "40px",
-                          borderRadius: "8px",
-                          backgroundColor: darkMode ? "#333" : "#fff",
-                          "& .MuiSelect-select": {
-                            padding: "10px",
-                            color: darkMode ? "#fff" : "#000",
-                          },
-                          "& .MuiOutlinedInput-notchedOutline": {
-                            borderColor: darkMode ? "#555" : "#ccc",
-                          },
-                          "&:hover .MuiOutlinedInput-notchedOutline": {
-                            borderColor: darkMode ? "#777" : "#888",
-                          },
-                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                            borderColor: darkMode ? "#0288d1" : "#1976d2",
-                          },
+                          "& .MuiSelect-select": { padding: "8px" },
                         }}
                       >
                         <MenuItem value="">None</MenuItem>
@@ -1143,7 +1101,7 @@ const ManageEmployee = () => {
                       </Select>
                     </FormControl>
                     {filterType && (
-                      <FormControl sx={{ minWidth: 150 }}>
+                      <FormControl sx={{ minWidth: "150px" }}>
                         <InputLabel id="filter-value-label">Value</InputLabel>
                         <Select
                           labelId="filter-value-label"
@@ -1152,24 +1110,10 @@ const ManageEmployee = () => {
                           label="Value"
                           sx={{
                             height: "40px",
-                            borderRadius: "8px",
-                            backgroundColor: darkMode ? "#333" : "#fff",
-                            "& .MuiSelect-select": {
-                              padding: "10px",
-                              color: darkMode ? "#fff" : "#000",
-                            },
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: darkMode ? "#555" : "#ccc",
-                            },
-                            "&:hover .MuiOutlinedInput-notchedOutline": {
-                              borderColor: darkMode ? "#777" : "#888",
-                            },
-                            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                              borderColor: darkMode ? "#0288d1" : "#1976d2",
-                            },
+                            "& .MuiSelect-select": { padding: "8px" },
                           }}
                         >
-                          <MenuItem value="">Select Value</MenuItem>
+                          <MenuItem value="">Select</MenuItem>
                           {filterType === "Department" &&
                             departments.map((dept) => (
                               <MenuItem key={dept} value={dept}>
@@ -1185,8 +1129,10 @@ const ManageEmployee = () => {
                         </Select>
                       </FormControl>
                     )}
-                  </Box>
+                  </>
                 )}
+              </MDBox>
+              <MDBox px={2} pb={3}>
                 <DataTable
                   table={tableData}
                   isSorted={false}
@@ -1194,12 +1140,9 @@ const ManageEmployee = () => {
                   showTotalEntries={false}
                   noEndBorder
                   canSearch
-                  onSearch={(query) =>
-                    setSearchQuery(query.trim().toLowerCase())
-                  }
+                  onSearch={(query) => setSearchQuery(query.trim().toLowerCase())}
                   searchProps={{
-                    onChange: (e) =>
-                      setSearchQuery(e.target.value.trim().toLowerCase()),
+                    onChange: (e) => setSearchQuery(e.target.value.trim().toLowerCase()),
                     placeholder: "Search employees...",
                   }}
                 />
@@ -1208,7 +1151,7 @@ const ManageEmployee = () => {
                     disabled={currentPage === 1}
                     onClick={() => handlePageChange(currentPage - 1)}
                     sx={{
-                      mx: 1,
+                      mx: "1px",
                       color: darkMode ? "#ffffff" : "#000000",
                       fontWeight: "bold",
                       fontSize: "16px",
@@ -1224,7 +1167,7 @@ const ManageEmployee = () => {
                       key={page}
                       onClick={() => handlePageChange(page)}
                       sx={{
-                        mx: 0.5,
+                        mx: "0.5px",
                         backgroundColor:
                           currentPage === page
                             ? darkMode
@@ -1248,8 +1191,8 @@ const ManageEmployee = () => {
                           backgroundColor:
                             currentPage === page
                               ? darkMode
-                                ? "#0277bd"
-                                : "info.dark"
+                              ? "#0277bd"
+                              : "info.dark"
                               : darkMode
                               ? "#616161"
                               : "#bdbdbd",
@@ -1263,7 +1206,7 @@ const ManageEmployee = () => {
                     disabled={currentPage === totalPages}
                     onClick={() => handlePageChange(currentPage + 1)}
                     sx={{
-                      mx: 1,
+                      mx: "1px",
                       color: darkMode ? "#ffffff" : "#000000",
                       fontWeight: "bold",
                       fontSize: "16px",
@@ -1276,420 +1219,296 @@ const ManageEmployee = () => {
             </Card>
           </Grid>
         </Grid>
-      </Box>
-
-      <Dialog
-        open={viewDetailsOpen}
-        onClose={() => setViewDetailsOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            backgroundColor: darkMode ? "#1a1a1a" : "#ffffff",
-            borderRadius: "12px",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-            padding: "16px",
-            border: darkMode ? "1px solid #333" : "1px solid #e0e0e0",
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            color: darkMode ? "#ffffff" : "#1976d2",
-            fontWeight: "bold",
-            textAlign: "center",
-            fontSize: "1.5rem",
-            borderBottom: darkMode ? "1px solid #333" : "1px solid #e0e0e0",
-            pb: 2,
-          }}
-        >
-          Employee Details
-        </DialogTitle>
-        <DialogContent sx={{ py: 3 }}>
-          {selectedEmployee && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              {[
-                { label: "Employee ID", value: selectedEmployee.employeeId },
-                { label: "Name", value: selectedEmployee.name },
-                { label: "Email", value: selectedEmployee.email },
-                { label: "Phone", value: selectedEmployee.phone || "N/A" },
-                { label: "Department", value: selectedEmployee.department },
-                { label: "Designation", value: selectedEmployee.designation },
-                { label: "Joining Date", value: selectedEmployee.joiningDate },
-                {
-                  label: "Exit Date",
-                  value: selectedEmployee.exitDate || "N/A",
-                },
-                { label: "Salary", value: selectedEmployee.salary || "N/A" },
-                { label: "Status", value: selectedEmployee.status },
-                {
-                  label: "Roles",
-                  value: selectedEmployee.roles
-                    ? selectedEmployee.roles.join(", ")
-                    : "N/A",
-                },
-              ].map(({ label, value }) => (
-                <Grid item xs={12} sm={6} key={label}>
-                  <MDTypography
-                    variant="subtitle2"
-                    color={darkMode ? "#aaaaaa" : "#555"}
-                    fontWeight="medium"
-                    sx={{ mb: 0.5 }}
+      </MDBox>
+      {!isReadOnly && (
+        <>
+          <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
+            <Typography sx={formHeadingStyle}>
+              {editingEmployee ? "Edit Employee" : "Add Employee"}
+            </Typography>
+            <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+              <label style={formLabelStyle}>Name*</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter Name"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.name ? "red" : "#ddd",
+                }}
+              />
+              {errors.name && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.name}</span>
+              )}
+              <label style={formLabelStyle}>Email*</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter Email"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.email ? "red" : "#ddd",
+                }}
+              />
+              {errors.email && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.email}</span>
+              )}
+              <label style={formLabelStyle}>Phone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter Phone"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Department*</label>
+              <select
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                required
+                style={{
+                  ...formSelectStyle,
+                  borderColor: errors.department ? "red" : "#ddd",
+                }}
+              >
+                <option value="" disabled>Select Department</option>
+                {departments.map((dept) => (
+                  <option key={dept} value={dept}>
+                    {dept}
+                  </option>
+                ))}
+              </select>
+              {errors.department && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.department}</span>
+              )}
+              <label style={formLabelStyle}>Designation*</label>
+              <input
+                type="text"
+                value={designation}
+                onChange={(e) => setDesignation(e.target.value)}
+                placeholder="Enter Designation"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.designation ? "red" : "#ddd",
+                }}
+              />
+              {errors.designation && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.designation}</span>
+              )}
+              <label style={formLabelStyle}>Joining Date*</label>
+              <input
+                type="date"
+                value={joiningDate}
+                onChange={(e) => setJoiningDate(e.target.value)}
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.joiningDate ? "red" : "#ddd",
+                }}
+              />
+              {errors.joiningDate && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.joiningDate}</span>
+              )}
+              <label style={formLabelStyle}>Exit Date</label>
+              <input
+                type="date"
+                value={exitDate}
+                onChange={(e) => setExitDate(e.target.value)}
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.exitDate ? "red" : "#ddd",
+                }}
+              />
+              {errors.exitDate && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.exitDate}</span>
+              )}
+              <label style={formLabelStyle}>Salary</label>
+              <input
+                type="number"
+                value={salary}
+                onChange={(e) => setSalary(e.target.value)}
+                placeholder="Enter Salary"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.salary ? "red" : "#ddd",
+                }}
+              />
+              {errors.salary && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.salary}</span>
+              )}
+              <label style={formLabelStyle}>Status*</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+                style={{
+                  ...formSelectStyle,
+                  borderColor: errors.status ? "red" : "#ddd",
+                }}
+              >
+                <option value="" disabled>Select Status</option>
+                {statuses.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+              {errors.status && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.status}</span>
+              )}
+              <label style={formLabelStyle}>Roles</label>
+              <Box
+                sx={{
+                  maxHeight: "100px",
+                  overflowY: "auto",
+                  border: "1px solid #ddd",
+                  borderRadius: "5px",
+                  padding: "10px",
+                  mb: 1,
+                }}
+              >
+                {roles.map((role) => (
+                  <Box
+                    key={role}
+                    sx={{ display: "flex", alignItems: "center", mb: "6px" }}
                   >
-                    {label}
-                  </MDTypography>
-                  <MDTypography
-                    color={darkMode ? "#ffffff" : "#000"}
-                    sx={{ fontSize: "1rem", wordBreak: "break-word" }}
-                  >
-                    {value}
-                  </MDTypography>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
-          <Button
-            onClick={() => setViewDetailsOpen(false)}
+                    <input
+                      type="checkbox"
+                      id={role}
+                      checked={selectedRoles.includes(role)}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setSelectedRoles((prev) =>
+                          checked
+                            ? [...prev, role]
+                            : prev.filter((r) => r !== role)
+                        );
+                      }}
+                      style={formCheckboxStyle}
+                    />
+                    <label
+                      htmlFor={role}
+                      style={{
+                        ...formLabelStyle,
+                        display: "inline",
+                        marginLeft: "5px",
+                        fontWeight: "normal",
+                      }}
+                    >
+                      {role}
+                    </label>
+                  </Box>
+                ))}
+              </Box>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  style={formButtonStyle}
+                >
+                  Cancel
+                </button>
+                <button type="submit" style={formButtonStyle}>
+                  Save
+                </button>
+              </Box>
+            </form>
+          </Box>
+          <Box
             sx={{
-              backgroundColor: darkMode ? "#0288d1" : "#1976d2",
-              color: "#ffffff",
-              borderRadius: "8px",
-              px: 3,
-              py: 1,
-              "&:hover": {
-                backgroundColor: darkMode ? "#0277bd" : "#1565c0",
-              },
+              ...formContainerStyle,
+              display: confirmUpdateOpen ? "block" : "none",
             }}
           >
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {!isReadOnly && (
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          maxWidth="md"
-          fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "#f3f3f3",
-              borderRadius: "15px",
-              boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-              width: "500px",
-              margin: "auto",
-            },
-          }}
-        >
-          <DialogTitle sx={{ ...titleStyle }}>
-            {editingEmployee ? "Edit Employee" : "Add Employee"}
-          </DialogTitle>
-          <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
-            <fieldset style={formStyle}>
-              <form>
-                <label style={labelStyle} htmlFor="name">
-                  Name*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.name ? "red" : "#ddd",
-                  }}
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter Name"
-                  required
-                />
-                {errors.name && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.name}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="email">
-                  Email*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.email ? "red" : "#ddd",
-                  }}
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Email"
-                  required
-                />
-                {errors.email && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.email}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="phone">
-                  Phone
-                </label>
-                <input
-                  style={inputStyle}
-                  type="tel"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter Phone"
-                />
-
-                <label style={labelStyle} htmlFor="department">
-                  Department*
-                </label>
-                <select
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.department ? "red" : "#ddd",
-                  }}
-                  id="department"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Select Department
-                  </option>
-                  {departments.map((dept) => (
-                    <option key={dept} value={dept}>
-                      {dept}
-                    </option>
-                  ))}
-                </select>
-                {errors.department && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.department}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="designation">
-                  Designation*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.designation ? "red" : "#ddd",
-                  }}
-                  type="text"
-                  id="designation"
-                  value={designation}
-                  onChange={(e) => setDesignation(e.target.value)}
-                  placeholder="Enter Designation"
-                  required
-                />
-                {errors.designation && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.designation}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="joiningDate">
-                  Joining Date*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.joiningDate ? "red" : "#ddd",
-                  }}
-                  type="date"
-                  id="joiningDate"
-                  value={joiningDate}
-                  onChange={(e) => setJoiningDate(e.target.value)}
-                  required
-                />
-                {errors.joiningDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.joiningDate}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="exitDate">
-                  Exit Date
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.exitDate ? "red" : "#ddd",
-                  }}
-                  type="date"
-                  id="exitDate"
-                  value={exitDate}
-                  onChange={(e) => setExitDate(e.target.value)}
-                />
-                {errors.exitDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.exitDate}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="salary">
-                  Salary
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: errors.salary ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="salary"
-                  value={salary}
-                  onChange={(e) => setSalary(e.target.value)}
-                  placeholder="Enter Salary"
-                />
-                {errors.salary && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.salary}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="status">
-                  Status*
-                </label>
-                <select
-                  style={{
-                    ...selectStyle,
-                    borderColor: errors.status ? "red" : "#ddd",
-                  }}
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Select Status
-                  </option>
-                  {statuses.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                {errors.status && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {errors.status}
-                  </span>
-                )}
-
-                <label style={labelStyle}>Roles</label>
-                <Box
-                  sx={{
-                    maxHeight: "150px",
-                    overflowY: "auto",
-                    border: "1px solid #ddd",
-                    borderRadius: "5px",
-                    padding: "10px",
-                  }}
-                >
-                  {roles.map((role) => (
-                    <Box
-                      key={role}
-                      sx={{ display: "flex", alignItems: "center" }}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selectedRoles.includes(role)}
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          setSelectedRoles((prev) =>
-                            checked
-                              ? [...prev, role]
-                              : prev.filter((r) => r !== role)
-                          );
-                        }}
-                      />
-                      <MDTypography sx={{ ml: 1 }}>{role}</MDTypography>
-                    </Box>
-                  ))}
-                </Box>
-              </form>
-            </fieldset>
-          </DialogContent>
-          <DialogActions
-            sx={{ padding: "16px 24px", justifyContent: "center" }}
-          >
-            <button style={buttonStyle} onClick={handleClose}>
-              Cancel
-            </button>
-            <button style={buttonStyle} onClick={handleSubmit}>
-              Save
-            </button>
-          </DialogActions>
-        </Dialog>
+            <Typography sx={formHeadingStyle}>
+              Ready to update employee details?
+            </Typography>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                type="button"
+                onClick={() => setConfirmUpdateOpen(false)}
+                style={formButtonStyle}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmUpdate}
+                style={formButtonStyle}
+              >
+                Confirm
+              </button>
+            </Box>
+          </Box>
+        </>
       )}
-
-      {!isReadOnly && (
-        <Dialog
-          open={confirmUpdateOpen}
-          onClose={() => setConfirmUpdateOpen(false)}
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: darkMode
-                ? "background.default"
-                : "background.paper",
-              borderRadius: "12px",
-            },
-          }}
-        >
-          <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-            Ready to update employee details?
-          </DialogTitle>
-          <DialogActions>
-            <Button
-              onClick={() => setConfirmUpdateOpen(false)}
-              sx={{
-                color: darkMode ? "#ffffff" : "#000000",
-                textTransform: "none",
-                fontWeight: "bold",
-                fontSize: "16px",
-                padding: "8px 20px",
-                borderRadius: "8px",
-                border: darkMode ? "1px solid #ffffff" : "1px solid #000000",
-                "&:hover": {
-                  backgroundColor: darkMode
-                    ? "rgba(255,255,255,0.2)"
-                    : "rgba(0,0,0,0.1)",
-                  color: darkMode ? "#ffffff" : "#000000",
-                },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={confirmUpdate}
-              sx={{
-                backgroundColor: darkMode ? "#4fc3f7" : "#1976d2",
-                color: "#ffffff",
-                textTransform: "none",
-                fontWeight: "bold",
-                fontSize: "16px",
-                padding: "8px 20px",
-                borderRadius: "8px",
-                "&:hover": {
-                  backgroundColor: darkMode ? "#29b6f6" : "#1565c0",
-                },
-              }}
-            >
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-
       <Box
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          zIndex: 1100,
+          ...formContainerStyle,
+          display: viewDetailsOpen ? "block" : "none",
+        }}
+      >
+        <Typography sx={{ ...formHeadingStyle, mb: 2 }}>
+          Employee Details
+        </Typography>
+        {selectedEmployee && (
+          <Grid container spacing={2}>
+            {[
+              { label: "Employee ID", value: selectedEmployee.employeeId },
+              { label: "Name", value: selectedEmployee.name },
+              { label: "Email", value: selectedEmployee.email },
+              { label: "Phone", value: selectedEmployee.phone || "N/A" },
+              { label: "Department", value: selectedEmployee.department },
+              { label: "Designation", value: selectedEmployee.designation },
+              { label: "Joining Date", value: selectedEmployee.joiningDate },
+              { label: "Exit Date", value: selectedEmployee.exitDate || "N/A" },
+              { label: "Salary", value: selectedEmployee.salary || "N/A" },
+              { label: "Status", value: selectedEmployee.status },
+              {
+                label: "Roles",
+                value: selectedEmployee.roles
+                  ? selectedEmployee.roles.join(", ")
+                  : "N/A",
+              },
+            ].map(({ label, value }) => (
+              <Grid item xs={12} sm={6} key={label}>
+                <MDTypography
+                  variant="subtitle2"
+                  color={darkMode ? "#aaaaaa" : "#555"}
+                  fontWeight="medium"
+                  sx={{ mb: 0.5 }}
+                >
+                  {label}
+                </MDTypography>
+                <MDTypography
+                  color={darkMode ? "#ffffff" : "#000"}
+                  sx={{ fontSize: "1rem", wordBreak: "break-word" }}
+                >
+                  {value}
+                </MDTypography>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+          <button
+            type="button"
+            onClick={() => setViewDetailsOpen(false)}
+            style={formButtonStyle}
+          >
+            Close
+          </button>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         }}
       >
         <Footer />

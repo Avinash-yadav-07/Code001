@@ -1,23 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Box,
-  Grid,
-  Button,
-} from "@mui/material";
+import { Card, CardContent, CardActions, Typography, Box, Grid, Button } from "@mui/material";
 import { db, auth } from "../manage-employee/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  query,
-  where,
-} from "firebase/firestore";
+import { collection, addDoc, getDocs, doc, updateDoc, query, where } from "firebase/firestore";
 import MDBox from "components/MDBox";
 import MDButton from "components/MDButton";
 import MDTypography from "components/MDTypography";
@@ -69,8 +53,7 @@ const ManageCustomer = () => {
   const [complaintDate, setComplaintDate] = useState(null);
   const [resolvedDate, setResolvedDate] = useState(null);
   const [responseChannel, setResponseChannel] = useState([]);
-  const [upgradeSubscriptionTier, setUpgradeSubscriptionTier] =
-    useState("premium");
+  const [upgradeSubscriptionTier, setUpgradeSubscriptionTier] = useState("premium");
   const [planUpgradeDate, setPlanUpgradeDate] = useState(null);
   const [cancellationDate, setCancellationDate] = useState(null);
   const [churnReason, setChurnReason] = useState("");
@@ -78,7 +61,7 @@ const ManageCustomer = () => {
   const [userRoles, setUserRoles] = useState([]);
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [latestMetrics, setLatestMetrics] = useState({});
-  const [formErrors, setFormErrors] = useState({});
+
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
 
@@ -87,9 +70,8 @@ const ManageCustomer = () => {
   const featureOptions = ["Core", "Advanced", "Integrations"];
 
   // Common styles adapted from provided App.css
-  // Styles adapted from ManageClient
   const formContainerStyle = {
-    backgroundColor: "#f3f6f8",
+    backgroundColor: "#fff",
     borderRadius: "15px",
     boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
     padding: "10px 20px",
@@ -104,99 +86,38 @@ const ManageCustomer = () => {
     left: "50%",
     transform: "translate(-50%, -50%)",
     zIndex: 1200,
+    transition: "transform 0.2s",
   };
 
-  const formStyle = {
-    border: "none",
-  };
-
-  const labelStyle = {
-    fontSize: "15px",
-    display: "block",
-    width: "100%",
-    marginTop: "8px",
-    marginBottom: "5px",
-    textAlign: "left",
-    color: "#555",
-    fontWeight: "bold",
-  };
-
-  const inputStyle = {
-    display: "block",
-    width: "100%",
-    padding: "8px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
-    fontSize: "12px",
-  };
-
-  const selectStyle = {
-    display: "block",
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-  };
-
-  const checkboxContainerStyle = {
-    display: "block",
-    margin: "0",
-    color: "#333",
-    fontSize: "12px",
-  };
-
-  const buttonStyle = {
-    padding: "15px",
-    borderRadius: "10px",
-    margin: "15px",
-    border: "none",
-    color: "white",
-    cursor: "pointer",
-    backgroundColor: "#4caf50",
-    width: "40%",
-    fontSize: "16px",
-    fontWeight: "bold",
-  };
-
-  const titleStyle = {
-    fontSize: "x-large",
-    textAlign: "center",
-    color: "#327c35",
-    margin: "10px 0",
-  };
   const formInputStyle = {
     display: "block",
     width: "100%",
-    padding: "6px", // Reduced padding for compactness
+    padding: "6px",
     boxSizing: "border-box",
     border: "1px solid #ddd",
     borderRadius: "3px",
     fontSize: "12px",
-    marginBottom: "10px", // Reduced margin
+    marginBottom: "10px",
   };
 
   const formSelectStyle = {
     ...formInputStyle,
     padding: "8px",
     borderRadius: "5px",
-    height: "32px", // Fixed height to ensure dropdown visibility
+    height: "32px",
   };
 
   const formCheckboxStyle = {
     display: "inline",
-    width: "auto", // Adjusted for better alignment
+    width: "auto",
     marginRight: "5px",
   };
 
   const formLabelStyle = {
-    fontSize: "14px", // Slightly smaller font
+    fontSize: "14px",
     display: "block",
     width: "100%",
-    marginTop: "6px", // Reduced margin
+    marginTop: "6px",
     marginBottom: "4px",
     textAlign: "left",
     color: "#555",
@@ -204,7 +125,7 @@ const ManageCustomer = () => {
   };
 
   const formButtonStyle = {
-    padding: "10px", // Smaller buttons
+    padding: "10px",
     borderRadius: "10px",
     margin: "10px",
     border: "none",
@@ -218,7 +139,7 @@ const ManageCustomer = () => {
   const formTextareaStyle = {
     resize: "none",
     width: "98%",
-    minHeight: "80px", // Reduced height
+    minHeight: "80px",
     maxHeight: "120px",
     padding: "6px",
     boxSizing: "border-box",
@@ -229,7 +150,7 @@ const ManageCustomer = () => {
   };
 
   const formHeadingStyle = {
-    fontSize: "large", // Smaller heading
+    fontSize: "large",
     textAlign: "center",
     color: "#327c35",
     margin: "10px 0",
@@ -240,10 +161,7 @@ const ManageCustomer = () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const q = query(
-            collection(db, "users"),
-            where("email", "==", user.email)
-          );
+          const q = query(collection(db, "users"), where("email", "==", user.email));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
             setUserRoles(querySnapshot.docs[0].data().roles || []);
@@ -262,26 +180,23 @@ const ManageCustomer = () => {
     let isMounted = true;
     const fetchData = async () => {
       try {
-        const [customerSnapshot, metricsSnapshot, projectSnapshot] =
-          await Promise.all([
-            getDocs(collection(db, "customers")),
-            getDocs(collection(db, "customerMetrics")),
-            getDocs(collection(db, "projects")),
-          ]);
+        const [customerSnapshot, metricsSnapshot, projectSnapshot] = await Promise.all([
+          getDocs(collection(db, "customers")),
+          getDocs(collection(db, "customerMetrics")),
+          getDocs(collection(db, "projects")),
+        ]);
 
         const customersData = customerSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          createdAt:
-            doc.data().createdAt?.toDate() || new Date(doc.data().createdAt),
+          createdAt: doc.data().createdAt?.toDate() || new Date(doc.data().createdAt),
           signUpDate: doc.data().signUpDate?.toDate() || null,
         }));
 
         const metricsData = metricsSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          metricDate:
-            doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
+          metricDate: doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
         }));
 
         const projectsData = projectSnapshot.docs.map((doc) => ({
@@ -292,9 +207,7 @@ const ManageCustomer = () => {
 
         const latestMetricsData = {};
         customersData.forEach((customer) => {
-          const customerMetrics = metricsData.filter(
-            (metric) => metric.customerId === customer.customerId
-          );
+          const customerMetrics = metricsData.filter((metric) => metric.customerId === customer.customerId);
           const latestNps = customerMetrics
             .filter((m) => m.metricType === "nps")
             .sort((a, b) => b.metricDate - a.metricDate)[0];
@@ -305,15 +218,9 @@ const ManageCustomer = () => {
             .filter((m) => m.metricType === "chs")
             .sort((a, b) => b.metricDate - a.metricDate)[0];
           latestMetricsData[customer.customerId] = {
-            nps: latestNps
-              ? { value: latestNps.value, date: latestNps.metricDate }
-              : null,
-            csat: latestCsat
-              ? { value: latestCsat.value, date: latestCsat.metricDate }
-              : null,
-            chs: latestChs
-              ? { value: latestChs.value, date: latestChs.metricDate }
-              : null,
+            nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
+            csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
+            chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
           };
         });
 
@@ -339,9 +246,7 @@ const ManageCustomer = () => {
     if (searchTerm) {
       filtered = filtered.filter(
         (customer) =>
-          customer.customerName
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
+          customer.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           customer.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -393,9 +298,7 @@ const ManageCustomer = () => {
         if (customStartDate && customEndDate) {
           filtered = filtered.filter((customer) => {
             const customerDate = new Date(customer.createdAt);
-            return (
-              customerDate >= customStartDate && customerDate <= customEndDate
-            );
+            return customerDate >= customStartDate && customerDate <= customEndDate;
           });
         }
         break;
@@ -516,44 +419,32 @@ const ManageCustomer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = {};
-    if (!customerName) errors.customerName = "Customer Name is required.";
-    if (!email) errors.email = "Email is required.";
-    if (!status) errors.status = "Status is required.";
-    if (!subscriptionTier)
-      errors.subscriptionTier = "Subscription Tier is required.";
-    if (!feature) errors.feature = "Feature is required.";
-    if (nps && !npsDate)
-      errors.npsDate = "NPS Date is required if NPS is provided.";
-    if (npsDate && !nps)
-      errors.nps = "NPS is required if NPS Date is provided.";
-    if (csat && !csatDate)
-      errors.csatDate = "CSAT Date is required if CSAT is provided.";
-    if (csatDate && !csat)
-      errors.csat = "CSAT is required if CSAT Date is provided.";
-    if (chs && !chsDate)
-      errors.chsDate = "CHS Date is required if CHS is provided.";
-    if (chsDate && !chs)
-      errors.chs = "CHS is required if CHS Date is provided.";
-    if (nps && (Number(nps) < 0 || Number(nps) > 100))
-      errors.nps = "NPS must be between 0 and 100.";
-    if (csat && (Number(csat) < 0 || Number(csat) > 100))
-      errors.csat = "CSAT must be between 0 and 100.";
-
-    setFormErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+    if (!customerName || !email || !status || !subscriptionTier || !feature) {
+      alert("Customer Name, Email, Status, Subscription Tier, and Feature are required.");
+      return;
+    }
+    if ((nps && !npsDate) || (npsDate && !nps)) {
+      alert("Both NPS value and NPS Date are required if one is provided.");
+      return;
+    }
+    if ((csat && !csatDate) || (csatDate && !csat)) {
+      alert("Both CSAT value and CSAT Date are required if one is provided.");
+      return;
+    }
+    if ((chs && !chsDate) || (chsDate && !chs)) {
+      alert("Both CHS value and CHS Date are required if one is provided.");
+      return;
+    }
 
     const newCustomer = {
-      customerId: editingCustomer
-        ? editingCustomer.customerId
-        : generateCustomerId(),
+      customerId: editingCustomer ? editingCustomer.customerId : generateCustomerId(),
       customerName,
       email,
       phone,
       address,
       status,
       subscriptionTier,
-      projectIds: projectIds.length > 0 ? projectIds : [], // Stores project names
+      projectIds: projectIds.length > 0 ? projectIds : [],
       signUpDate: signUpDate || new Date(),
       feature,
       cltv: Number(cltv) || 0,
@@ -565,9 +456,7 @@ const ManageCustomer = () => {
         await updateDoc(doc(db, "customers", editingCustomer.id), newCustomer);
         setCustomers(
           customers.map((cust) =>
-            cust.id === editingCustomer.id
-              ? { id: cust.id, ...newCustomer }
-              : cust
+            cust.id === editingCustomer.id ? { id: cust.id, ...newCustomer } : cust
           )
         );
       } else {
@@ -605,11 +494,7 @@ const ManageCustomer = () => {
       }
 
       if (metricsToSave.length > 0) {
-        await Promise.all(
-          metricsToSave.map((metric) =>
-            addDoc(collection(db, "customerMetrics"), metric)
-          )
-        );
+        await Promise.all(metricsToSave.map((metric) => addDoc(collection(db, "customerMetrics"), metric)));
       }
 
       await refreshMetrics();
@@ -624,15 +509,12 @@ const ManageCustomer = () => {
     const metricsData = metricsSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-      metricDate:
-        doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
+      metricDate: doc.data().metricDate?.toDate() || new Date(doc.data().metricDate),
     }));
 
     const latestMetricsData = {};
     customers.forEach((customer) => {
-      const customerMetrics = metricsData.filter(
-        (metric) => metric.customerId === customer.customerId
-      );
+      const customerMetrics = metricsData.filter((metric) => metric.customerId === customer.customerId);
       const latestNps = customerMetrics
         .filter((m) => m.metricType === "nps")
         .sort((a, b) => b.metricDate - a.metricDate)[0];
@@ -643,15 +525,9 @@ const ManageCustomer = () => {
         .filter((m) => m.metricType === "chs")
         .sort((a, b) => b.metricDate - a.metricDate)[0];
       latestMetricsData[customer.customerId] = {
-        nps: latestNps
-          ? { value: latestNps.value, date: latestNps.metricDate }
-          : null,
-        csat: latestCsat
-          ? { value: latestCsat.value, date: latestCsat.metricDate }
-          : null,
-        chs: latestChs
-          ? { value: latestChs.value, date: latestChs.metricDate }
-          : null,
+        nps: latestNps ? { value: latestNps.value, date: latestNps.metricDate } : null,
+        csat: latestCsat ? { value: latestCsat.value, date: latestCsat.metricDate } : null,
+        chs: latestChs ? { value: latestChs.value, date: latestChs.metricDate } : null,
       };
     });
     setLatestMetrics(latestMetricsData);
@@ -745,15 +621,8 @@ const ManageCustomer = () => {
 
   const handleSupportSubmit = async (e) => {
     e.preventDefault();
-    if (
-      !supportProjectIds.length ||
-      !issueDescription ||
-      !numberOfIssues ||
-      !complaintDate
-    ) {
-      alert(
-        "Project IDs, Issue Description, Number of Issues, and Complaint Date are required."
-      );
+    if (!supportProjectIds.length || !issueDescription || !numberOfIssues || !complaintDate) {
+      alert("Project IDs, Issue Description, Number of Issues, and Complaint Date are required.");
       return;
     }
     if (!supportCustomer) {
@@ -769,8 +638,7 @@ const ManageCustomer = () => {
         numberOfIssues: Number(numberOfIssues),
         complaintDate,
         resolvedDate,
-        responseChannel:
-          responseChannel.length > 0 ? responseChannel : ["None"],
+        responseChannel: responseChannel.length > 0 ? responseChannel : ["None"],
         createdAt: new Date(),
       });
       handleSupportClose();
@@ -807,11 +675,7 @@ const ManageCustomer = () => {
       setCustomers(
         customers.map((cust) =>
           cust.id === upgradeCustomer.id
-            ? {
-                ...cust,
-                subscriptionTier: upgradeSubscriptionTier,
-                status: "active",
-              }
+            ? { ...cust, subscriptionTier: upgradeSubscriptionTier, status: "active" }
             : cust
         )
       );
@@ -858,8 +722,7 @@ const ManageCustomer = () => {
     }
   };
 
-  const generateCustomerId = () =>
-    Math.floor(1000 + Math.random() * 9000).toString();
+  const generateCustomerId = () => Math.floor(1000 + Math.random() * 9000).toString();
 
   const resetForm = () => {
     setCustomerName("");
@@ -889,74 +752,47 @@ const ManageCustomer = () => {
     setResponseChannel([]);
   };
 
-  const handleProjectIdChange = (name) => {
+  const handleProjectIdChange = (id) => {
     setProjectIds((prev) =>
-      prev.includes(name)
-        ? prev.filter((pname) => pname !== name)
-        : [...prev, name]
+      prev.includes(id) ? prev.filter((pid) => pid !== id) : [...prev, id]
     );
   };
 
   const handleResponseChannelChange = (channel) => {
     setResponseChannel((prev) =>
-      prev.includes(channel)
-        ? prev.filter((c) => c !== channel)
-        : [...prev, channel]
+      prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]
     );
   };
 
   if (loadingRoles) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
-          Loading...
-        </MDTypography>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>Loading...</MDTypography>
       </Box>
     );
   }
 
-  if (
-    !userRoles.includes("ManageCustomer:read") &&
-    !userRoles.includes("ManageCustomer:full access")
-  ) {
+  if (!userRoles.includes("ManageCustomer:read") && !userRoles.includes("ManageCustomer:full access")) {
     return <Navigate to="/unauthorized" />;
   }
 
   const isReadOnly =
-    userRoles.includes("ManageCustomer:read") &&
-    !userRoles.includes("ManageCustomer:full access");
+    userRoles.includes("ManageCustomer:read") && !userRoles.includes("ManageCustomer:full access");
 
   return (
-    <Box
-      sx={{
-        backgroundColor: darkMode ? "#212121" : "#f3f3f3",
-        minHeight: "100vh",
-      }}
-    >
+    <Box sx={{ backgroundColor: darkMode ? "#212121" : "#f3f3f3", minHeight: "100vh" }}>
       <DashboardNavbar
         absolute
         light={!darkMode}
         sx={{
-          backgroundColor: darkMode
-            ? "rgba(33, 33, 33, 0.9)"
-            : "rgba(255, 255, 255, 0.9)",
+          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          width: {
-            xs: "100%",
-            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
-          },
+          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
           borderRadius: "12px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
@@ -988,29 +824,10 @@ const ManageCustomer = () => {
                   Customer Management
                 </MDTypography>
               </MDBox>
-              <MDBox
-                pt={3}
-                pb={2}
-                px={2}
-                display="flex"
-                flexDirection={{ xs: "column", sm: "row" }}
-                alignItems={{ xs: "stretch", sm: "center" }}
-                gap={2}
-                justifyContent="space-between"
-              >
-                <Box
-                  display="flex"
-                  flexDirection={{ xs: "column", sm: "row" }}
-                  gap={2}
-                  width={{ xs: "100%", sm: "auto" }}
-                >
+              <MDBox pt={3} pb={2} px={2} display="flex" flexDirection={{ xs: "column", sm: "row" }} alignItems={{ xs: "stretch", sm: "center" }} gap={2} justifyContent="space-between">
+                <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} width={{ xs: "100%", sm: "auto" }}>
                   {!isReadOnly && (
-                    <MDButton
-                      variant="gradient"
-                      color={darkMode ? "dark" : "info"}
-                      onClick={handleClickOpen}
-                      fullWidth={{ xs: true, sm: false }}
-                    >
+                    <MDButton variant="gradient" color={darkMode ? "dark" : "info"} onClick={handleClickOpen} fullWidth={{ xs: true, sm: false }}>
                       Add Customer
                     </MDButton>
                   )}
@@ -1022,13 +839,7 @@ const ManageCustomer = () => {
                     style={formInputStyle}
                   />
                 </Box>
-                <Box
-                  display="flex"
-                  flexDirection={{ xs: "column", sm: "row" }}
-                  gap={2}
-                  alignItems={{ xs: "stretch", sm: "center" }}
-                  width={{ xs: "100%", sm: "auto" }}
-                >
+                <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} alignItems={{ xs: "stretch", sm: "center" }} width={{ xs: "100%", sm: "auto" }}>
                   <select
                     value={dateFilterType}
                     onChange={(e) => setDateFilterType(e.target.value)}
@@ -1059,63 +870,29 @@ const ManageCustomer = () => {
                 </Box>
               </MDBox>
 
-              <Box
-                sx={{
-                  ...formContainerStyle,
-                  display: datePickerOpen ? "block" : "none",
-                }}
-              >
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setDatePickerOpen(false);
-                  }}
-                >
-                  <Typography sx={formHeadingStyle}>
-                    Select Date Range
-                  </Typography>
+              <Box sx={{ ...formContainerStyle, display: datePickerOpen ? "block" : "none" }}>
+                <form onSubmit={(e) => { e.preventDefault(); setDatePickerOpen(false); }}>
+                  <Typography sx={formHeadingStyle}>Select Date Range</Typography>
                   <label style={formLabelStyle}>Start Date*</label>
                   <input
                     type="date"
-                    value={
-                      customStartDate
-                        ? customStartDate.toISOString().split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setCustomStartDate(
-                        e.target.value ? new Date(e.target.value) : null
-                      )
-                    }
+                    value={customStartDate ? customStartDate.toISOString().split("T")[0] : ""}
+                    onChange={(e) => setCustomStartDate(e.target.value ? new Date(e.target.value) : null)}
                     required
                     style={formInputStyle}
                   />
                   <label style={formLabelStyle}>End Date*</label>
                   <input
                     type="date"
-                    value={
-                      customEndDate
-                        ? customEndDate.toISOString().split("T")[0]
-                        : ""
-                    }
-                    onChange={(e) =>
-                      setCustomEndDate(
-                        e.target.value ? new Date(e.target.value) : null
-                      )
-                    }
+                    value={customEndDate ? customEndDate.toISOString().split("T")[0] : ""}
+                    onChange={(e) => setCustomEndDate(e.target.value ? new Date(e.target.value) : null)}
                     required
                     style={formInputStyle}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setDatePickerOpen(false)}
-                    style={formButtonStyle}
-                  >
-                    Cancel
-                  </button>
-                  <button type="submit" style={formButtonStyle}>
-                    Apply
-                  </button>
+                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <button type="button" onClick={() => setDatePickerOpen(false)} style={formButtonStyle}>Cancel</button>
+                    <button type="submit" style={formButtonStyle}>Apply</button>
+                  </Box>
                 </form>
               </Box>
 
@@ -1131,10 +908,7 @@ const ManageCustomer = () => {
                         boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                         padding: "20px",
                         transition: "0.3s ease-in-out",
-                        "&:hover": {
-                          boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
-                          transform: "scale(1.02)",
-                        },
+                        "&:hover": { boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)", transform: "scale(1.02)" },
                         display: "flex",
                         flexDirection: { xs: "column", sm: "row" },
                       }}
@@ -1145,16 +919,8 @@ const ManageCustomer = () => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor:
-                            customer.subscriptionTier === "premium"
-                              ? "#4caf50"
-                              : darkMode
-                              ? "#90A4AE"
-                              : "#B0BEC5",
-                          borderRadius: {
-                            xs: "8px 8px 0 0",
-                            sm: "8px 0 0 8px",
-                          },
+                          backgroundColor: customer.subscriptionTier === "premium" ? "#4caf50" : darkMode ? "#90A4AE" : "#B0BEC5",
+                          borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
                           marginRight: { sm: "16px" },
                           marginBottom: { xs: "16px", sm: 0 },
                           boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
@@ -1163,147 +929,60 @@ const ManageCustomer = () => {
                         <MDTypography
                           variant="body2"
                           color="white"
-                          sx={{
-                            fontWeight: 700,
-                            fontSize: "1rem",
-                            textTransform: "uppercase",
-                          }}
+                          sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
                         >
-                          {customer.subscriptionTier === "premium"
-                            ? "Premium"
-                            : "Free"}
+                          {customer.subscriptionTier === "premium" ? "Premium" : "Free"}
                         </MDTypography>
                       </Box>
-                      <Box
-                        sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}
-                      >
+                      <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
                         <CardContent>
                           <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Customer ID: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.customerId}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.customerId}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Name: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.customerName}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.customerName}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Email: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.email}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.email}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Phone: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.phone || "N/A"}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.phone || "N/A"}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Address: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.address || "N/A"}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.address || "N/A"}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Status: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.status}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.status}</span>
                               </MDTypography>
                             </Grid>
                             <Grid item xs={12} sm={6}>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Subscription Tier: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.subscriptionTier}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.subscriptionTier}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Feature: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.feature || "N/A"}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.feature || "N/A"}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Project: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {Array.isArray(customer.projectIds) &&
-                                  customer.projectIds.length > 0
-                                    ? customer.projectIds
-                                        .map((name) => {
-                                          const project = projects.find(
-                                            (p) => p.name === name
-                                          );
-                                          return project
-                                            ? `${project.name} (${project.projectId})`
-                                            : name;
-                                        })
-                                        .join(", ")
-                                    : "None"}
-                                </span>
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                <span>Project IDs: </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.projectIds?.join(", ") || "None"}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>Sign-Up Date: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.signUpDate?.toLocaleDateString() ||
-                                    "N/A"}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.signUpDate?.toLocaleDateString() || "N/A"}</span>
                               </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
+                              <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
                                 <span>CLTV: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {customer.cltv}
-                                </span>
+                                <span style={{ fontWeight: "bold" }}>{customer.cltv}</span>
                               </MDTypography>
                               <Box
                                 sx={{
@@ -1312,10 +991,7 @@ const ManageCustomer = () => {
                                   gap: 1,
                                   mt: 1,
                                   flexWrap: "wrap",
-                                  justifyContent: {
-                                    xs: "flex-start",
-                                    sm: "flex-end",
-                                  },
+                                  justifyContent: { xs: "flex-start", sm: "flex-end" },
                                 }}
                               >
                                 <MDButton
@@ -1323,19 +999,12 @@ const ManageCustomer = () => {
                                   color={darkMode ? "white" : "info"}
                                   size="small"
                                   onClick={() => handleNpsUpdateOpen(customer)}
-                                  sx={{
-                                    minWidth: { xs: "100%", sm: "120px" },
-                                    textAlign: "left",
-                                  }}
+                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
                                 >
                                   <Icon fontSize="small">update</Icon>
-                                  NPS:{" "}
-                                  {latestMetrics[customer.customerId]?.nps
-                                    ?.value ?? "N/A"}
+                                  NPS: {latestMetrics[customer.customerId]?.nps?.value ?? "N/A"}
                                   {latestMetrics[customer.customerId]?.nps?.date
-                                    ? ` (${latestMetrics[
-                                        customer.customerId
-                                      ].nps.date.toLocaleDateString()})`
+                                    ? ` (${latestMetrics[customer.customerId].nps.date.toLocaleDateString()})`
                                     : ""}
                                 </MDButton>
                                 <MDButton
@@ -1343,20 +1012,12 @@ const ManageCustomer = () => {
                                   color={darkMode ? "white" : "info"}
                                   size="small"
                                   onClick={() => handleCsatUpdateOpen(customer)}
-                                  sx={{
-                                    minWidth: { xs: "100%", sm: "120px" },
-                                    textAlign: "left",
-                                  }}
+                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
                                 >
                                   <Icon fontSize="small">update</Icon>
-                                  CSAT:{" "}
-                                  {latestMetrics[customer.customerId]?.csat
-                                    ?.value ?? "N/A"}
-                                  {latestMetrics[customer.customerId]?.csat
-                                    ?.date
-                                    ? ` (${latestMetrics[
-                                        customer.customerId
-                                      ].csat.date.toLocaleDateString()})`
+                                  CSAT: {latestMetrics[customer.customerId]?.csat?.value ?? "N/A"}
+                                  {latestMetrics[customer.customerId]?.csat?.date
+                                    ? ` (${latestMetrics[customer.customerId].csat.date.toLocaleDateString()})`
                                     : ""}
                                 </MDButton>
                                 <MDButton
@@ -1364,19 +1025,12 @@ const ManageCustomer = () => {
                                   color={darkMode ? "white" : "info"}
                                   size="small"
                                   onClick={() => handleChsUpdateOpen(customer)}
-                                  sx={{
-                                    minWidth: { xs: "100%", sm: "120px" },
-                                    textAlign: "left",
-                                  }}
+                                  sx={{ minWidth: { xs: "100%", sm: "120px" }, textAlign: "left" }}
                                 >
                                   <Icon fontSize="small">update</Icon>
-                                  CHS:{" "}
-                                  {latestMetrics[customer.customerId]?.chs
-                                    ?.value ?? "N/A"}
+                                  CHS: {latestMetrics[customer.customerId]?.chs?.value ?? "N/A"}
                                   {latestMetrics[customer.customerId]?.chs?.date
-                                    ? ` (${latestMetrics[
-                                        customer.customerId
-                                      ].chs.date.toLocaleDateString()})`
+                                    ? ` (${latestMetrics[customer.customerId].chs.date.toLocaleDateString()})`
                                     : ""}
                                 </MDButton>
                               </Box>
@@ -1389,10 +1043,7 @@ const ManageCustomer = () => {
                               display: "flex",
                               flexWrap: "wrap",
                               gap: 1,
-                              justifyContent: {
-                                xs: "space-between",
-                                sm: "flex-end",
-                              },
+                              justifyContent: { xs: "space-between", sm: "flex-end" },
                               alignItems: "center",
                               padding: "8px 16px",
                             }}
@@ -1402,12 +1053,11 @@ const ManageCustomer = () => {
                               color={darkMode ? "dark" : "info"}
                               onClick={() => handleEdit(customer)}
                               sx={{
-                                flex: {
-                                  xs: "1 1 calc(50% - 4px)",
-                                  sm: "0 0 auto",
-                                },
-                                minWidth: { xs: "auto", sm: "100px" },
-                                maxWidth: { xs: "50%", sm: "auto" },
+                                flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" }, // Adjusted flex for consistent spacing
+                                minWidth: { xs: "100px", sm: "100px" }, // Consistent minWidth
+                                maxWidth: { xs: "calc(50% - 8px)", sm: "100px" }, // Adjusted maxWidth
+                                padding: "8px 16px", // Consistent padding
+                                fontSize: "14px", // Consistent font size
                               }}
                             >
                               <Icon fontSize="medium">edit</Icon> Edit
@@ -1417,12 +1067,11 @@ const ManageCustomer = () => {
                               color={darkMode ? "dark" : "success"}
                               onClick={() => handleSupportOpen(customer)}
                               sx={{
-                                flex: {
-                                  xs: "1 1 calc(50% - 4px)",
-                                  sm: "0 0 auto",
-                                },
-                                minWidth: { xs: "auto", sm: "100px" },
-                                maxWidth: { xs: "50%", sm: "auto" },
+                                flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                                minWidth: { xs: "100px", sm: "100px" },
+                                maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                                padding: "8px 16px",
+                                fontSize: "14px",
                               }}
                             >
                               <Icon fontSize="medium">support</Icon> Support
@@ -1433,12 +1082,11 @@ const ManageCustomer = () => {
                                 color={darkMode ? "dark" : "warning"}
                                 onClick={() => handleUpgradeOpen(customer)}
                                 sx={{
-                                  flex: {
-                                    xs: "1 1 calc(50% - 4px)",
-                                    sm: "0 0 auto",
-                                  },
-                                  minWidth: { xs: "auto", sm: "100px" },
-                                  maxWidth: { xs: "50%", sm: "auto" },
+                                  flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                                  minWidth: { xs: "100px", sm: "100px" },
+                                  maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                                  padding: "8px 16px",
+                                  fontSize: "14px",
                                 }}
                               >
                                 <Icon fontSize="medium">upgrade</Icon> Upgrade
@@ -1449,12 +1097,11 @@ const ManageCustomer = () => {
                               color="error"
                               onClick={() => handleCancelOpen(customer)}
                               sx={{
-                                flex: {
-                                  xs: "1 1 calc(50% - 4px)",
-                                  sm: "0 0 auto",
-                                },
-                                minWidth: { xs: "auto", sm: "100px" },
-                                maxWidth: { xs: "50%", sm: "auto" },
+                                flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                                minWidth: { xs: "100px", sm: "100px" },
+                                maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                                padding: "8px 16px",
+                                fontSize: "14px",
                               }}
                             >
                               <Icon fontSize="medium">cancel</Icon> Cancel
@@ -1470,384 +1117,201 @@ const ManageCustomer = () => {
           </Grid>
         </Grid>
       </MDBox>
-      <Box
-        sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
-        }}
-      >
+      <Box sx={{ marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" }, backgroundColor: darkMode ? "#212121" : "#f3f3f3" }}>
         <Footer />
       </Box>
 
       {!isReadOnly && (
         <>
           <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
-            <fieldset style={formStyle}>
-              <form onSubmit={handleSubmit}>
-                <Typography sx={titleStyle}>
-                  {editingCustomer ? "Edit Customer" : "Add Customer"}
-                </Typography>
-                <label style={labelStyle} htmlFor="customerName">
-                  Customer Name*
-                </label>
-                <input
-                  type="text"
-                  id="customerName"
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="Enter Customer Name"
-                  required
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.customerName
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.customerName && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.customerName}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="email">
-                  Email*
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Email"
-                  required
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.email
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.email && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.email}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="phone">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter Phone Number"
-                  style={inputStyle}
-                />
-                <label style={labelStyle} htmlFor="address">
-                  Address
-                </label>
-                <input
-                  type="text"
-                  id="address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Enter Address"
-                  style={inputStyle}
-                />
-                <label style={labelStyle} htmlFor="status">
-                  Status*
-                </label>
-                <select
-                  id="status"
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  required
-                  style={{
-                    ...selectStyle,
-                    border: formErrors.status
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                >
-                  <option value="" disabled>
-                    Select Status
-                  </option>
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-                {formErrors.status && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.status}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="subscriptionTier">
-                  Subscription Tier*
-                </label>
-                <select
-                  id="subscriptionTier"
-                  value={subscriptionTier}
-                  onChange={(e) => setSubscriptionTier(e.target.value)}
-                  required
-                  style={{
-                    ...selectStyle,
-                    border: formErrors.subscriptionTier
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                >
-                  <option value="" disabled>
-                    Select Tier
-                  </option>
-                  <option value="free">Free</option>
-                  <option value="premium">Premium</option>
-                </select>
-                {formErrors.subscriptionTier && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.subscriptionTier}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="feature">
-                  Feature*
-                </label>
-                <select
-                  id="feature"
-                  value={feature}
-                  onChange={(e) => setFeature(e.target.value)}
-                  required
-                  style={{
-                    ...selectStyle,
-                    border: formErrors.feature
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                >
-                  <option value="" disabled>
-                    Select Feature
-                  </option>
-                  {featureOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                {formErrors.feature && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.feature}
-                  </span>
-                )}
-                <label style={labelStyle}>Projects</label>
-                <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
-                  {projects.map((project) => (
-                    <div key={project.projectId} style={checkboxContainerStyle}>
-                      <input
-                        type="checkbox"
-                        id={project.projectId}
-                        checked={projectIds.includes(project.name)}
-                        onChange={() => handleProjectIdChange(project.name)}
-                        style={{ marginRight: "5px" }}
-                      />
-                      <label
-                        htmlFor={project.projectId}
-                        style={{ fontSize: "12px", color: "#333" }}
-                      >
-                        {project.name}
-                      </label>
-                    </div>
-                  ))}
-                </Box>
-                <label style={labelStyle} htmlFor="signUpDate">
-                  Sign-Up Date
-                </label>
-                <input
-                  type="date"
-                  id="signUpDate"
-                  value={
-                    signUpDate ? signUpDate.toISOString().split("T")[0] : ""
-                  }
-                  onChange={(e) =>
-                    setSignUpDate(
-                      e.target.value ? new Date(e.target.value) : null
-                    )
-                  }
-                  style={inputStyle}
-                />
-                <label style={labelStyle} htmlFor="nps">
-                  Net Promoter Score (0-100)
-                </label>
-                <input
-                  type="number"
-                  id="nps"
-                  value={nps}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    if (value >= 0 && value <= 100) setNps(e.target.value);
-                  }}
-                  placeholder="Enter NPS (0-100)"
-                  min="0"
-                  max="100"
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.nps ? "1px solid red" : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.nps && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.nps}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="npsDate">
-                  NPS Date{!!nps && "*"}
-                </label>
-                <input
-                  type="date"
-                  id="npsDate"
-                  value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                  onChange={(e) =>
-                    setNpsDate(e.target.value ? new Date(e.target.value) : null)
-                  }
-                  required={!!nps}
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.npsDate
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.npsDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.npsDate}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="csat">
-                  Customer Satisfaction Score (0-100)
-                </label>
-                <input
-                  type="number"
-                  id="csat"
-                  value={csat}
-                  onChange={(e) => {
-                    const value = Number(e.target.value);
-                    if (value >= 0 && value <= 100) setCsat(e.target.value);
-                  }}
-                  placeholder="Enter CSAT (0-100)"
-                  min="0"
-                  max="100"
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.csat
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.csat && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.csat}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="csatDate">
-                  CSAT Date{!!csat && "*"}
-                </label>
-                <input
-                  type="date"
-                  id="csatDate"
-                  value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                  onChange={(e) =>
-                    setCsatDate(
-                      e.target.value ? new Date(e.target.value) : null
-                    )
-                  }
-                  required={!!csat}
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.csatDate
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.csatDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.csatDate}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="chs">
-                  Customer Health Score
-                </label>
-                <input
-                  type="number"
-                  id="chs"
-                  value={chs}
-                  onChange={(e) => setChs(e.target.value)}
-                  placeholder="Enter CHS"
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.chs ? "1px solid red" : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.chs && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.chs}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="chsDate">
-                  CHS Date{!!chs && "*"}
-                </label>
-                <input
-                  type="date"
-                  id="chsDate"
-                  value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                  onChange={(e) =>
-                    setChsDate(e.target.value ? new Date(e.target.value) : null)
-                  }
-                  required={!!chs}
-                  style={{
-                    ...inputStyle,
-                    border: formErrors.chsDate
-                      ? "1px solid red"
-                      : "1px solid #ddd",
-                  }}
-                />
-                {formErrors.chsDate && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.chsDate}
-                  </span>
-                )}
-                <label style={labelStyle} htmlFor="cltv">
-                  Customer Lifetime Value
-                </label>
-                <input
-                  type="number"
-                  id="cltv"
-                  value={cltv}
-                  onChange={(e) => setCltv(e.target.value)}
-                  placeholder="Enter CLTV"
-                  style={inputStyle}
-                />
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <button
-                    type="button"
-                    onClick={handleClose}
-                    style={buttonStyle}
+            <form onSubmit={handleSubmit}>
+              <Typography sx={formHeadingStyle}>{editingCustomer ? "Edit Customer" : "Add Customer"}</Typography>
+              <label style={formLabelStyle}>Customer Name*</label>
+              <input
+                type="text"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="Enter Customer Name"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Email*</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter Email"
+                required
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Phone</label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="Enter Phone Number"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Address</label>
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter Address"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Status*</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+              <label style={formLabelStyle}>Subscription Tier*</label>
+              <select
+                value={subscriptionTier}
+                onChange={(e) => setSubscriptionTier(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Tier</option>
+                <option value="free">Free</option>
+                <option value="premium">Premium</option>
+              </select>
+              <label style={formLabelStyle}>Feature*</label>
+              <select
+                value={feature}
+                onChange={(e) => setFeature(e.target.value)}
+                required
+                style={formSelectStyle}
+              >
+                <option value="" disabled>Select Feature</option>
+                {featureOptions.map((option) => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
+              </select>
+              <label style={formLabelStyle}>Project IDs</label>
+              <Box sx={{ maxHeight: "100px", overflowY: "auto", mb: 1 }}>
+                {projects.map((project) => (
+                  <Box
+                    key={project.projectId}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      mb: "4px",
+                      flexWrap: "wrap", // Allow wrapping for small screens
+                    }}
                   >
-                    Cancel
-                  </button>
-                  <button type="submit" style={buttonStyle}>
-                    Save
-                  </button>
-                </Box>
-              </form>
-            </fieldset>
+                    <input
+                      type="checkbox"
+                      id={project.projectId}
+                      checked={projectIds.includes(project.projectId)}
+                      onChange={() => handleProjectIdChange(project.projectId)}
+                      style={formCheckboxStyle}
+                    />
+                    <label
+                      htmlFor={project.projectId}
+                      style={{
+                        ...formLabelStyle,
+                        display: "inline",
+                        marginLeft: "5px",
+                        fontWeight: "normal",
+                        flex: "1", // Allow label to take remaining space
+                        wordBreak: "break-word", // Break long project names
+                      }}
+                    >
+                      {project.projectId} - {project.name}
+                    </label>
+                  </Box>
+                ))}
+              </Box>
+              <label style={formLabelStyle}>Sign-Up Date</label>
+              <input
+                type="date"
+                value={signUpDate ? signUpDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setSignUpDate(e.target.value ? new Date(e.target.value) : null)}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Net Promoter Score (0-100)</label>
+              <input
+                type="number"
+                value={nps}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) setNps(e.target.value);
+                }}
+                placeholder="Enter NPS (0-100)"
+                min="0"
+                max="100"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>NPS Date{!!nps && "*"}</label>
+              <input
+                type="date"
+                value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
+                required={!!nps}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Customer Satisfaction Score (0-100)</label>
+              <input
+                type="number"
+                value={csat}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  if (value >= 0 && value <= 100) setCsat(e.target.value);
+                }}
+                placeholder="Enter CSAT (0-100)"
+                min="0"
+                max="100"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>CSAT Date{!!csat && "*"}</label>
+              <input
+                type="date"
+                value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
+                required={!!csat}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Customer Health Score</label>
+              <input
+                type="number"
+                value={chs}
+                onChange={(e) => setChs(e.target.value)}
+                placeholder="Enter CHS"
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>CHS Date{!!chs && "*"}</label>
+              <input
+                type="date"
+                value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
+                required={!!chs}
+                style={formInputStyle}
+              />
+              <label style={formLabelStyle}>Customer Lifetime Value</label>
+              <input
+                type="number"
+                value={cltv}
+                onChange={(e) => setCltv(e.target.value)}
+                placeholder="Enter CLTV"
+                style={formInputStyle}
+              />
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button type="button" onClick={handleClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Save</button>
+              </Box>
+            </form>
           </Box>
 
-          <Box
-            sx={{
-              ...formContainerStyle,
-              display: supportOpen ? "block" : "none",
-            }}
-          >
+          <Box sx={{ ...formContainerStyle, display: supportOpen ? "block" : "none" }}>
             <form onSubmit={handleSupportSubmit}>
-              <Typography sx={formHeadingStyle}>
-                Create Support Ticket for{" "}
-                {supportCustomer?.customerName || "Customer"}
-              </Typography>
+              <Typography sx={formHeadingStyle}>Create Support Ticket for {supportCustomer?.customerName || "Customer"}</Typography>
               <label style={formLabelStyle}>Project IDs*</label>
               <input
                 type="text"
@@ -1875,35 +1339,28 @@ const ManageCustomer = () => {
               <label style={formLabelStyle}>Complaint Date*</label>
               <input
                 type="datetime-local"
-                value={
-                  complaintDate ? complaintDate.toISOString().slice(0, 16) : ""
-                }
-                onChange={(e) =>
-                  setComplaintDate(
-                    e.target.value ? new Date(e.target.value) : null
-                  )
-                }
+                value={complaintDate ? complaintDate.toISOString().slice(0, 16) : ""}
+                onChange={(e) => setComplaintDate(e.target.value ? new Date(e.target.value) : null)}
                 required
                 style={formInputStyle}
               />
               <label style={formLabelStyle}>Resolved Date</label>
               <input
                 type="datetime-local"
-                value={
-                  resolvedDate ? resolvedDate.toISOString().slice(0, 16) : ""
-                }
-                onChange={(e) =>
-                  setResolvedDate(
-                    e.target.value ? new Date(e.target.value) : null
-                  )
-                }
+                value={resolvedDate ? resolvedDate.toISOString().slice(0, 16) : ""}
+                onChange={(e) => setResolvedDate(e.target.value ? new Date(e.target.value) : null)}
                 style={formInputStyle}
               />
               <label style={formLabelStyle}>Response Channel</label>
               {responseChannelOptions.map((channel) => (
-                <div
+                <Box
                   key={channel}
-                  style={{ textAlign: "left", marginBottom: "4px" }}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mb: "4px",
+                    flexWrap: "wrap",
+                  }}
                 >
                   <input
                     type="checkbox"
@@ -1919,38 +1376,24 @@ const ManageCustomer = () => {
                       display: "inline",
                       marginLeft: "5px",
                       fontWeight: "normal",
+                      flex: "1",
+                      wordBreak: "break-word",
                     }}
                   >
                     {channel}
                   </label>
-                </div>
+                </Box>
               ))}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleSupportClose}
-                  style={formButtonStyle}
-                >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Save
-                </button>
+                <button type="button" onClick={handleSupportClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Save</button>
               </Box>
             </form>
           </Box>
 
-          <Box
-            sx={{
-              ...formContainerStyle,
-              display: upgradeOpen ? "block" : "none",
-            }}
-          >
+          <Box sx={{ ...formContainerStyle, display: upgradeOpen ? "block" : "none" }}>
             <form onSubmit={handleUpgradeSubmit}>
-              <Typography sx={formHeadingStyle}>
-                Upgrade Subscription for{" "}
-                {upgradeCustomer?.customerName || "Customer"}
-              </Typography>
+              <Typography sx={formHeadingStyle}>Upgrade Subscription for {upgradeCustomer?.customerName || "Customer"}</Typography>
               <label style={formLabelStyle}>Subscription Tier*</label>
               <select
                 value={upgradeSubscriptionTier}
@@ -1963,16 +1406,8 @@ const ManageCustomer = () => {
               <label style={formLabelStyle}>Plan Upgrade Date*</label>
               <input
                 type="date"
-                value={
-                  planUpgradeDate
-                    ? planUpgradeDate.toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) =>
-                  setPlanUpgradeDate(
-                    e.target.value ? new Date(e.target.value) : null
-                  )
-                }
+                value={planUpgradeDate ? planUpgradeDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setPlanUpgradeDate(e.target.value ? new Date(e.target.value) : null)}
                 required
                 style={formInputStyle}
               />
@@ -1984,44 +1419,20 @@ const ManageCustomer = () => {
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleUpgradeClose}
-                  style={formButtonStyle}
-                >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Upgrade
-                </button>
+                <button type="button" onClick={handleUpgradeClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Upgrade</button>
               </Box>
             </form>
           </Box>
 
-          <Box
-            sx={{
-              ...formContainerStyle,
-              display: cancelOpen ? "block" : "none",
-            }}
-          >
+          <Box sx={{ ...formContainerStyle, display: cancelOpen ? "block" : "none" }}>
             <form onSubmit={handleCancelSubmit}>
-              <Typography sx={formHeadingStyle}>
-                Cancel Subscription for{" "}
-                {cancelCustomer?.customerName || "Customer"}
-              </Typography>
+              <Typography sx={formHeadingStyle}>Cancel Subscription for {cancelCustomer?.customerName || "Customer"}</Typography>
               <label style={formLabelStyle}>Cancellation Date*</label>
               <input
                 type="date"
-                value={
-                  cancellationDate
-                    ? cancellationDate.toISOString().split("T")[0]
-                    : ""
-                }
-                onChange={(e) =>
-                  setCancellationDate(
-                    e.target.value ? new Date(e.target.value) : null
-                  )
-                }
+                value={cancellationDate ? cancellationDate.toISOString().split("T")[0] : ""}
+                onChange={(e) => setCancellationDate(e.target.value ? new Date(e.target.value) : null)}
                 required
                 style={formInputStyle}
               />
@@ -2032,41 +1443,21 @@ const ManageCustomer = () => {
                 required
                 style={formSelectStyle}
               >
-                <option value="" disabled>
-                  Select Reason
-                </option>
+                <option value="" disabled>Select Reason</option>
                 {churnReasonOptions.map((reason) => (
-                  <option key={reason} value={reason}>
-                    {reason}
-                  </option>
+                  <option key={reason} value={reason}>{reason}</option>
                 ))}
               </select>
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleCancelClose}
-                  style={formButtonStyle}
-                >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Confirm Cancellation
-                </button>
+                <button type="button" onClick={handleCancelClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Confirm Cancellation</button>
               </Box>
             </form>
           </Box>
 
-          <Box
-            sx={{
-              ...formContainerStyle,
-              display: npsUpdateOpen ? "block" : "none",
-            }}
-          >
+          <Box sx={{ ...formContainerStyle, display: npsUpdateOpen ? "block" : "none" }}>
             <form onSubmit={handleNpsUpdateSubmit}>
-              <Typography sx={formHeadingStyle}>
-                Update NPS for{" "}
-                {updateMetricCustomer?.customerName || "Customer"}
-              </Typography>
+              <Typography sx={formHeadingStyle}>Update NPS for {updateMetricCustomer?.customerName || "Customer"}</Typography>
               <label style={formLabelStyle}>Net Promoter Score (0-100)*</label>
               <input
                 type="number"
@@ -2085,41 +1476,21 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={npsDate ? npsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setNpsDate(e.target.value ? new Date(e.target.value) : null)
-                }
+                onChange={(e) => setNpsDate(e.target.value ? new Date(e.target.value) : null)}
                 required
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleNpsUpdateClose}
-                  style={formButtonStyle}
-                >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Update
-                </button>
+                <button type="button" onClick={handleNpsUpdateClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Update</button>
               </Box>
             </form>
           </Box>
 
-          <Box
-            sx={{
-              ...formContainerStyle,
-              display: csatUpdateOpen ? "block" : "none",
-            }}
-          >
+          <Box sx={{ ...formContainerStyle, display: csatUpdateOpen ? "block" : "none" }}>
             <form onSubmit={handleCsatUpdateSubmit}>
-              <Typography sx={formHeadingStyle}>
-                Update CSAT for{" "}
-                {updateMetricCustomer?.customerName || "Customer"}
-              </Typography>
-              <label style={formLabelStyle}>
-                Customer Satisfaction Score (0-100)*
-              </label>
+              <Typography sx={formHeadingStyle}>Update CSAT for {updateMetricCustomer?.customerName || "Customer"}</Typography>
+              <label style={formLabelStyle}>Customer Satisfaction Score (0-100)*</label>
               <input
                 type="number"
                 value={csat}
@@ -2137,38 +1508,20 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={csatDate ? csatDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setCsatDate(e.target.value ? new Date(e.target.value) : null)
-                }
+                onChange={(e) => setCsatDate(e.target.value ? new Date(e.target.value) : null)}
                 required
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleCsatUpdateClose}
-                  style={formButtonStyle}
-                >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Update
-                </button>
+                <button type="button" onClick={handleCsatUpdateClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Update</button>
               </Box>
             </form>
           </Box>
 
-          <Box
-            sx={{
-              ...formContainerStyle,
-              display: chsUpdateOpen ? "block" : "none",
-            }}
-          >
+          <Box sx={{ ...formContainerStyle, display: chsUpdateOpen ? "block" : "none" }}>
             <form onSubmit={handleChsUpdateSubmit}>
-              <Typography sx={formHeadingStyle}>
-                Update CHS for{" "}
-                {updateMetricCustomer?.customerName || "Customer"}
-              </Typography>
+              <Typography sx={formHeadingStyle}>Update CHS for {updateMetricCustomer?.customerName || "Customer"}</Typography>
               <label style={formLabelStyle}>Customer Health Score*</label>
               <input
                 type="number"
@@ -2182,23 +1535,13 @@ const ManageCustomer = () => {
               <input
                 type="date"
                 value={chsDate ? chsDate.toISOString().split("T")[0] : ""}
-                onChange={(e) =>
-                  setChsDate(e.target.value ? new Date(e.target.value) : null)
-                }
+                onChange={(e) => setChsDate(e.target.value ? new Date(e.target.value) : null)}
                 required
                 style={formInputStyle}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <button
-                  type="button"
-                  onClick={handleChsUpdateClose}
-                  style={formButtonStyle}
-                >
-                  Cancel
-                </button>
-                <button type="submit" style={formButtonStyle}>
-                  Update
-                </button>
+                <button type="button" onClick={handleChsUpdateClose} style={formButtonStyle}>Cancel</button>
+                <button type="submit" style={formButtonStyle}>Update</button>
               </Box>
             </form>
           </Box>
