@@ -6,6 +6,8 @@
 * Modified from Material Dashboard 2 React - v2.2.0
 * Copyright 2023 Creative Tim (https://www.creative-tim.com)
 * Enhanced for modern UI, Firebase role management, and streamlined user details
+* Adapted to match student profile layout with Card 1 centered in first row, Card 2 and Card 3 side by side in second row
+* Reduced gap between rows, no employee name in Card 3, adjustable Card 1 position
 */
 
 // @mui material components
@@ -108,9 +110,7 @@ function ProfilePage() {
   const filterRoles = (roles) => {
     const roleSet = new Set();
     roles.forEach((role) => {
-      // Remove ":read" or ":full access" from the role
       let cleanedRole = role.replace(/:read|:full access/gi, "").trim();
-      // Add to set to ensure uniqueness
       roleSet.add(cleanedRole);
     });
     return Array.from(roleSet);
@@ -127,12 +127,11 @@ function ProfilePage() {
             const employeesRef = collection(db, "employees");
             const q = query(employeesRef, where("email", "==", user.email));
 
-            // Set up real-time listener for matching employee document
             const unsubscribeSnapshot = onSnapshot(
               q,
               (querySnapshot) => {
                 if (!querySnapshot.empty) {
-                  const docSnap = querySnapshot.docs[0]; // Assume one document per email
+                  const docSnap = querySnapshot.docs[0];
                   const data = docSnap.data();
                   const rolesArray = Array.isArray(data.roles)
                     ? data.roles
@@ -280,7 +279,7 @@ function ProfilePage() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <MDBox mb={6} />
+      <MDBox mb={4} />
       <motion.div initial="hidden" animate="visible" variants={cardVariants}>
         {/* Header Section */}
         <MDBox
@@ -307,286 +306,216 @@ function ProfilePage() {
           </MDTypography>
         </MDBox>
 
-        {/* Main Card */}
-        <Card
-          sx={{
-            mt: -4,
-            mx: { xs: 2, md: 4 },
-            p: { xs: 2, md: 4 },
-            boxShadow: ({ boxShadows: { xl } }) => xl,
-            borderRadius: "20px",
-            background: ({ palette: { background } }) =>
-              background.card || "white",
-          }}
-        >
-          {/* User Info Header */}
-          <Grid container spacing={2} alignItems="center" mb={3}>
-            <Grid item>
-              <MDAvatar
-                alt="profile-image"
-                size="lg"
-                shadow="md"
-                sx={{ border: "3px solid white", bgcolor: "grey.200" }}
-              />
-            </Grid>
-            <Grid item xs>
-              <MDBox>
-                <MDTypography variant="h5" fontWeight="medium">
-                  {userData.name || "Unknown User"}
-                </MDTypography>
-                <MDTypography variant="body2" color="text" fontWeight="regular">
-                  {userData.designation || "No Designation"} |{" "}
-                  {userData.department || "No Department"}
-                </MDTypography>
-              </MDBox>
-            </Grid>
-            <Grid item>
-              <Tooltip title="Edit Profile">
-                <Fab
-                  color="primary"
-                  size="medium"
-                  onClick={handleEditOpen}
+        <MDBox mx={{ xs: 2, md: 4 }} mt={-4}>
+          <Grid container spacing={-3} direction="column">
+            {/* Row 1: Card 1 (Centered, Half-Covered) */}
+            <Grid item xs={12}>
+              <MDBox display="flex" justifyContent="center" mb={-10}>
+                <Card
                   sx={{
-                    boxShadow: ({ boxShadows: { md } }) => md,
-                    "&:hover": {
-                      transform: "scale(1.1)",
-                      transition: "transform 0.2s",
-                    },
+                    p: 3,
+                    boxShadow: ({ boxShadows: { xl } }) => xl,
+                    borderRadius: "20px",
+                    background: ({ palette: { background } }) =>
+                      background.card || "white",
+                    position: "relative",
+                    zIndex: 1,
+                    width: { xs: "100%", md: "50%" },
+                    ml: { md: "0%" }, // Adjust this value to shift Card 1 left (negative) or right (positive)
+                    // Example: ml: { md: "-20%" } shifts further left, ml: { md: "10%" } shifts right
                   }}
                 >
-                  <EditIcon />
-                </Fab>
-              </Tooltip>
-            </Grid>
-          </Grid>
-
-          <Divider
-            sx={{ my: 2, background: ({ palette: { grey } }) => grey[200] }}
-          />
-
-          {/* Content Sections */}
-          <Grid container spacing={4}>
-            {/* Account Actions */}
-            <Grid item xs={12} md={4}>
-              <MDBox>
-                <MDTypography variant="h6" fontWeight="medium" mb={2}>
-                  Account Actions
-                </MDTypography>
-                <Box mb={2}>
-                  {!otpSent ? (
-                    <Button
-                      variant="contained"
+                  <MDBox
+                    display="flex"
+                    flexDirection="column"
+                    alignItems="center"
+                  >
+                    <MDAvatar
+                      alt="profile-image"
+                      size="xl"
+                      shadow="md"
                       sx={{
-                        padding: "15px 25px",
-                        border: "unset",
-                        borderRadius: "15px",
-                        color: "#e8e8e8",
-                        zIndex: 1,
-                        background: "#ADD8E6",
-                        position: "relative",
-                        fontWeight: 1000,
-                        fontSize: "17px",
-                        boxShadow: "4px 8px 19px -3px rgba(0,0,0,0.27)",
-                        transition: "all 250ms",
-                        overflow: "hidden",
-                        "&::before": {
-                          content: '""',
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          height: "100%",
-                          width: 0,
-                          borderRadius: "15px",
-                          backgroundColor: "#1E90FF",
-                          zIndex: -1,
-                          boxShadow: "4px 8px 19px -3px rgba(0,0,0,0.27)",
-                          transition: "all 250ms",
-                        },
+                        border: "3px solid white",
+                        bgcolor: "grey.200",
+                        mb: 2,
+                      }}
+                    />
+                    <MDTypography variant="h5" fontWeight="medium" mb={1}>
+                      {userData.name || "Unknown User"}
+                    </MDTypography>
+                    <MDTypography variant="body2" color="text" mb={1}>
+                      Employee ID: {userData.employeeId || "N/A"}
+                    </MDTypography>
+                    <MDTypography variant="body2" color="text" mb={1}>
+                      Designation: {userData.designation || "N/A"}
+                    </MDTypography>
+                    <MDTypography variant="body2" color="text">
+                      Department: {userData.department || "N/A"}
+                    </MDTypography>
+                  </MDBox>
+                  <Tooltip title="Edit Profile">
+                    <Fab
+                      color="primary"
+                      size="medium"
+                      onClick={handleEditOpen}
+                      sx={{
+                        position: "absolute",
+                        top: 16,
+                        right: 16,
+                        boxShadow: ({ boxShadows: { md } }) => md,
                         "&:hover": {
-                          color: "#e8e8e8",
-                          "&::before": {
-                            width: "100%",
-                          },
+                          transform: "scale(1.1)",
+                          transition: "transform 0.2s",
                         },
                       }}
-                      onClick={handleSendOtp}
                     >
-                      Reset Password
-                    </Button>
-                  ) : (
-                    <MDTypography
-                      variant="body2"
-                      color="success"
-                      sx={{ mt: 1, fontWeight: "medium" }}
-                    >
-                      Password reset email sent! Check your inbox.
-                    </MDTypography>
-                  )}
-                </Box>
-                {error && (
-                  <MDTypography
-                    variant="body2"
-                    color="error"
-                    mt={2}
-                    sx={{ fontWeight: "medium" }}
-                  >
-                    {error}
-                  </MDTypography>
-                )}
+                      <EditIcon />
+                    </Fab>
+                  </Tooltip>
+                </Card>
               </MDBox>
             </Grid>
 
-            {/* Profile Information */}
-            <Grid item xs={12} md={8}>
-              <MDBox>
-                <MDTypography variant="h6" fontWeight="medium" mb={3}>
-                  Profile Information
-                </MDTypography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
+            {/* Row 2: Card 2 and Card 3 (Side by Side) */}
+            <Grid item xs={12}>
+              <Grid container spacing={3}>
+                {/* Card 2: General Information */}
+                <Grid item xs={12} md={6}>
+                  <Card
+                    sx={{
+                      p: 3,
+                      boxShadow: ({ boxShadows: { xl } }) => xl,
+                      borderRadius: "20px",
+                      background: ({ palette: { background } }) =>
+                        background.card || "white",
+                      zIndex: 2,
+                    }}
+                  >
+                    <MDTypography variant="h6" fontWeight="medium" mb={2}>
+                      General Information
+                    </MDTypography>
+                    <MDBox>
+                      <MDBox
+                        display="flex"
+                        justifyContent="space-between"
+                        mb={1}
                       >
-                        Employee ID
-                      </MDTypography>
+                        <MDTypography
+                          variant="body2"
+                          color="text"
+                          fontWeight="medium"
+                        >
+                          Employee ID:
+                        </MDTypography>
+                        <MDTypography variant="body2" color="text">
+                          {userData.employeeId || "N/A"}
+                        </MDTypography>
+                      </MDBox>
+                      <MDBox
+                        display="flex"
+                        justifyContent="space-between"
+                        mb={1}
+                      >
+                        <MDTypography
+                          variant="body2"
+                          color="text"
+                          fontWeight="medium"
+                        >
+                          Email:
+                        </MDTypography>
+                        <MDTypography variant="body2" color="text">
+                          {userData.email || "N/A"}
+                        </MDTypography>
+                      </MDBox>
+                      <MDBox
+                        display="flex"
+                        justifyContent="space-between"
+                        mb={1}
+                      >
+                        <MDTypography
+                          variant="body2"
+                          color="text"
+                          fontWeight="medium"
+                        >
+                          Joining Date:
+                        </MDTypography>
+                        <MDTypography variant="body2" color="text">
+                          {userData.joiningDate || "N/A"}
+                        </MDTypography>
+                      </MDBox>
+                      <MDBox
+                        display="flex"
+                        justifyContent="space-between"
+                        mb={1}
+                      >
+                        <MDTypography
+                          variant="body2"
+                          color="text"
+                          fontWeight="medium"
+                        >
+                          Designation:
+                        </MDTypography>
+                        <MDTypography variant="body2" color="text">
+                          {userData.designation || "N/A"}
+                        </MDTypography>
+                      </MDBox>
+                      <MDBox
+                        display="flex"
+                        justifyContent="space-between"
+                        mb={1}
+                      >
+                        <MDTypography
+                          variant="body2"
+                          color="text"
+                          fontWeight="medium"
+                        >
+                          Department:
+                        </MDTypography>
+                        <MDTypography variant="body2" color="text">
+                          {userData.department || "N/A"}
+                        </MDTypography>
+                      </MDBox>
+                      <MDBox display="flex" justifyContent="space-between">
+                        <MDTypography
+                          variant="body2"
+                          color="text"
+                          fontWeight="medium"
+                        >
+                          Status:
+                        </MDTypography>
+                        <MDTypography variant="body2" color="text">
+                          {userData.status || "N/A"}
+                        </MDTypography>
+                      </MDBox>
+                    </MDBox>
+                  </Card>
+                </Grid>
+
+                {/* Card 3: Other Information */}
+                <Grid item xs={12} md={6}>
+                  <Card
+                    sx={{
+                      p: 3,
+                      boxShadow: ({ boxShadows: { xl } }) => xl,
+                      borderRadius: "20px",
+                      background: ({ palette: { background } }) =>
+                        background.card || "white",
+                      zIndex: 2,
+                    }}
+                  >
+                    <MDTypography variant="h6" fontWeight="medium" mb={2}>
+                      Other Information
+                    </MDTypography>
+                    <MDBox>
                       <MDTypography
                         variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.employeeId || "N/A"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
-                      >
-                        Email
-                      </MDTypography>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.email || "N/A"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
-                      >
-                        Email Verified
-                      </MDTypography>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.emailVerified ? "Yes" : "No"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
-                      >
-                        Joining Date
-                      </MDTypography>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.joiningDate || "N/A"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
-                      >
-                        Designation
-                      </MDTypography>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.designation || "N/A"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
-                      >
-                        Department
-                      </MDTypography>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.department || "N/A"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
-                        color="text"
-                        fontWeight="medium"
-                        mb={0.5}
-                      >
-                        Status
-                      </MDTypography>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        sx={{ fontWeight: "regular" }}
-                      >
-                        {userData.status || "N/A"}
-                      </MDTypography>
-                    </MDBox>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <MDBox display="flex" flexDirection="column">
-                      <MDTypography
-                        variant="caption"
                         color="text"
                         fontWeight="medium"
                         mb={1}
                       >
-                        Roles
+                        Roles:
                       </MDTypography>
-                      <Stack direction="row" spacing={1} flexWrap="wrap">
+                      <Stack direction="row" spacing={1} flexWrap="wrap" mb={2}>
                         {filterRoles(userData.roles).length > 0 ? (
                           filterRoles(userData.roles).map((role, index) => (
                             <motion.div key={index} variants={chipVariants}>
@@ -620,13 +549,56 @@ function ProfilePage() {
                           </MDTypography>
                         )}
                       </Stack>
+                      <Box>
+                        {!otpSent ? (
+                          <Button
+                            variant="contained"
+                            sx={{
+                              padding: "10px 20px",
+                              borderRadius: "10px",
+                              background: "00CAFF",
+                              color: "#e8e8e8",
+                              fontWeight: "medium",
+                              fontSize: "0.875rem",
+                              boxShadow: "4px 8px 19px -3px rgba(0,0,0,0.27)",
+                              transition: "all 250ms",
+                              "&:hover": {
+                                backgroundColor: "red",
+                                boxShadow: "4px 8px 19px -3px rgba(0,0,0,0.27)",
+                                transform: "translateY(-2px)",
+                              },
+                            }}
+                            onClick={handleSendOtp}
+                          >
+                            Reset Password
+                          </Button>
+                        ) : (
+                          <MDTypography
+                            variant="body2"
+                            color="success"
+                            sx={{ mt: 1, fontWeight: "medium" }}
+                          >
+                            Password reset email sent! Check your inbox.
+                          </MDTypography>
+                        )}
+                      </Box>
+                      {error && (
+                        <MDTypography
+                          variant="body2"
+                          color="error"
+                          mt={2}
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {error}
+                        </MDTypography>
+                      )}
                     </MDBox>
-                  </Grid>
+                  </Card>
                 </Grid>
-              </MDBox>
+              </Grid>
             </Grid>
           </Grid>
-        </Card>
+        </MDBox>
       </motion.div>
 
       {/* Edit Profile Dialog */}
