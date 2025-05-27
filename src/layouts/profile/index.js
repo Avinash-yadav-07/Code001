@@ -38,7 +38,7 @@ import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 
 // Firebase imports
-import { db, auth } from "firebase.js";
+import { db, auth } from "../manage-employee/firebase";
 import {
   collection,
   query,

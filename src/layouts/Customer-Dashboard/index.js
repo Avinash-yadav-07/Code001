@@ -352,16 +352,10 @@ const CustomerDashboard = () => {
       (c) => c.subscriptionTier === "premium"
     ).length;
 
-    console.log("Filtered metrics:", filteredMetrics);
-
-    months.forEach((month, index) => {
+    months.forEach((month) => {
       const parsedMonth = parse(month, "MMM yyyy", new Date());
       const monthStart = startOfMonth(parsedMonth);
       const monthEnd = endOfMonth(parsedMonth);
-
-      console.log(
-        `Processing month: ${month}, Start: ${monthStart}, End: ${monthEnd}`
-      );
 
       // Filter metrics for the month
       const monthMetrics = filteredMetrics.filter(
@@ -380,10 +374,6 @@ const CustomerDashboard = () => {
       npsData.push(avgNps);
       csatData.push(avgCsat);
 
-      console.log(
-        `Month: ${month}, NPS: ${avgNps}, CSAT: ${avgCsat}, Metrics count: ${monthMetrics.length}`
-      );
-
       // Existing logic for other metrics
       const monthCustomers = filteredCustomers.filter(
         (c) => c.createdAt >= monthStart && c.createdAt <= monthEnd
@@ -398,12 +388,12 @@ const CustomerDashboard = () => {
       }
 
       const churnedCustomers = filteredCancellations.filter(
-        (can) =>
-          can.cancellationDate &&
-          can.cancellationDate >= monthStart &&
-          can.cancellationDate <= monthEnd &&
+        (c) =>
+          c.cancellationDate &&
+          c.cancellationDate >= monthStart &&
+          c.cancellationDate <= monthEnd &&
           filteredCustomers.some(
-            (c) => c.customerId === can.customerId && c.status === "inactive"
+            (cust) => cust.customerId === c.customerId && cust.status === "inactive"
           )
       ).length;
       const churnRate = (churnedCustomers / count) * 100;
@@ -455,8 +445,8 @@ const CustomerDashboard = () => {
 
     const features = ["Core", "Advanced", "Integrations"];
     const productAdoptionByFeature = features.map((feature) => {
-      const featureUsers = filteredCustomers.filter(
-        (c) => c.feature === feature
+      const featureUsers = featureUsage.filter(
+        (f) => f.feature === feature
       ).length;
       const totalCustomers = filteredCustomers.length || 1;
       return {
@@ -468,7 +458,7 @@ const CustomerDashboard = () => {
     const issuesByProject = projects
       .map((project) => {
         const ticketCount = filteredSupportTickets.filter((t) =>
-          t.projectIds.includes(project.projectId)
+          t.projectIds?.includes(project.projectId)
         ).length;
         return { project: project.projectId, count: ticketCount };
       })
@@ -855,7 +845,7 @@ const CustomerDashboard = () => {
       sx={{
         backgroundColor: darkMode ? "background.default" : "#f5f7fa",
         minHeight: "100vh",
-        padding: { xs: 2, md: 4 },
+        padding: { xs: 2, sm: 3, md: 4 },
       }}
     >
       <DashboardNavbar
@@ -883,27 +873,33 @@ const CustomerDashboard = () => {
       <MDBox
         sx={{
           marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          marginTop: { xs: "100px", md: "80px" },
+          marginTop: { xs: "90px", sm: "90px", md: "80px" },
           maxWidth: "100%",
           mx: "auto",
+          px: { xs: 1, sm: 2, md: 3 },
         }}
       >
+        {/* Title Section with Full-Screen Animation */}
         <MDBox
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
+          sx={{
+            mb: 3,
+            width: "100vw",
+            position: "relative",
+            left: { xs: "calc(-1 * var(--chakra-space-1))", sm: "-16px", md: "-24px" },
+            overflow: "hidden",
+            pt: { xs: 2, sm: 1, md: 0 },
+            minHeight: "60px",
+          }}
         >
           <motion.div
             initial="hidden"
             animate="visible"
             variants={titleVariants}
           >
-            <MDBox
-              sx={{ overflow: "hidden", whiteSpace: "nowrap", flexGrow: 1 }}
-            >
+            <MDBox sx={{ width: "100%", minHeight: "60px" }}>
               <motion.div
-                animate={{ x: ["0%", "-100%"] }}
+                initial={{ x: "100%" }}
+                animate={{ x: "-100%" }}
                 transition={{
                   x: {
                     repeat: Infinity,
@@ -912,18 +908,24 @@ const CustomerDashboard = () => {
                     ease: "linear",
                   },
                 }}
+                style={{
+                  display: "inline-block",
+                  whiteSpace: "nowrap",
+                  width: "max-content",
+                }}
               >
                 <MDTypography
                   variant="h3"
                   color={darkMode ? "white" : "textPrimary"}
                   sx={{
-                    display: "inline-block",
                     fontWeight: 700,
                     fontFamily: "'Poppins', 'Roboto', sans-serif",
                     letterSpacing: "-0.02em",
                     textShadow: darkMode
                       ? "0 2px 4px rgba(0,0,0,0.3)"
                       : "0 2px 4px rgba(0,0,0,0.1)",
+                    display: "inline-block",
+                    pr: "100vw",
                   }}
                 >
                   Customer Insights Dashboard
@@ -931,12 +933,33 @@ const CustomerDashboard = () => {
               </motion.div>
             </MDBox>
           </motion.div>
+        </MDBox>
+
+        {/* Date Filter Section */}
+        <MDBox
+          sx={{
+            mb: 3,
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            alignItems: { xs: "stretch", sm: "center" },
+            gap: { xs: 1, sm: 1 },
+            justifyContent: { xs: "flex-start", sm: "flex-end" },
+            flexWrap: "wrap",
+          }}
+        >
           <Paper
             elevation={2}
             sx={{
-              p: 0.5,
+              p: 1,
               backgroundColor: darkMode ? "#333333" : "#ffffff",
-              borderRadius: "12px",
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
+              width: { xs: "100%", sm: "auto" },
+              maxWidth: { xs: "100%", sm: 320 },
+              overflow: "hidden",
+              borderRadius: 8,
               boxShadow: darkMode
                 ? "0 4px 12px rgba(0,0,0,0.4)"
                 : "0 4px 12px rgba(0,0,0,0.1)",
@@ -947,12 +970,14 @@ const CustomerDashboard = () => {
                   ? "0 6px 16px rgba(0,0,0,0.5)"
                   : "0 6px 16px rgba(0,0,0,0.15)",
               },
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
             }}
           >
-            <FormControl sx={{ minWidth: 120 }}>
+            <FormControl
+              sx={{
+                flex: 1,
+                minWidth: { xs: 150, sm: 120 },
+              }}
+            >
               <InputLabel
                 sx={{
                   color: darkMode ? "#ffffff" : "#333333",
@@ -1033,9 +1058,11 @@ const CustomerDashboard = () => {
                   borderRadius: "8px",
                   textTransform: "none",
                   fontWeight: 500,
-                  fontSize: "0.85rem",
-                  px: 1.5,
-                  py: 0.4,
+                  fontSize: { xs: "0.75rem", sm: "0.85rem" },
+                  px: { xs: 1, sm: 1.5 },
+                  py: { xs: 0.3, sm: 0.4 },
+                  width: { xs: "100%", sm: "auto" },
+                  maxWidth: { xs: 150, sm: 120 },
                   "&:hover": {
                     background: darkMode
                       ? "linear-gradient(45deg, #1b5e20 30%, #4caf50 90%)"
@@ -1048,195 +1075,197 @@ const CustomerDashboard = () => {
                 Select Dates
               </Button>
             )}
-            <Dialog
-              open={datePickerOpen}
-              onClose={() => setDatePickerOpen(false)}
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "#2a2a2a" : "white",
-                  borderRadius: "16px",
-                  boxShadow: darkMode
-                    ? "0 8px 24px rgba(0,0,0,0.5)"
-                    : "0 8px 24px rgba(0,0,0,0.2)",
-                  width: "350px",
-                  border: darkMode
-                    ? "1px solid rgba(255,255,255,0.1)"
-                    : "1px solid rgba(0,0,0,0.1)",
-                },
-              }}
-            >
-              <DialogTitle
-                sx={{
-                  color: darkMode ? "#ffffff" : "#333333",
-                  fontWeight: 600,
-                  background: darkMode
-                    ? "linear-gradient(135deg, #333 0%, #424242 100%)"
-                    : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
-                  borderRadius: "16px 16px 0 0",
-                  py: 2,
-                  textAlign: "center",
-                  fontSize: "1.2rem",
-                  letterSpacing: "0.02em",
-                }}
-              >
-                Select Date Range
-              </DialogTitle>
-              <DialogContent
-                sx={{
-                  p: 3,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 2,
-                  background: darkMode ? "#2a2a2a" : "white",
-                  borderTop: darkMode
-                    ? "1px solid rgba(255,255,255,0.1)"
-                    : "1px solid rgba(0,0,0,0.05)",
-                }}
-              >
-                <TextField
-                  label="Start Date"
-                  type="date"
-                  value={
-                    customStartDate
-                      ? customStartDate.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) => setCustomStartDate(new Date(e.target.value))}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    input: {
-                      color: darkMode ? "#ffffff" : "#333333",
-                      backgroundColor: darkMode ? "#424242" : "#f5f5f5",
-                      borderRadius: "8px",
-                      padding: "8px 12px",
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: darkMode ? "#ffffff" : "#333333",
-                      fontWeight: 500,
-                      fontSize: "0.9rem",
-                      transform: "translate(14px, -6px) scale(0.75)",
-                      backgroundColor: darkMode ? "#2a2a2a" : "white",
-                      padding: "0 4px",
-                    },
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: darkMode
-                          ? "rgba(255,255,255,0.3)"
-                          : "rgba(0,0,0,0.2)",
-                        borderRadius: "8px",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: darkMode ? "#ffffff" : "#1976d2",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: darkMode ? "#4fc3f7" : "#1976d2",
-                      },
-                    },
-                  }}
-                />
-                <TextField
-                  label="End Date"
-                  type="date"
-                  value={
-                    customEndDate
-                      ? customEndDate.toISOString().split("T")[0]
-                      : ""
-                  }
-                  onChange={(e) => setCustomEndDate(new Date(e.target.value))}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    input: {
-                      color: darkMode ? "#ffffff" : "#333333",
-                      backgroundColor: darkMode ? "#424242" : "#f5f5f5",
-                      borderRadius: "8px",
-                      padding: "8px 12px",
-                    },
-                    "& .MuiInputLabel-root": {
-                      color: darkMode ? "#ffffff" : "#333333",
-                      fontWeight: 500,
-                      fontSize: "0.9rem",
-                      transform: "translate(14px, -6px) scale(0.75)",
-                      backgroundColor: darkMode ? "#2a2a2a" : "white",
-                      padding: "0 4px",
-                    },
-                    "& .MuiOutlinedInput-root": {
-                      "& fieldset": {
-                        borderColor: darkMode
-                          ? "rgba(255,255,255,0.3)"
-                          : "rgba(0,0,0,0.2)",
-                        borderRadius: "8px",
-                      },
-                      "&:hover fieldset": {
-                        borderColor: darkMode ? "#ffffff" : "#1976d2",
-                      },
-                      "&.Mui-focused fieldset": {
-                        borderColor: darkMode ? "#4fc3f7" : "#1976d2",
-                      },
-                    },
-                  }}
-                />
-              </DialogContent>
-              <DialogActions
-                sx={{
-                  background: darkMode
-                    ? "linear-gradient(135deg, #333 0%, #424242 100%)"
-                    : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
-                  borderTop: darkMode
-                    ? "1px solid rgba(255,255,255,0.1)"
-                    : "1px solid rgba(0,0,0,0.05)",
-                  borderRadius: "0 0 16px 16px",
-                  py: 1.5,
-                  px: 3,
-                }}
-              >
-                <Button
-                  onClick={() => setDatePickerOpen(false)}
-                  sx={{
-                    color: "#ffffff",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    borderRadius: "8px",
-                    px: 3,
-                    py: 0.5,
-                    background: darkMode
-                      ? "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)"
-                      : "linear-gradient(45deg, #e53935 30%, #ef5350 90%)",
-                    "&:hover": {
-                      background: darkMode
-                        ? "linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)"
-                        : "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)",
-                    },
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => setDatePickerOpen(false)}
-                  sx={{
-                    background: darkMode
-                      ? "linear-gradient(45deg, #0288d1 30%, #4fc3f7 90%)"
-                      : "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
-                    color: "#ffffff",
-                    textTransform: "none",
-                    fontWeight: 500,
-                    borderRadius: "8px",
-                    px: 3,
-                    py: 0.5,
-                    "&:hover": {
-                      background: darkMode
-                        ? "linear-gradient(45deg, #0277bd 30%, #29b6f6 90%)"
-                        : "linear-gradient(45deg, #1565c0 30%, #2196f3 90%)",
-                    },
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  Apply
-                </Button>
-              </DialogActions>
-            </Dialog>
           </Paper>
         </MDBox>
+
+        {/* Date Picker Dialog */}
+        <Dialog
+          open={datePickerOpen}
+          onClose={() => setDatePickerOpen(false)}
+          sx={{
+            "& .MuiDialog-paper": {
+              backgroundColor: darkMode ? "#2a2a2a" : "white",
+              borderRadius: "16px",
+              boxShadow: darkMode
+                ? "0 8px 24px rgba(0,0,0,0.5)"
+                : "0 8px 24px rgba(0,0,0,0.2)",
+              width: { xs: "90%", sm: "350px" },
+              maxWidth: "400px",
+              border: darkMode
+                ? "1px solid rgba(255,255,255,0.1)"
+                : "1px solid rgba(0,0,0,0.1)",
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              color: darkMode ? "#ffffff" : "#333333",
+              fontWeight: 600,
+              background: darkMode
+                ? "linear-gradient(135deg, #333 0%, #424242 100%)"
+                : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+              borderRadius: "16px 16px 0 0",
+              py: 2,
+              textAlign: "center",
+              fontSize: "1.2rem",
+              letterSpacing: "0.02em",
+            }}
+          >
+            Select Date Range
+          </DialogTitle>
+          <DialogContent
+            sx={{
+              p: 3,
+              display: "flex",
+              flexDirection: "column",
+              gap: 2,
+              background: darkMode ? "#2a2a2a" : "white",
+              borderTop: darkMode
+                ? "1px solid rgba(255,255,255,0.1)"
+                : "1px solid rgba(0,0,0,0.05)",
+            }}
+          >
+            <TextField
+              label="Start Date"
+              type="date"
+              value={
+                customStartDate
+                  ? customStartDate.toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={(e) => setCustomStartDate(new Date(e.target.value))}
+              InputLabelProps={{ shrink: true }}
+              sx={{
+                input: {
+                  color: darkMode ? "#ffffff" : "#333333",
+                  backgroundColor: darkMode ? "#424242" : "#f5f5f5",
+                  borderRadius: "8px",
+                  padding: "8px 12px",
+                },
+                "& .MuiInputLabel-root": {
+                  color: darkMode ? "#ffffff" : "#333333",
+                  fontWeight: 500,
+                  fontSize: "0.9rem",
+                  transform: "translate(14px, -6px) scale(0.75)",
+                  backgroundColor: darkMode ? "#2a2a2a" : "white",
+                  padding: "0 4px",
+                },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: darkMode
+                      ? "rgba(255,255,255,0.3)"
+                      : "rgba(0,0,0,0.2)",
+                    borderRadius: "8px",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: darkMode ? "#ffffff" : "#1976d2",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: darkMode ? "#4fc3f7" : "#1976d2",
+                  },
+                },
+              }}
+            />
+            <TextField
+              label="End Date"
+              type="date"
+              value={
+                customEndDate ? customEndDate.toISOString().split("T")[0] : ""
+              }
+              onChange={(e) => setCustomEndDate(new Date(e.target.value))}
+              InputLabelProps={{ shrink: true }}
+              sx={{
+                input: {
+                  color: darkMode ? "#ffffff" : "#333333",
+                  backgroundColor: darkMode ? "#424242" : "#f5f5f5",
+                  borderRadius: "8px",
+                  padding: "8px 12px",
+                },
+                "& .MuiInputLabel-root": {
+                  color: darkMode ? "#ffffff" : "#333333",
+                  fontWeight: 500,
+                  fontSize: "0.9rem",
+                  transform: "translate(14px, -6px) scale(0.75)",
+                  backgroundColor: darkMode ? "#2a2a2a" : "white",
+                  padding: "0 4px",
+                },
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    borderColor: darkMode
+                      ? "rgba(255,255,255,0.3)"
+                      : "rgba(0,0,0,0.2)",
+                    borderRadius: "8px",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: darkMode ? "#ffffff" : "#1976d2",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: darkMode ? "#4fc3f7" : "#1976d2",
+                  },
+                },
+              }}
+            />
+          </DialogContent>
+          <DialogActions
+            sx={{
+              background: darkMode
+                ? "linear-gradient(135deg, #333 0%, #424242 100%)"
+                : "linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)",
+              borderTop: darkMode
+                ? "1px solid rgba(255,255,255,0.1)"
+                : "1px solid rgba(0,0,0,0.05)",
+              borderRadius: "0 0 16px 16px",
+              py: 1.5,
+              px: 3,
+            }}
+          >
+            <Button
+              onClick={() => setDatePickerOpen(false)}
+              sx={{
+                color: "#ffffff",
+                textTransform: "none",
+                fontWeight: 500,
+                borderRadius: "8px",
+                px: 3,
+                py: 0.5,
+                background: darkMode
+                  ? "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)"
+                  : "linear-gradient(45deg, #e53935 30%, #ef5350 90%)",
+                "&:hover": {
+                  background: darkMode
+                    ? "linear-gradient(45deg, #b71c1c 30%, #d32f2f 90%)"
+                    : "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)",
+                },
+                transition: "all 0.2s ease",
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => setDatePickerOpen(false)}
+              sx={{
+                background: darkMode
+                  ? "linear-gradient(45deg, #0288d1 30%, #4fc3f7 90%)"
+                  : "linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)",
+                color: "#ffffff",
+                textTransform: "none",
+                fontWeight: 500,
+                borderRadius: "8px",
+                px: 3,
+                py: 0.5,
+                "&:hover": {
+                  background: darkMode
+                    ? "linear-gradient(45deg, #0277bd 30%, #29b6f6 90%)"
+                    : "linear-gradient(45deg, #1565c0 30%, #2196f3 90%)",
+                },
+                transition: "all 0.2s ease",
+              }}
+            >
+              Apply
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <Paper
@@ -1722,7 +1751,7 @@ const CustomerDashboard = () => {
                   overflow: "hidden",
                   background: darkMode
                     ? "linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%)"
-                    : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
+                    : "linear-gradient(135deg, #ffffff, #f8fafc 100%)",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
                 }}
               >
