@@ -256,6 +256,20 @@ const ManageAccount = () => {
     }
   }, [loadingRoles, fetchAllData]);
 
+  // Calculate account metrics
+  const calculateAccountMetrics = () => {
+    const totalAccounts = accounts.length;
+    const activeAccounts = accounts.filter((acc) => acc.status === "Active").length;
+    const totalRevenue = accounts.reduce((sum, acc) => sum + (Number(acc.revenue) || 0), 0);
+    const averageProfitMargin =
+      accounts.length > 0
+        ? accounts.reduce((sum, acc) => sum + (Number(acc.profitMargin) || 0), 0) /
+          accounts.length
+        : 0;
+
+    return { totalAccounts, activeAccounts, totalRevenue, averageProfitMargin };
+  };
+
   // Handle Excel option change
   const handleExcelOptionChange = (event) => {
     const option = event.target.value;
@@ -643,6 +657,8 @@ const ManageAccount = () => {
     );
   }
 
+  const { totalAccounts, activeAccounts, totalRevenue, averageProfitMargin } = calculateAccountMetrics();
+
   return (
     <Box sx={{ backgroundColor: darkMode ? "#212121" : "#f3f3f3", minHeight: "100vh" }}>
       <DashboardNavbar
@@ -673,244 +689,288 @@ const ManageAccount = () => {
       >
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <MDBox
-              mx={2}
-              mt={-3}
-              py={3}
-              px={2}
-              variant="gradient"
-              bgColor={darkMode ? "dark" : "info"}
-              borderRadius="lg"
-              coloredShadow={darkMode ? "dark" : "info"}
-            >
-              <MDTypography variant="h6" color="white">
-                Account Management
-              </MDTypography>
-            </MDBox>
-            {!isReadOnly && (
+            <Card>
               <MDBox
-                pt={3}
-                pb={2}
+                mx={2}
+                mt={-3}
+                py={3}
                 px={2}
-                display="flex"
-                flexDirection={{ xs: "column", sm: "row" }}
-                alignItems={{ xs: "stretch", sm: "center" }}
-                gap={2}
-                justifyContent="space-between"
+                variant="gradient"
+                bgColor={darkMode ? "dark" : "info"}
+                borderRadius="lg"
+                coloredShadow={darkMode ? "dark" : "info"}
               >
-                <Box
+                <MDTypography variant="h6" color="white">
+                  Account Management
+                </MDTypography>
+              </MDBox>
+              {!isReadOnly && (
+                <MDBox
+                  pt={3}
+                  pb={2}
+                  px={2}
                   display="flex"
                   flexDirection={{ xs: "column", sm: "row" }}
+                  alignItems={{ xs: "stretch", sm: "center" }}
                   gap={2}
-                  width={{ xs: "100%", sm: "auto" }}
+                  justifyContent="space-between"
                 >
-                  <MDButton
-                    variant="gradient"
-                    color={darkMode ? "dark" : "info"}
-                    onClick={handleClickOpen}
-                    startIcon={<AddIcon />}
-                    fullWidth={{ xs: true, sm: false }}
-                    sx={{ textTransform: "none", fontWeight: "medium" }}
+                  <Box
+                    display="flex"
+                    flexDirection={{ xs: "column", sm: "row" }}
+                    gap={2}
+                    width={{ xs: "100%", sm: "auto" }}
                   >
-                    Add Account
-                  </MDButton>
-                  <select
-                    value={excelOption}
-                    onChange={handleExcelOptionChange}
-                    style={formSelectStyle}
-                  >
-                    <option value="" disabled>Select Excel Option</option>
-                    <option value="upload">Upload Excel</option>
-                    <option value="download">Download Excel</option>
-                    <option value="downloadDummy">Download Dummy Excel</option>
-                  </select>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    hidden
-                    accept=".xlsx, .xls, .csv"
-                    onChange={handleFileUpload}
-                  />
-                </Box>
-              </MDBox>
-            )}
-            <Grid container spacing={3} sx={{ padding: "16px" }}>
-              {accounts.length === 0 ? (
-                <Grid item xs={12}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    No accounts available.
-                  </MDTypography>
-                </Grid>
-              ) : (
-                accounts.map((account) => (
-                  <Grid item xs={12} key={account.id}>
-                    <Card
-                      sx={{
-                        background: darkMode
-                          ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
-                          : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
-                        borderRadius: "12px",
-                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                        padding: "20px",
-                        transition: "0.3s ease-in-out",
-                        "&:hover": {
-                          boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
-                          transform: "scale(1.02)",
-                        },
-                        display: "flex",
-                        flexDirection: { xs: "column", sm: "row" },
-                      }}
+                    <MDButton
+                      variant="gradient"
+                      color={darkMode ? "dark" : "info"}
+                      onClick={handleClickOpen}
+                      startIcon={<AddIcon />}
+                      fullWidth={{ xs: true, sm: false }}
+                      sx={{ textTransform: "none", fontWeight: "medium" }}
                     >
-                      <Box
-                        sx={{
-                          width: { xs: "100%", sm: "120px" },
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          backgroundColor: account.status === "Active" ? "#4caf50" : "#F44336",
-                          borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
-                          marginRight: { sm: "16px" },
-                          marginBottom: { xs: "16px", sm: 0 },
-                          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-                        }}
-                      >
-                        <MDTypography
-                          variant="body2"
-                          color="white"
-                          sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
-                        >
-                          {account.status}
+                      Add Account
+                    </MDButton>
+                    <select
+                      value={excelOption}
+                      onChange={handleExcelOptionChange}
+                      style={formSelectStyle}
+                    >
+                      <option value="" disabled>Select Excel Option</option>
+                      <option value="upload">Upload Excel</option>
+                      <option value="download">Download Excel</option>
+                      <option value="downloadDummy">Download Dummy Excel</option>
+                    </select>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      hidden
+                      accept=".xlsx, .xls, .csv"
+                      onChange={handleFileUpload}
+                    />
+                  </Box>
+                </MDBox>
+              )}
+              <MDBox px={2} pb={2}>
+                <Card
+                  sx={{
+                    background: darkMode
+                      ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                      : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                    borderRadius: "12px",
+                    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                    padding: "20px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <CardContent>
+                    <Grid container spacing={2}>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                          <span>Total Accounts: </span>
+                          <span style={{ fontWeight: "bold" }}>{totalAccounts}</span>
                         </MDTypography>
-                      </Box>
-                      <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
-                        <CardContent>
-                          <Grid container spacing={2}>
-                            <Grid item xs={12} sm={6}>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Account ID: </span>
-                                <span style={{ fontWeight: "bold" }}>{account.accountId}</span>
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Name: </span>
-                                <span style={{ fontWeight: "bold" }}>{account.name}</span>
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Industry: </span>
-                                <span style={{ fontWeight: "bold" }}>{account.industry}</span>
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Revenue: </span>
-                                <span style={{ fontWeight: "bold" }}>${account.revenue || 0}</span>
-                              </MDTypography>
-                            </Grid>
-                            <Grid item xs={12} sm={6}>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Expenses: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  ${accountExpenses[account.accountId] || 0}
-                                </span>
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Profit Margin: </span>
-                                <span style={{ fontWeight: "bold" }}>{account.profitMargin || 0}%</span>
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Projects: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {Array.isArray(account.projects) && account.projects.length > 0
-                                    ? account.projects
-                                        .map((projectId) => {
-                                          const project = projectList.find((p) => p.id === projectId);
-                                          const projectExpense = projectExpenses[projectId] || 0;
-                                          return project
-                                            ? `${project.name || project.id} ($${projectExpense})`
-                                            : projectId;
-                                        })
-                                        .join(", ")
-                                    : "No projects assigned"}
-                                </span>
-                              </MDTypography>
-                              <MDTypography
-                                variant="body2"
-                                color={darkMode ? "white" : "textSecondary"}
-                                sx={{ mb: 1 }}
-                              >
-                                <span>Clients: </span>
-                                <span style={{ fontWeight: "bold" }}>
-                                  {Array.isArray(account.clients) && account.clients.length > 0
-                                    ? account.clients
-                                        .map((clientId) => {
-                                          const client = clientList.find((c) => c.id === clientId);
-                                          return client ? client.name || client.id : clientId;
-                                        })
-                                        .join(", ")
-                                    : "No clients assigned"}
-                                </span>
-                              </MDTypography>
-                            </Grid>
-                          </Grid>
-                        </CardContent>
-                        {!isReadOnly && (
-                          <CardActions
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                          <span>Active Accounts: </span>
+                          <span style={{ fontWeight: "bold" }}>{activeAccounts}</span>
+                        </MDTypography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                          <span>Total Revenue: </span>
+                          <span style={{ fontWeight: "bold" }}>${totalRevenue.toLocaleString()}</span>
+                        </MDTypography>
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                          <span>Average Profit Margin: </span>
+                          <span style={{ fontWeight: "bold" }}>{averageProfitMargin.toFixed(2)}%</span>
+                        </MDTypography>
+                      </Grid>
+                    </Grid>
+                  </CardContent>
+                </Card>
+                <Grid container spacing={3}>
+                  {accounts.length === 0 ? (
+                    <Grid item xs={12}>
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                        No accounts available.
+                      </MDTypography>
+                    </Grid>
+                  ) : (
+                    accounts.map((account) => (
+                      <Grid item xs={12} key={account.id}>
+                        <Card
+                          sx={{
+                            background: darkMode
+                              ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                              : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                            borderRadius: "12px",
+                            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                            padding: "20px",
+                            transition: "0.3s ease-in-out",
+                            "&:hover": {
+                              boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
+                              transform: "scale(1.02)",
+                            },
+                            display: "flex",
+                            flexDirection: { xs: "column", sm: "row" },
+                          }}
+                        >
+                          <Box
                             sx={{
+                              width: { xs: "100%", sm: "120px" },
                               display: "flex",
-                              flexWrap: "wrap",
-                              gap: 1,
-                              justifyContent: { xs: "space-between", sm: "flex-end" },
                               alignItems: "center",
-                              padding: "8px 16px",
+                              justifyContent: "center",
+                              backgroundColor: account.status === "Active" ? "#4caf50" : "#F44336",
+                              borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+                              marginRight: { sm: "16px" },
+                              marginBottom: { xs: "16px", sm: 0 },
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
                             }}
                           >
-                            <MDButton
-                              variant="gradient"
-                              color={darkMode ? "dark" : "info"}
-                              onClick={() => handleEdit(account)}
-                              sx={{
-                                flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
-                                minWidth: { xs: "100px", sm: "100px" },
-                                maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
-                                padding: "8px 16px",
-                                fontSize: "14px",
-                              }}
+                            <MDTypography
+                              variant="body2"
+                              color="white"
+                              sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
                             >
-                              <Icon fontSize="medium">edit</Icon> Edit
-                            </MDButton>
-                          </CardActions>
-                        )}
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))
-              )}
-            </Grid>
+                              {account.status}
+                            </MDTypography>
+                          </Box>
+                          <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
+                            <CardContent>
+                              <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Account ID: </span>
+                                    <span style={{ fontWeight: "bold" }}>{account.accountId}</span>
+                                  </MDTypography>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Name: </span>
+                                    <span style={{ fontWeight: "bold" }}>{account.name}</span>
+                                  </MDTypography>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Industry: </span>
+                                    <span style={{ fontWeight: "bold" }}>{account.industry}</span>
+                                  </MDTypography>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Revenue: </span>
+                                    <span style={{ fontWeight: "bold" }}>${account.revenue || 0}</span>
+                                  </MDTypography>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Expenses: </span>
+                                    <span style={{ fontWeight: "bold" }}>
+                                      ${accountExpenses[account.accountId] || 0}
+                                    </span>
+                                  </MDTypography>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Profit Margin: </span>
+                                    <span style={{ fontWeight: "bold" }}>{account.profitMargin || 0}%</span>
+                                  </MDTypography>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Projects: </span>
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {Array.isArray(account.projects) && account.projects.length > 0
+                                        ? account.projects
+                                            .map((projectId) => {
+                                              const project = projectList.find((p) => p.id === projectId);
+                                              const projectExpense = projectExpenses[projectId] || 0;
+                                              return project
+                                                ? `${project.name || project.id} ($${projectExpense})`
+                                                : projectId;
+                                            })
+                                            .join(", ")
+                                        : "No projects assigned"}
+                                    </span>
+                                  </MDTypography>
+                                  <MDTypography
+                                    variant="body2"
+                                    color={darkMode ? "white" : "textSecondary"}
+                                    sx={{ mb: 1 }}
+                                  >
+                                    <span>Clients: </span>
+                                    <span style={{ fontWeight: "bold" }}>
+                                      {Array.isArray(account.clients) && account.clients.length > 0
+                                        ? account.clients
+                                            .map((clientId) => {
+                                              const client = clientList.find((c) => c.id === clientId);
+                                              return client ? client.name || client.id : clientId;
+                                            })
+                                            .join(", ")
+                                        : "No clients assigned"}
+                                    </span>
+                                  </MDTypography>
+                                </Grid>
+                              </Grid>
+                            </CardContent>
+                            {!isReadOnly && (
+                              <CardActions
+                                sx={{
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: 1,
+                                  justifyContent: { xs: "space-between", sm: "flex-end" },
+                                  alignItems: "center",
+                                  padding: "8px 16px",
+                                }}
+                              >
+                                <MDButton
+                                  variant="gradient"
+                                  color={darkMode ? "dark" : "info"}
+                                  onClick={() => handleEdit(account)}
+                                  sx={{
+                                    flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                                    minWidth: { xs: "100px", sm: "100px" },
+                                    maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                                    padding: "8px 16px",
+                                    fontSize: "14px",
+                                  }}
+                                >
+                                  <Icon fontSize="medium">edit</Icon> Edit
+                                </MDButton>
+                              </CardActions>
+                            )}
+                          </Box>
+                        </Card>
+                      </Grid>
+                    ))
+                  )}
+                </Grid>
+              </MDBox>
+            </Card>
           </Grid>
         </Grid>
       </MDBox>
@@ -1064,7 +1124,7 @@ const ManageAccount = () => {
               </select>
               {errors.status && (
                 <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-                  {errors.status}
+                  errors.status
                 </span>
               )}
               <label style={formLabelStyle}>Notes</label>
@@ -1085,17 +1145,19 @@ const ManageAccount = () => {
             <Typography sx={formHeadingStyle}>Ready to update account details?</Typography>
             <Box sx={{ display: "flex", justifyContent: "space-between" }}>
               <button
+                style={formButtonStyle}
                 type="button"
                 onClick={() => setConfirmUpdateOpen(false)}
-                style={formButtonStyle}
+                
               >
                 Cancel
               </button>
               <button
+                style={{ ...formButtonStyle, backgroundColor: "#1976d2" }}
                 type="button"
                 onClick={confirmUpdate}
-                style={{ ...formButtonStyle, backgroundColor: "#1976d2" }}
-              >
+                
+                >
                 Confirm
               </button>
             </Box>

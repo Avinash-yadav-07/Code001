@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
@@ -15,12 +16,10 @@ import {
   CardContent,
   Box,
   Alert,
-  FormControl,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
-  Icon,
+  Autocomplete,
 } from "@mui/material";
+import CheckIcon from "@mui/icons-material/Check";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import { styled } from "@mui/material/styles";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
@@ -49,21 +48,26 @@ import { debounce } from "lodash";
 
 const statuses = ["Ongoing", "Completed", "On Hold"];
 
-// Custom button styling to match ManageClient
-const CustomButton = styled("button")(({ theme }) => ({
-  padding: "15px",
+// Custom button styling to match ManageEarnings
+const CustomButton = styled("button")(({ theme, darkMode }) => ({
+  padding: "10px",
   borderRadius: "10px",
-  margin: "15px",
+  margin: "10px",
   border: "none",
   color: "white",
   cursor: "pointer",
   backgroundColor: "#4caf50",
   width: "40%",
-  fontSize: "16px",
-  fontWeight: "bold",
+  fontSize: "14px",
   "&:hover": {
     backgroundColor: "#45a049",
   },
+  ...(darkMode && {
+    backgroundColor: "#388e3c",
+    "&:hover": {
+      backgroundColor: "#2e7d32",
+    },
+  }),
 }));
 
 const Progress = ({ value, status }) => {
@@ -131,6 +135,8 @@ const ManageProject = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [saving, setSaving] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const [form, setForm] = useState({
     name: "",
@@ -154,15 +160,24 @@ const ManageProject = () => {
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
 
-  // Styles to match ManageClient
+  // Styles aligned with ManageEarnings
   const formContainerStyle = {
-    backgroundColor: "#fff",
+    backgroundColor: darkMode ? "#424242" : "#fff",
     borderRadius: "15px",
     boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
     padding: "10px 20px",
-    width: "500px",
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "80vh",
+    overflowY: "auto",
     textAlign: "center",
     margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
   };
 
   const formStyle = {
@@ -170,55 +185,39 @@ const ManageProject = () => {
   };
 
   const labelStyle = {
-    fontSize: "15px",
+    fontSize: "14px",
     display: "block",
     width: "100%",
-    marginTop: "8px",
-    marginBottom: "5px",
+    marginTop: "6px",
+    marginBottom: "4px",
     textAlign: "left",
-    color: "#555",
+    color: darkMode ? "#aaaaaa" : "#555",
     fontWeight: "bold",
   };
 
   const inputStyle = {
     display: "block",
     width: "100%",
-    padding: "8px",
+    padding: "6px",
     boxSizing: "border-box",
     border: "1px solid #ddd",
     borderRadius: "3px",
     fontSize: "12px",
+    marginBottom: "10px",
   };
 
   const selectStyle = {
-    display: "block",
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
+    ...inputStyle,
+    padding: "8px",
     borderRadius: "5px",
-    fontSize: "12px",
+    height: "32px",
   };
 
-  const checkboxContainerStyle = {
-    display: "block",
-    width: "100%",
-    maxHeight: "150px",
-    overflowY: "auto",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-    backgroundColor: "#fff",
-  };
-
-  const titleStyle = {
-    fontSize: "x-large",
+  const formHeadingStyle = {
+    fontSize: "large",
     textAlign: "center",
-    color: "#327c35",
+    color: darkMode ? "#ffffff" : "#327c35",
+    margin: "10px 0",
   };
 
   useEffect(() => {
@@ -274,12 +273,13 @@ const ManageProject = () => {
     }
     return "";
   };
+
   const generateProjectId = async () => {
     const maxAttempts = 10;
     let attempts = 0;
 
     while (attempts < maxAttempts) {
-      const number = Math.floor(Math.random() * 999) + 1; // Random number from 1 to 999
+      const number = Math.floor(Math.random() * 999) + 1;
       const projectId = `P-${number}`;
       const q = query(
         collection(db, "projects"),
@@ -293,6 +293,7 @@ const ManageProject = () => {
     }
     throw new Error("Could not generate a unique project ID");
   };
+
   useEffect(() => {
     if (loadingRoles || !hasAccess) return;
 
@@ -357,6 +358,7 @@ const ManageProject = () => {
           snapshot.docs.map((doc) => ({
             id: doc.id,
             name: doc.data().name || "Unknown",
+            employeeId: doc.data().employeeId || doc.id,
           }))
         );
       },
@@ -487,7 +489,7 @@ const ManageProject = () => {
         const teamMemberNames = teamMemberIds
           .map((id) => {
             const emp = employees.find((e) => e.id === id);
-            return emp ? emp.name : null;
+            return emp ? `${emp.name} (${emp.employeeId})` : null;
           })
           .filter(Boolean);
         setSelectedProject({
@@ -519,7 +521,7 @@ const ManageProject = () => {
           teamMembers: project.teamMembers
             .map((id) => {
               const emp = employees.find((e) => e.id === id);
-              return emp ? emp.name : null;
+              return emp ? `${emp.name} (${emp.employeeId})` : null;
             })
             .filter(Boolean),
         });
@@ -550,7 +552,7 @@ const ManageProject = () => {
       description: project.description || "",
       completion: project.completion || "",
       selectedEmployees: employees.filter((e) =>
-        project.teamMembers.includes(e.name)
+        project.teamMembers.includes(`${e.name} (${e.employeeId})`)
       ),
     });
     setViewDetailsOpen(false);
@@ -580,7 +582,8 @@ const ManageProject = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (!validateForm()) {
       toast.error("Please fix form errors");
       return;
@@ -678,56 +681,69 @@ const ManageProject = () => {
     setFormErrors({});
   };
 
-  const tableData = useMemo(
-    () => ({
-      columns: [
-        { Header: "project", accessor: "project", width: "30%", align: "left" },
-        { Header: "budget", accessor: "budget", align: "left" },
-        { Header: "status", accessor: "status", align: "center" },
-        { Header: "completion", accessor: "completion", align: "center" },
-        { Header: "action", accessor: "action", align: "center" },
-      ],
-      rows: filteredProjects.map((project) => ({
-        project: (
-          <ProjectInfo name={project.name} projectId={project.projectId} />
-        ),
-        budget: (
-          <MDTypography variant="button" color="text" fontWeight="medium">
-            ${project.financialMetrics?.budget || 0}
-          </MDTypography>
-        ),
-        status: (
-          <Chip
-            label={project.status}
-            color={
-              project.status === "Completed"
-                ? "success"
-                : project.status === "On Hold"
-                ? "warning"
-                : "info"
-            }
-            size="small"
-          />
-        ),
-        completion: (
-          <Progress value={project.completion || 0} status={project.status} />
-        ),
-        action: (
-          <MDBox display="flex" justifyContent="center">
-            <Button
-              variant="gradient"
-              color={darkMode ? "dark" : "info"}
-              onClick={() => handleViewDetails(project)}
-              sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
-            >
-              <Icon>visibility</Icon> View Project
-            </Button>
-          </MDBox>
-        ),
-      })),
-    }),
-    [filteredProjects, darkMode]
-  );
+  // Pagination logic
+  const totalItems = filteredProjects.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedProjects = filteredProjects.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+const tableData = useMemo(
+  () => ({
+    columns: [
+      { Header: "project", accessor: "project", width: "30%", align: "left" },
+      { Header: "budget", accessor: "budget", align: "left" },
+      { Header: "status", accessor: "status", align: "center" },
+      { Header: "completion", accessor: "completion", align: "center" },
+      { Header: "action", accessor: "action", align: "center" },
+    ],
+    rows: paginatedProjects.map((project) => ({
+      project: (
+        <ProjectInfo name={project.name} projectId={project.projectId} />
+      ),
+      budget: (
+        <MDTypography variant="button" color="text" fontWeight="medium">
+          ${project.financialMetrics?.budget || 0}
+        </MDTypography>
+      ),
+      status: (
+        <Chip
+          label={project.status}
+          color={
+            project.status === "Completed"
+              ? "success"
+              : project.status === "On Hold"
+              ? "warning"
+              : "info"
+          }
+          size="small"
+        />
+      ),
+      completion: (
+        <Progress value={project.completion || 0} status={project.status} />
+      ),
+      action: (
+        <MDBox display="flex" justifyContent="center">
+          <Button
+            variant="gradient"
+            color={darkMode ? "dark" : "info"}
+            onClick={() => handleViewDetails(project)}
+            sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <VisibilityIcon /> View Project
+          </Button>
+        </MDBox>
+      ),
+    })),
+  }),
+  [paginatedProjects, darkMode]
+);
 
   if (loadingRoles) {
     return (
@@ -737,9 +753,10 @@ const ManageProject = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         }}
       >
-        <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
+        <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
           Loading...
         </MDTypography>
       </Box>
@@ -751,16 +768,10 @@ const ManageProject = () => {
   }
 
   return (
-    <Box
-      sx={{
-        backgroundColor: darkMode ? "background.default" : "background.paper",
-        minHeight: "100vh",
-      }}
-    >
+    <>
       <DashboardNavbar
         absolute
         light={!darkMode}
-        isMini={false}
         sx={{
           backgroundColor: darkMode
             ? "rgba(33, 33, 33, 0.9)"
@@ -770,22 +781,23 @@ const ManageProject = () => {
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
-          left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           width: {
             xs: "100%",
-            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
           },
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       />
       <MDBox
         p={3}
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           marginTop: { xs: "140px", md: "100px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           minHeight: "calc(100vh - 80px)",
           paddingTop: { xs: "32px", md: "24px" },
-          zIndex: 1000,
         }}
       >
         <Grid container spacing={3}>
@@ -804,7 +816,7 @@ const ManageProject = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <MDTypography variant="h6" color={darkMode ? "white" : "white"}>
+                <MDTypography variant="h6" color="white">
                   Projects
                 </MDTypography>
                 <TextField
@@ -818,9 +830,12 @@ const ManageProject = () => {
                       borderRadius: "8px",
                       backgroundColor: darkMode ? "#424242" : "#fff",
                       color: darkMode ? "white" : "black",
+                      "& fieldset": {
+                        borderColor: darkMode ? "#aaaaaa" : "#ddd",
+                      },
                     },
                     "& .MuiInputLabel-root": {
-                      color: darkMode ? "white" : "black",
+                      color: darkMode ? "#aaaaaa" : "black",
                     },
                   }}
                 />
@@ -845,6 +860,10 @@ const ManageProject = () => {
                       textTransform: "none",
                       fontWeight: "medium",
                       boxShadow: 3,
+                      "&:hover": {
+                        boxShadow: 6,
+                        backgroundColor: darkMode ? "grey.700" : "info.dark",
+                      },
                     }}
                   >
                     Add Project
@@ -855,13 +874,84 @@ const ManageProject = () => {
                 ) : filteredProjects.length === 0 ? (
                   <Typography>No projects available</Typography>
                 ) : (
-                  <DataTable
-                    table={tableData}
-                    isSorted={false}
-                    entriesPerPage={false}
-                    showTotalEntries={false}
-                    noEndBorder
-                  />
+                  <>
+                    <DataTable
+                      table={tableData}
+                      isSorted={false}
+                      entriesPerPage={false}
+                      showTotalEntries={false}
+                      noEndBorder
+                    />
+                    <MDBox display="flex" justifyContent="center" mt={2}>
+                      <Button
+                        disabled={currentPage === 1}
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        sx={{
+                          mx: 1,
+                          color: darkMode ? "#ffffff" : "#000000",
+                          fontWeight: "bold",
+                          fontSize: "16px",
+                        }}
+                      >
+                        {"<"}
+                      </Button>
+                      {Array.from(
+                        { length: totalPages },
+                        (_, index) => index + 1
+                      ).map((page) => (
+                        <Button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          sx={{
+                            mx: 0.5,
+                            backgroundColor:
+                              currentPage === page
+                                ? darkMode
+                                  ? "#0288d1"
+                                  : "info.main"
+                                : darkMode
+                                ? "#424242"
+                                : "#e0e0e0",
+                            color:
+                              currentPage === page
+                                ? "#ffffff"
+                                : darkMode
+                                ? "#ffffff"
+                                : "#000000",
+                            borderRadius: "50%",
+                            minWidth: "36px",
+                            height: "36px",
+                            fontWeight: "bold",
+                            fontSize: "14px",
+                            "&:hover": {
+                              backgroundColor:
+                                currentPage === page
+                                  ? darkMode
+                                    ? "#0277bd"
+                                    : "info.dark"
+                                  : darkMode
+                                  ? "#616161"
+                                  : "#bdbdbd",
+                            },
+                          }}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                      <Button
+                        disabled={currentPage === totalPages}
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        sx={{
+                          mx: 1,
+                          color: darkMode ? "#ffffff" : "#000000",
+                          fontWeight: "bold",
+                          fontSize: "16px",
+                        }}
+                      >
+                        {">"}
+                      </Button>
+                    </MDBox>
+                  </>
                 )}
               </MDBox>
             </Card>
@@ -870,9 +960,8 @@ const ManageProject = () => {
       </MDBox>
       <Box
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          zIndex: 1100,
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         }}
       >
         <Footer />
@@ -885,15 +974,13 @@ const ManageProject = () => {
         fullWidth
         sx={{
           "& .MuiDialog-paper": {
-            backgroundColor: darkMode
-              ? "background.default"
-              : "background.paper",
+            backgroundColor: darkMode ? "#424242" : "#fff",
             borderRadius: "15px",
             boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
           },
         }}
       >
-        <DialogTitle sx={{ ...titleStyle }}>Project Details</DialogTitle>
+        <DialogTitle sx={formHeadingStyle}>Project Details</DialogTitle>
         <DialogContent>
           {selectedProject && (
             <Card
@@ -925,183 +1012,114 @@ const ManageProject = () => {
                       {selectedProject.projectId || selectedProject.id || "N/A"}
                     </MDTypography>
                   </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Name: </span>
-                      {selectedProject.name || "N/A"}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Team: </span>
-                      {selectedProject.team.join(", ") || "N/A"}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Team Members: </span>
-                      {selectedProject.teamMembers.join(", ") || "N/A"}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Budget: </span>$
-                      {selectedProject.financialMetrics?.budget || 0}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Expenses: </span>$
-                      {projectExpenses}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>ROI (%): </span>
-                      {selectedProject.financialMetrics?.roi || 0}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Burn Rate: </span>
-                      {selectedProject.financialMetrics?.burnRate || 0}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>
-                        Profit Margin (%):{" "}
-                      </span>
-                      {selectedProject.financialMetrics?.profitMargin || 0}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>
-                        Revenue Generated:{" "}
-                      </span>
-                      ${projectRevenue}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>
-                        Expected Revenue:{" "}
-                      </span>
-                      ${selectedProject.financialMetrics?.expectedRevenue || 0}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Start Date: </span>
-                      {selectedProject.startDate
-                        ? new Date(
-                            selectedProject.startDate
-                          ).toLocaleDateString()
-                        : "N/A"}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>End Date: </span>
-                      {selectedProject.endDate
+                  {[
+                    { label: "Name", value: selectedProject.name || "N/A" },
+                    {
+                      label: "Team",
+                      value: selectedProject.team.join(", ") || "N/A",
+                    },
+                    {
+                      label: "Team Members",
+                      value: selectedProject.teamMembers.join(", ") || "N/A",
+                    },
+                    {
+                      label: "Budget",
+                      value: `$${selectedProject.financialMetrics?.budget || 0}`,
+                    },
+                    { label: "Expenses", value: `$${projectExpenses}` },
+                    {
+                      label: "ROI (%)",
+                      value: selectedProject.financialMetrics?.roi || 0,
+                    },
+                    {
+                      label: "Burn Rate",
+                      value: selectedProject.financialMetrics?.burnRate || 0,
+                    },
+                    {
+                      label: "Profit Margin (%)",
+                      value: selectedProject.financialMetrics?.profitMargin || 0,
+                    },
+                    {
+                      label: "Revenue Generated",
+                      value: `$${projectRevenue}`,
+                    },
+                    {
+                      label: "Expected Revenue",
+                      value: `$${selectedProject.financialMetrics?.expectedRevenue || 0}`,
+                    },
+                    {
+                      label: "Start Date",
+                      value: selectedProject.startDate
+                        ? new Date(selectedProject.startDate).toLocaleDateString()
+                        : "N/A",
+                    },
+                    {
+                      label: "End Date",
+                      value: selectedProject.endDate
                         ? new Date(selectedProject.endDate).toLocaleDateString()
-                        : "Ongoing"}
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Status: </span>
-                      <Chip
-                        label={selectedProject.status || "N/A"}
-                        sx={{
-                          backgroundColor:
-                            selectedProject.status === "Completed"
-                              ? "#4CAF50"
-                              : selectedProject.status === "On Hold"
-                              ? "#FF9800"
-                              : "#2196F3",
-                          color: "#fff",
-                          fontSize: "12px",
-                          padding: "4px 8px",
-                          borderRadius: "6px",
-                        }}
-                      />
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>
-                        Completion (%):{" "}
-                      </span>
-                      {selectedProject.completion || 0}%
-                    </MDTypography>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <MDTypography
-                      variant="body2"
-                      color={darkMode ? "white" : "textSecondary"}
-                    >
-                      <span style={{ fontWeight: "bold" }}>Description: </span>
-                      {selectedProject.description ||
-                        "No description available"}
-                    </MDTypography>
-                  </Grid>
+                        : "Ongoing",
+                    },
+                    {
+                      label: "Status",
+                      value: (
+                        <Chip
+                          label={selectedProject.status || "N/A"}
+                          sx={{
+                            backgroundColor:
+                              selectedProject.status === "Completed"
+                                ? "#4CAF50"
+                                : selectedProject.status === "On Hold"
+                                ? "#FF9800"
+                                : "#2196F3",
+                            color: "#fff",
+                            fontSize: "12px",
+                            padding: "4px 8px",
+                            borderRadius: "6px",
+                          }}
+                        />
+                      ),
+                    },
+                    {
+                      label: "Completion (%)",
+                      value: `${selectedProject.completion || 0}%`,
+                    },
+                    {
+                      label: "Description",
+                      value: selectedProject.description || "No description available",
+                    },
+                  ].map(({ label, value }) => (
+                    <Grid item xs={12} sm={6} key={label}>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "#aaaaaa" : "textSecondary"}
+                        sx={{ fontWeight: "bold" }}
+                      >
+                        {label}:
+                      </MDTypography>
+                      <MDTypography
+                        variant="body2"
+                        color={darkMode ? "white" : "textPrimary"}
+                      >
+                        {value}
+                      </MDTypography>
+                    </Grid>
+                  ))}
                 </Grid>
               </CardContent>
             </Card>
           )}
         </DialogContent>
         <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
-          <CustomButton onClick={() => setViewDetailsOpen(false)}>
+          <CustomButton darkMode={darkMode} onClick={() => setViewDetailsOpen(false)}>
             Close
           </CustomButton>
           {!isReadOnly && (
             <>
-              <CustomButton onClick={handleEditFromDetails}>Edit</CustomButton>
+              <CustomButton darkMode={darkMode} onClick={handleEditFromDetails}>
+                Edit
+              </CustomButton>
               <CustomButton
+                darkMode={darkMode}
                 onClick={() => {
                   setDeleteId(selectedProject.id);
                   setConfirmDeleteOpen(true);
@@ -1123,21 +1141,15 @@ const ManageProject = () => {
             maxWidth="md"
             fullWidth
             sx={{
-              "& .MuiDialog-paper": {
-                backgroundColor: "#f3f3f3",
-                borderRadius: "15px",
-                boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-                width: "500px",
-                margin: "auto",
-              },
+              "& .MuiDialog-paper": formContainerStyle,
             }}
           >
-            <DialogTitle sx={{ ...titleStyle }}>
+            <DialogTitle sx={formHeadingStyle}>
               {editingProject ? "Edit Project" : "Add Project"}
             </DialogTitle>
             <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
               <fieldset style={formStyle}>
-                <form action="#" method="get">
+                <form onSubmit={handleSubmit}>
                   <label style={labelStyle} htmlFor="name">
                     Project Name*
                   </label>
@@ -1154,53 +1166,64 @@ const ManageProject = () => {
                     required
                   />
                   {formErrors.name && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.name}
                     </span>
                   )}
 
                   <label style={labelStyle}>Team Members</label>
-                  <Box sx={checkboxContainerStyle}>
-                    {employees.map((employee) => (
-                      <FormControlLabel
-                        key={employee.id}
-                        control={
-                          <Checkbox
-                            checked={form.selectedEmployees.some(
-                              (e) => e.id === employee.id
-                            )}
-                            onChange={(e) => {
-                              const updated = e.target.checked
-                                ? [...form.selectedEmployees, employee]
-                                : form.selectedEmployees.filter(
-                                    (e) => e.id !== employee.id
-                                  );
-                              setForm({ ...form, selectedEmployees: updated });
-                            }}
-                            sx={{
-                              "& .MuiSvgIcon-root": { fontSize: "20px" },
-                            }}
-                          />
-                        }
-                        label={employee.name}
+                  <Autocomplete
+                    multiple
+                    fullWidth
+                    options={employees}
+                    getOptionLabel={(option) =>
+                      `${option.name} (${option.employeeId})` || "N/A"
+                    }
+                    value={form.selectedEmployees}
+                    onChange={(e, newValue) =>
+                      setForm({ ...form, selectedEmployees: newValue })
+                    }
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        placeholder="Select Team Members"
+                        variant="outlined"
                         sx={{
-                          display: "block",
-                          margin: "0",
-                          "& .MuiFormControlLabel-label": {
+                          "& .MuiOutlinedInput-root": {
                             fontSize: "12px",
-                            color: "#555",
+                            padding: "6px",
+                            borderRadius: "3px",
+                            "& fieldset": {
+                              borderColor: formErrors.teamMembers ? "red" : "#ddd",
+                            },
                           },
+                          marginBottom: "10px",
                         }}
                       />
-                    ))}
-                  </Box>
-                  <Typography
-                    variant="caption"
-                    color="textSecondary"
-                    sx={{ display: "block", mt: 1 }}
-                  >
-                    Click to select or deselect team members
-                  </Typography>
+                    )}
+                    renderOption={(props, option, { selected }) => (
+                      <li {...props}>
+                        <Box display="flex" alignItems="center">
+                          {selected && <CheckIcon sx={{ mr: 1 }} />}
+                          {`${option.name} (${option.employeeId})` || "N/A"}
+                        </Box>
+                      </li>
+                    )}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip
+                          label={`${option.name} (${option.employeeId})`}
+                          {...getTagProps({ index })}
+                          size="small"
+                        />
+                      ))
+                    }
+                  />
+                  {formErrors.teamMembers && (
+                    <span style={{ color: "red", fontSize: "10px" }}>
+                      {formErrors.teamMembers}
+                    </span>
+                  )}
 
                   <label style={labelStyle} htmlFor="budget">
                     Budget ($)
@@ -1219,7 +1242,7 @@ const ManageProject = () => {
                     placeholder="Enter Budget"
                   />
                   {formErrors.budget && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.budget}
                     </span>
                   )}
@@ -1239,7 +1262,7 @@ const ManageProject = () => {
                     placeholder="Enter ROI"
                   />
                   {formErrors.roi && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.roi}
                     </span>
                   )}
@@ -1261,7 +1284,7 @@ const ManageProject = () => {
                     placeholder="Enter Burn Rate"
                   />
                   {formErrors.burnRate && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.burnRate}
                     </span>
                   )}
@@ -1283,7 +1306,7 @@ const ManageProject = () => {
                     required
                   />
                   {formErrors.startDate && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.startDate}
                     </span>
                   )}
@@ -1304,7 +1327,7 @@ const ManageProject = () => {
                     }
                   />
                   {formErrors.endDate && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.endDate}
                     </span>
                   )}
@@ -1334,7 +1357,7 @@ const ManageProject = () => {
                     ))}
                   </select>
                   {formErrors.status && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.status}
                     </span>
                   )}
@@ -1356,7 +1379,7 @@ const ManageProject = () => {
                     placeholder="Enter Completion Percentage"
                   />
                   {formErrors.completion && (
-                    <span style={{ color: "red", fontSize: "12px" }}>
+                    <span style={{ color: "red", fontSize: "10px" }}>
                       {formErrors.completion}
                     </span>
                   )}
@@ -1365,7 +1388,11 @@ const ManageProject = () => {
                     Description
                   </label>
                   <textarea
-                    style={{ ...inputStyle, minHeight: "100px" }}
+                    style={{
+                      ...inputStyle,
+                      minHeight: "100px",
+                      marginBottom: "10px",
+                    }}
                     id="description"
                     value={form.description}
                     onChange={(e) =>
@@ -1376,13 +1403,11 @@ const ManageProject = () => {
                 </form>
               </fieldset>
             </DialogContent>
-            <DialogActions
-              sx={{ padding: "16px 24px", justifyContent: "center" }}
-            >
-              <CustomButton onClick={handleClose} disabled={saving}>
+            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+              <CustomButton darkMode={darkMode} onClick={handleClose} disabled={saving}>
                 Cancel
               </CustomButton>
-              <CustomButton onClick={handleSubmit} disabled={saving}>
+              <CustomButton darkMode={darkMode} onClick={handleSubmit} disabled={saving}>
                 Save
               </CustomButton>
             </DialogActions>
@@ -1393,24 +1418,21 @@ const ManageProject = () => {
             onClose={() => setConfirmDeleteOpen(false)}
             sx={{
               "& .MuiDialog-paper": {
-                backgroundColor: darkMode
-                  ? "background.default"
-                  : "background.paper",
+                backgroundColor: darkMode ? "#424242" : "#fff",
                 borderRadius: "12px",
               },
             }}
           >
-            <DialogTitle sx={{ ...titleStyle }}>Confirm Deletion</DialogTitle>
-            <DialogContent sx={{ color: darkMode ? "white" : "black" }}>
+            <DialogTitle sx={formHeadingStyle}>Confirm Deletion</DialogTitle>
+            <DialogContent sx={{ color: darkMode ? "#ffffff" : "black" }}>
               Are you sure you want to delete this project?
             </DialogContent>
-            <DialogActions
-              sx={{ padding: "16px 24px", justifyContent: "center" }}
-            >
-              <CustomButton onClick={() => setConfirmDeleteOpen(false)}>
+            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
+              <CustomButton darkMode={darkMode} onClick={() => setConfirmDeleteOpen(false)}>
                 Cancel
               </CustomButton>
               <CustomButton
+                darkMode={darkMode}
                 onClick={handleDelete}
                 style={{ backgroundColor: "#F44336" }}
               >
@@ -1424,34 +1446,31 @@ const ManageProject = () => {
             onClose={() => setConfirmUpdateOpen(false)}
             sx={{
               "& .MuiDialog-paper": {
-                backgroundColor: darkMode
-                  ? "background.default"
-                  : "background.paper",
+                backgroundColor: darkMode ? "#424242" : "#fff",
                 borderRadius: "12px",
               },
             }}
           >
-            <DialogTitle sx={{ ...titleStyle }}>Confirm Submission</DialogTitle>
-            <DialogContent sx={{ color: darkMode ? "white" : "black" }}>
+            <DialogTitle sx={formHeadingStyle}>Confirm Submission</DialogTitle>
+            <DialogContent sx={{ color: darkMode ? "#ffffff" : "black" }}>
               Are you sure you want to save this project?
             </DialogContent>
-            <DialogActions
-              sx={{ padding: "16px 24px", justifyContent: "center" }}
-            >
+            <DialogActions sx={{ padding: "16px 24px", justifyContent: "center" }}>
               <CustomButton
+                darkMode={darkMode}
                 onClick={() => setConfirmUpdateOpen(false)}
                 disabled={saving}
               >
                 Cancel
               </CustomButton>
-              <CustomButton onClick={confirmUpdate} disabled={saving}>
-                Confirm
+              <CustomButton darkMode={darkMode} onClick={confirmUpdate} disabled={saving}>
+                Save
               </CustomButton>
             </DialogActions>
           </Dialog>
         </>
       )}
-    </Box>
+    </>
   );
 };
 

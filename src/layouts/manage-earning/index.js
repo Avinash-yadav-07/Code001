@@ -1,27 +1,20 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import {
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
   Grid,
   Card,
   Typography,
   Box,
-  InputAdornment,
   MenuItem,
   FormControl,
   InputLabel,
   Select,
-  Chip,
-  CardContent,
-  CardActions,
-  FormControlLabel,
-  Checkbox,
+  TextField,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import CheckIcon from "@mui/icons-material/Check";
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDBadge from "components/MDBadge";
@@ -40,7 +33,6 @@ import Autocomplete from "@mui/material/Autocomplete";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 import { useMaterialUIController } from "context";
-import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 
@@ -96,9 +88,79 @@ const ManageEarnings = () => {
   const [loadingRoles, setLoadingRoles] = useState(true);
   const [excelOption, setExcelOption] = useState("");
   const [formErrors, setFormErrors] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(5);
 
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
+
+  // Styles aligned with ManageEmployee
+  const formContainerStyle = {
+    backgroundColor: darkMode ? "#424242" : "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    textAlign: "center",
+    margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
+  };
+
+  const formInputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "6px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px",
+  };
+
+  const formSelectStyle = {
+    ...formInputStyle,
+    padding: "8px",
+    borderRadius: "5px",
+    height: "32px",
+  };
+
+  const formLabelStyle = {
+    fontSize: "14px",
+    display: "block",
+    width: "100%",
+    marginTop: "6px",
+    marginBottom: "4px",
+    textAlign: "left",
+    color: darkMode ? "#aaaaaa" : "#555",
+    fontWeight: "bold",
+  };
+
+  const formButtonStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    margin: "10px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "14px",
+  };
+
+  const formHeadingStyle = {
+    fontSize: "large",
+    textAlign: "center",
+    color: darkMode ? "#ffffff" : "#327c35",
+    margin: "10px 0",
+  };
 
   // Check if an ID is unique in Firestore
   const checkUniqueId = async (collectionName, field, value) => {
@@ -128,7 +190,6 @@ const ManageEarnings = () => {
       handleDownloadDummyExcel();
     }
 
-    // Reset the select value after action
     setExcelOption("");
   };
 
@@ -157,7 +218,6 @@ const ManageEarnings = () => {
 
         const validAccountIds = accounts.map((a) => a.accountId);
 
-        // Normalize column names for Excel import
         const normalizeColumnName = (name) => {
           if (!name) return "";
           const cleanName = name.trim().toLowerCase().replace(/\s+/g, "");
@@ -183,7 +243,6 @@ const ManageEarnings = () => {
           let attempts = 0;
           const maxAttempts = 10;
 
-          // Ensure unique earning ID
           while (attempts < maxAttempts) {
             const isEarningIdUnique = await checkUniqueId(
               "earnings",
@@ -203,7 +262,6 @@ const ManageEarnings = () => {
             return;
           }
 
-          // Validate required fields
           if (
             !earning["Category"]?.trim() ||
             !earning["Amount"] ||
@@ -222,7 +280,6 @@ const ManageEarnings = () => {
             return;
           }
 
-          // Validate category
           const normalizedCategory = earning["Category"].trim();
           if (
             !earningCategories
@@ -241,7 +298,6 @@ const ManageEarnings = () => {
             return;
           }
 
-          // Validate amount
           const amount = parseFloat(earning["Amount"]);
           if (isNaN(amount) || amount <= 0) {
             console.error("Invalid amount for earning:", earning["Earning ID"]);
@@ -253,7 +309,6 @@ const ManageEarnings = () => {
             return;
           }
 
-          // Validate date
           let earningDate = earning["Date"];
           if (earningDate instanceof Date) {
             earningDate = earningDate.toISOString().substring(0, 10);
@@ -271,7 +326,6 @@ const ManageEarnings = () => {
             earningDate = earningDate.toISOString().substring(0, 10);
           }
 
-          // Validate account ID
           const accountId = earning["Account ID"]?.trim();
           if (!validAccountIds.includes(accountId)) {
             console.error(
@@ -286,7 +340,6 @@ const ManageEarnings = () => {
             return;
           }
 
-          // Create new earning object
           const newEarning = {
             earningId: newEarningId,
             category: normalizedCategory,
@@ -297,7 +350,6 @@ const ManageEarnings = () => {
             createdBy: user.uid,
           };
 
-          // Save earning to Firestore
           try {
             await addDoc(collection(db, "earnings"), newEarning);
           } catch (error) {
@@ -326,7 +378,6 @@ const ManageEarnings = () => {
     }
   };
 
-  // Handle Excel download
   const handleDownloadExcel = () => {
     const exportData = earnings.map((earning) => ({
       "Earning ID": earning.earningId || earning.id,
@@ -343,7 +394,6 @@ const ManageEarnings = () => {
     XLSX.writeFile(workbook, "earnings_export.xlsx");
   };
 
-  // Handle dummy Excel download
   const handleDownloadDummyExcel = () => {
     const dummyData = [
       {
@@ -362,11 +412,9 @@ const ManageEarnings = () => {
     XLSX.writeFile(workbook, "earnings_dummy.xlsx");
   };
 
-  // Generate earning ID
   const generateEarningId = () =>
     `E-${Math.floor(10000 + Math.random() * 90000)}`;
 
-  // Fetch user roles
   useEffect(() => {
     const fetchUserRoles = async () => {
       const user = auth.currentUser;
@@ -404,7 +452,6 @@ const ManageEarnings = () => {
     userRoles.includes("ManageEarning:read") ||
     userRoles.includes("ManageEarning:full access");
 
-  // Fetch earnings with real-time listener
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) {
@@ -414,7 +461,7 @@ const ManageEarnings = () => {
 
     let earningsQuery = query(
       collection(db, "earnings"),
-      where("accountId", "!=", null) // Ensure earnings have an account
+      where("accountId", "!=", null)
     );
     if (isReadOnly) {
       earningsQuery = query(earningsQuery, where("createdBy", "==", user.uid));
@@ -440,7 +487,6 @@ const ManageEarnings = () => {
     return () => unsubscribe();
   }, [isReadOnly]);
 
-  // Fetch clients, accounts, and projects with where clauses
   const fetchReferenceData = useCallback(async () => {
     try {
       const user = auth.currentUser;
@@ -449,19 +495,16 @@ const ManageEarnings = () => {
         return;
       }
 
-      // Fetch active clients
       const clientsQuery = query(
         collection(db, "clients"),
         where("status", "==", "Active")
       );
 
-      // Fetch active accounts
       const accountsQuery = query(
         collection(db, "accounts"),
         where("status", "==", "Active")
       );
 
-      // Fetch active projects
       const projectsQuery = query(
         collection(db, "projects"),
         where("status", "==", "Active")
@@ -478,7 +521,12 @@ const ManageEarnings = () => {
         clientsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
       );
       setAccounts(
-        accountsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        accountsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          accountId: doc.data().accountId,
+          name: doc.data().name || "Unknown",
+          ...doc.data(),
+        }))
       );
       setProjects(
         projectsSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -488,14 +536,12 @@ const ManageEarnings = () => {
     }
   }, []);
 
-  // Trigger data fetch after roles are loaded
   useEffect(() => {
     if (!loadingRoles) {
       fetchReferenceData();
     }
   }, [loadingRoles, fetchReferenceData]);
 
-  // Reset reference when category changes
   useEffect(() => {
     setReference(null);
   }, [category]);
@@ -529,7 +575,7 @@ const ManageEarnings = () => {
           : reference || "N/A",
       amount: Number(amount) || 0,
       date: date ? Timestamp.fromDate(new Date(date)) : Timestamp.now(),
-      accountId: selectedAccount.accountId,
+      accountId: selectedAccount?.accountId,
       createdBy: auth.currentUser?.uid || "unknown",
     };
 
@@ -592,6 +638,19 @@ const ManageEarnings = () => {
     amount: PropTypes.number.isRequired,
   };
 
+  // Pagination logic
+  const totalItems = earnings.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedEarnings = earnings.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   const tableData = {
     columns: [
       { Header: "Earning ID", accessor: "earningId", align: "left" },
@@ -602,7 +661,7 @@ const ManageEarnings = () => {
       { Header: "Date", accessor: "date", align: "center" },
       { Header: "Actions", accessor: "actions", align: "center" },
     ],
-    rows: earnings.map((earning) => ({
+    rows: paginatedEarnings.map((earning) => ({
       earningId: (
         <MDTypography
           variant="caption"
@@ -651,104 +710,64 @@ const ManageEarnings = () => {
         <MDBox display="flex" justifyContent="center">
           <Button
             variant="gradient"
-            color={darkMode ? "dark" : "info"}
+            color="info"
             onClick={() => {
               setSelectedEarning(earning);
               setViewDetailsOpen(true);
             }}
+            sx={{ mb: 2 }}
           >
-            View Details
+            <VisibilityIcon />
           </Button>
         </MDBox>
       ),
     })),
   };
 
-  // Form styles from ManageExpenses
-  const formContainerStyle = {
-    backgroundColor: "#fff",
-    borderRadius: "15px",
-    boxShadow: "0 0 20px rgba(0, 0,0,0.2)",
-    padding: "10px 20px",
-    width: "100%",
-    textAlign: "center",
-    margin: "auto",
-  };
-
-  const formStyle = {
-    border: "none",
-  };
-
-  const labelStyle = {
-    fontSize: "15px",
-    display: "block",
-    width: "100%",
-    marginTop: "8px",
-    marginBottom: "5px",
-    textAlign: "left",
-    color: "#555",
-    fontWeight: "bold",
-  };
-
-  const inputStyle = {
-    display: "block",
-    width: "100%",
-    padding: "8px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
-    fontSize: "12px",
-  };
-
-  const selectStyle = {
-    display: "block",
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-  };
-
-  const buttonStyle = {
-    padding: "15px",
-    borderRadius: "10px",
-    margin: "15px",
-    border: "none",
-    color: "white",
-    cursor: "pointer",
-    backgroundColor: "#4caf50",
-    width: "40%",
-    fontSize: "16px",
-    fontWeight: "bold",
-  };
-
-  const titleStyle = {
-    fontSize: "x-large",
-    textAlign: "center",
-    color: "#333",
-  };
-
   if (loadingRoles) {
-    return <div>Loading...</div>;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
+          Loading...
+        </MDTypography>
+      </Box>
+    );
   }
 
   if (!hasAccess) {
-    return <Navigate to="/unauthorized" />;
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <MDTypography variant="h6" color={darkMode ? "white" : "primary"}>
+          You do not have permission to view this page.
+        </MDTypography>
+      </Box>
+    );
   }
 
   return (
     <Box
       sx={{
-        backgroundColor: darkMode ? "background.default" : "background.paper",
+        backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         minHeight: "100vh",
       }}
     >
       <DashboardNavbar
         absolute
         light={!darkMode}
-        isMini={false}
         sx={{
           backgroundColor: darkMode
             ? "rgba(33, 33, 33, 0.9)"
@@ -758,22 +777,23 @@ const ManageEarnings = () => {
           padding: "0 16px",
           minHeight: "60px",
           top: "8px",
-          left: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           width: {
             xs: "100%",
-            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 260px)",
+            md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
           },
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
         }}
       />
       <MDBox
         p={3}
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           marginTop: { xs: "140px", md: "100px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           minHeight: "calc(100vh - 80px)",
           paddingTop: { xs: "32px", md: "24px" },
-          zIndex: 1000,
         }}
       >
         <Grid container spacing={3}>
@@ -789,74 +809,71 @@ const ManageEarnings = () => {
                 borderRadius="lg"
                 coloredShadow={darkMode ? "dark" : "info"}
               >
-                <MDTypography variant="h6" color={darkMode ? "white" : "white"}>
+                <MDTypography variant="h6" color="white">
                   Earnings Management
                 </MDTypography>
               </MDBox>
               <MDBox
-                pt={3}
+                pt={2}
                 pb={2}
                 px={2}
                 display="flex"
-                alignItems="center"
+                flexDirection={{ xs: "column", sm: "row" }}
+                alignItems={{ xs: "stretch", sm: "center" }}
                 gap={2}
-                justifyContent="space-between"
+                flexWrap="wrap"
               >
-                <Box display="flex" gap={2}>
-                  {!isReadOnly && (
-                    <>
-                      <Button
-                        variant="gradient"
-                        color={darkMode ? "dark" : "info"}
-                        onClick={() => setOpen(true)}
+                {!isReadOnly && (
+                  <>
+                    <Button
+                      variant="gradient"
+                      color={darkMode ? "dark" : "info"}
+                      onClick={() => setOpen(true)}
+                      startIcon={<AddIcon />}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: "medium",
+                        boxShadow: 3,
+                        "&:hover": {
+                          boxShadow: 6,
+                          backgroundColor: darkMode ? "grey.700" : "info.dark",
+                        },
+                        width: { xs: "100%", sm: "auto" },
+                      }}
+                    >
+                      Add Earning
+                    </Button>
+                    <FormControl sx={{ minWidth: "150px" }}>
+                      <InputLabel id="excel-options-label">Excel Options</InputLabel>
+                      <Select
+                        labelId="excel-options-label"
+                        value={excelOption}
+                        onChange={handleExcelOptionChange}
+                        label="Excel Options"
+                        sx={{
+                          height: "40px",
+                          "& .MuiSelect-select": { padding: "8px" },
+                        }}
                       >
-                        Add Earning
-                      </Button>
-                      <FormControl sx={{ minWidth: 150 }}>
-                        <InputLabel
-                          id="excel-options-label"
-                          sx={{ color: darkMode ? "white" : "black" }}
-                        >
-                          Excel Options
-                        </InputLabel>
-                        <Select
-                          labelId="excel-options-label"
-                          value={excelOption}
-                          onChange={handleExcelOptionChange}
-                          label="Excel Options"
-                          sx={{
-                            height: "36px",
-                            "& .MuiSelect-select": {
-                              padding: "8px",
-                              color: darkMode ? "white" : "black",
-                            },
-                            "& .MuiSvgIcon-root": {
-                              color: darkMode ? "white" : "black",
-                            },
-                          }}
-                        >
-                          <MenuItem value="" disabled>
-                            Select an option
-                          </MenuItem>
-                          <MenuItem value="upload">Upload Excel</MenuItem>
-                          <MenuItem value="download">Download Excel</MenuItem>
-                          <MenuItem value="downloadDummy">
-                            Download Dummy Excel
-                          </MenuItem>
-                        </Select>
-                      </FormControl>
-                      <input
-                        id="file-upload"
-                        type="file"
-                        hidden
-                        accept=".xlsx, .xls, .csv"
-                        onChange={handleFileUpload}
-                      />
-                    </>
-                  )}
-                </Box>
+                        <MenuItem value="" disabled>
+                          Select an option
+                        </MenuItem>
+                        <MenuItem value="upload">Upload Excel</MenuItem>
+                        <MenuItem value="download">Download Excel</MenuItem>
+                        <MenuItem value="downloadDummy">Download Dummy Excel</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <input
+                      id="file-upload"
+                      type="file"
+                      hidden
+                      accept=".xlsx, .xls, .csv"
+                      onChange={handleFileUpload}
+                    />
+                  </>
+                )}
               </MDBox>
-              <MDBox pt={3} pb={2} px={2}>
+              <MDBox px={2} pb={3}>
                 <DataTable
                   table={tableData}
                   isSorted={false}
@@ -864,307 +881,387 @@ const ManageEarnings = () => {
                   showTotalEntries={false}
                   noEndBorder
                 />
+                <MDBox display="flex" justifyContent="center" mt={2}>
+                  <Button
+                    disabled={currentPage === 1}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    sx={{
+                      mx: "1px",
+                      color: darkMode ? "#ffffff" : "#000000",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {"<"}
+                  </Button>
+                  {Array.from(
+                    { length: totalPages },
+                    (_, index) => index + 1
+                  ).map((page) => (
+                    <Button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      sx={{
+                        mx: "0.5px",
+                        backgroundColor:
+                          currentPage === page
+                            ? darkMode
+                              ? "#0288d1"
+                              : "info.main"
+                            : darkMode
+                            ? "#424242"
+                            : "#e0e0e0",
+                        color:
+                          currentPage === page
+                            ? "#ffffff"
+                            : darkMode
+                            ? "#ffffff"
+                            : "#000000",
+                        borderRadius: "50%",
+                        minWidth: "36px",
+                        height: "36px",
+                        fontWeight: "bold",
+                        fontSize: "14px",
+                        "&:hover": {
+                          backgroundColor:
+                            currentPage === page
+                              ? darkMode
+                                ? "#0277bd"
+                                : "info.dark"
+                              : darkMode
+                              ? "#616161"
+                              : "#bdbdbd",
+                        },
+                      }}
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                  <Button
+                    disabled={currentPage === totalPages}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    sx={{
+                      mx: "1px",
+                      color: darkMode ? "#ffffff" : "#000000",
+                      fontWeight: "bold",
+                      fontSize: "16px",
+                    }}
+                  >
+                    {">"}
+                  </Button>
+                </MDBox>
               </MDBox>
             </Card>
           </Grid>
         </Grid>
       </MDBox>
+      {!isReadOnly && (
+        <Box sx={{ ...formContainerStyle, display: open ? "block" : "none" }}>
+          <Typography sx={formHeadingStyle}>Add Earning</Typography>
+          <form onSubmit={(e) => { e.preventDefault(); handleAddEarning(); }}>
+            <label style={formLabelStyle}>Category*</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              required
+              style={{
+                ...formSelectStyle,
+                borderColor: formErrors.category ? "red" : "#ddd",
+              }}
+            >
+              <option value="" disabled>Select Category</option>
+              {earningCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+            {formErrors.category && (
+              <span style={{ color: "red", fontSize: "10px" }}>{formErrors.category}</span>
+            )}
+            {category && (
+              <>
+                {category === "Project Revenue" && (
+                  <>
+                    <label style={formLabelStyle}>Project</label>
+                    <Autocomplete
+                      fullWidth
+                      options={projects}
+                      getOptionLabel={(option) =>
+                        option.projectId || option.name || "N/A"
+                      }
+                      value={reference}
+                      onChange={(e, newValue) => setReference(newValue)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Select Project"
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              fontSize: "12px",
+                              padding: "6px",
+                              borderRadius: "3px",
+                              "& fieldset": {
+                                borderColor: formErrors.project ? "red" : "#ddd",
+                              },
+                            },
+                          }}
+                        />
+                      )}
+                      renderOption={(props, option, { selected }) => (
+                        <li {...props}>
+                          <Box display="flex" alignItems="center">
+                            {selected && <CheckIcon sx={{ mr: 1 }} />}
+                            {option.projectId || option.name || "N/A"}
+                          </Box>
+                        </li>
+                      )}
+                    />
+                  </>
+                )}
+                {(category === "Service Revenue" ||
+                  category === "Subscription Revenue" ||
+                  category === "Licensing Revenue" ||
+                  category === "Consulting Fees") && (
+                  <>
+                    <label style={formLabelStyle}>Client</label>
+                    <Autocomplete
+                      fullWidth
+                      options={clients}
+                      getOptionLabel={(option) =>
+                        option.clientId || option.name || "N/A"
+                      }
+                      value={reference}
+                      onChange={(e, newValue) => setReference(newValue)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Select Client"
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              fontSize: "12px",
+                              padding: "6px",
+                              borderRadius: "3px",
+                              "& fieldset": {
+                                borderColor: formErrors.client ? "red" : "#ddd",
+                              },
+                            },
+                          }}
+                        />
+                      )}
+                      renderOption={(props, option, { selected }) => (
+                        <li {...props}>
+                          <Box display="flex" alignItems="center">
+                            {selected && <CheckIcon sx={{ mr: 1 }} />}
+                            {option.clientId || option.name || "N/A"}
+                          </Box>
+                        </li>
+                      )}
+                    />
+                  </>
+                )}
+                {(category === "Commission Income" ||
+                  category === "Advertising Revenue" ||
+                  category === "Rental or Leasing Income") && (
+                  <>
+                    <label style={formLabelStyle}>Account</label>
+                    <Autocomplete
+                      fullWidth
+                      options={accounts}
+                      getOptionLabel={(option) =>
+                        `${option.name} (${option.accountId})` || "N/A"
+                      }
+                      value={reference}
+                      onChange={(e, newValue) => setReference(newValue)}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Select Account"
+                          variant="outlined"
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              fontSize: "12px",
+                              padding: "6px",
+                              borderRadius: "3px",
+                              "& fieldset": {
+                                borderColor: formErrors.account ? "red" : "#ddd",
+                              },
+                            },
+                          }}
+                        />
+                      )}
+                      renderOption={(props, option, { selected }) => (
+                        <li {...props}>
+                          <Box display="flex" alignItems="center">
+                            {selected && <CheckIcon sx={{ mr: 1 }} />}
+                            {`${option.name} (${option.accountId})` || "N/A"}
+                          </Box>
+                        </li>
+                      )}
+                    />
+                  </>
+                )}
+                {(category === "Product Sales" ||
+                  category === "Investment Income") && (
+                  <>
+                    <label style={formLabelStyle}>Reference Details</label>
+                    <input
+                      type="text"
+                      value={reference || ""}
+                      onChange={(e) => setReference(e.target.value)}
+                      placeholder="Enter reference details"
+                      style={formInputStyle}
+                    />
+                  </>
+                )}
+              </>
+            )}
+            <label style={formLabelStyle}>Account*</label>
+            <Autocomplete
+              fullWidth
+              options={accounts}
+              getOptionLabel={(option) =>
+                `${option.name} (${option.accountId})` || "N/A"
+              }
+              value={selectedAccount}
+              onChange={(e, newValue) => setSelectedAccount(newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  placeholder="Select Account"
+                  variant="outlined"
+                  required
+                  error={!!formErrors.account}
+                  helperText={formErrors.account}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      fontSize: "12px",
+                      padding: "6px",
+                      borderRadius: "3px",
+                      "& fieldset": {
+                        borderColor: formErrors.account ? "red" : "#ddd",
+                      },
+                    },
+                    "& .Mui-root": {
+                      marginBottom: "10px",
+                    },
+                  }}
+                />
+              )}
+              renderOption={(props, option, { selected }) => (
+                <li {...props}>
+                  <Box display="flex" alignItems="center">
+                    {selected && <CheckIcon sx={{ mr: 1 }} />}
+                    {`${option.name} (${option.accountId})` || "N/A"}
+                  </Box>
+                </li>
+              )}
+            />
+            <label style={formLabelStyle}>Amount*</label>
+            <input
+              type="number"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Amount"
+              required
+              style={{
+                ...formInputStyle,
+                borderColor: formErrors.amount ? "red" : "#ddd",
+              }}
+            />
+            {formErrors.amount && (
+              <span style={{ color: "red", fontSize: "10px" }}>{formErrors.amount}</span>
+            )}
+            <label style={formLabelStyle}>Date*</label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              style={{
+                ...formInputStyle,
+                borderColor: formErrors.date ? "red" : "#ddd",
+              }}
+            />
+            {formErrors.date && (
+              <span style={{ color: "red", fontSize: "10px" }}>{formErrors.date}</span>
+            )}
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                type="button"
+                onClick={handleClose}
+                style={formButtonStyle}
+              >
+                Cancel
+              </button>
+              <button type="submit" style={formButtonStyle}>
+                Save
+              </button>
+            </Box>
+          </form>
+        </Box>
+      )}
       <Box
         sx={{
-          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
-          zIndex: 1100,
+          ...formContainerStyle,
+          display: viewDetailsOpen ? "block" : "none",
+        }}
+      >
+        <Typography sx={{ ...formHeadingStyle, mb: 2 }}>
+          Earning Details
+        </Typography>
+        {selectedEarning && (
+          <Grid container spacing={2}>
+            {[
+              { label: "Earning ID", value: selectedEarning.earningId || "N/A" },
+              { label: "Category", value: selectedEarning.category || "N/A" },
+              { label: "Reference", value: selectedEarning.referenceId || "N/A" },
+              { label: "Account ID", value: selectedEarning.accountId || "N/A" },
+              {
+                label: "Amount",
+                value: `$${Number(selectedEarning.amount || 0).toFixed(2)}`,
+              },
+              { label: "Date", value: selectedEarning.date || "N/A" },
+            ].map(({ label, value }) => (
+              <Grid item xs={12} sm={6} key={label}>
+                <MDTypography
+                  variant="subtitle2"
+                  color={darkMode ? "#aaaaaa" : "#555"}
+                  fontWeight="medium"
+                  sx={{ mb: 0.5 }}
+                >
+                  {label}
+                </MDTypography>
+                <MDTypography
+                  color={darkMode ? "#ffffff" : "#000"}
+                  sx={{ fontSize: "1rem", wordBreak: "break-word" }}
+                >
+                  {value}
+                </MDTypography>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+          <button
+            type="button"
+            onClick={() => setViewDetailsOpen(false)}
+            style={formButtonStyle}
+          >
+            Close
+          </button>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         }}
       >
         <Footer />
       </Box>
-
-      {!isReadOnly && (
-        <Dialog
-          open={open}
-          onClose={handleClose}
-          fullWidth
-          sx={{
-            "& .MuiDialog-paper": {
-              backgroundColor: "#f3f3f3",
-              borderRadius: "8px",
-              boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-              width: "400px",
-              margin: "auto",
-            },
-          }}
-        >
-          <DialogTitle sx={{ ...titleStyle }}>Add Earning</DialogTitle>
-          <DialogContent sx={{ padding: "10px 20px" }}>
-            <fieldset style={formStyle}>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddEarning();
-                }}
-              >
-                <label style={labelStyle} htmlFor="category">
-                  Category*
-                </label>
-                <select
-                  style={{
-                    ...selectStyle,
-                    borderColor: formErrors.category ? "red" : "#ddd",
-                  }}
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>
-                    Select category
-                  </option>
-                  {earningCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                {formErrors.category && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.category}
-                  </span>
-                )}
-
-                {category && (
-                  <>
-                    {category === "Project Revenue" && (
-                      <>
-                        <label style={labelStyle} htmlFor="project">
-                          Project
-                        </label>
-                        <Autocomplete
-                          options={projects}
-                          getOptionLabel={(option) =>
-                            option.projectId || option.name || "N/A"
-                          }
-                          value={reference}
-                          onChange={(e, newValue) => setReference(newValue)}
-                          renderInput={(params) => (
-                            <input
-                              {...params}
-                              style={selectStyle}
-                              placeholder="Select Project"
-                            />
-                          )}
-                        />
-                      </>
-                    )}
-                    {(category === "Service Revenue" ||
-                      category === "Subscription Revenue" ||
-                      category === "Licensing Revenue" ||
-                      category === "Consulting Fees") && (
-                      <>
-                        <label style={labelStyle} htmlFor="client">
-                          Client
-                        </label>
-                        <Autocomplete
-                          options={clients}
-                          getOptionLabel={(option) =>
-                            option.clientId || option.name || "N/A"
-                          }
-                          value={reference}
-                          onChange={(e, newValue) => setReference(newValue)}
-                          renderInput={(params) => (
-                            <input
-                              {...params}
-                              style={selectStyle}
-                              placeholder="Select Client"
-                            />
-                          )}
-                        />
-                      </>
-                    )}
-                    {(category === "Commission Income" ||
-                      category === "Advertising Revenue" ||
-                      category === "Rental or Leasing Income") && (
-                      <>
-                        <label style={labelStyle} htmlFor="account">
-                          Account
-                        </label>
-                        <Autocomplete
-                          options={accounts}
-                          getOptionLabel={(option) => option.accountId || "N/A"}
-                          value={reference}
-                          onChange={(e, newValue) => setReference(newValue)}
-                          renderInput={(params) => (
-                            <input
-                              {...params}
-                              style={selectStyle}
-                              placeholder="Select Account"
-                            />
-                          )}
-                        />
-                      </>
-                    )}
-                    {(category === "Product Sales" ||
-                      category === "Investment Income") && (
-                      <>
-                        <label style={labelStyle} htmlFor="reference">
-                          Reference Details
-                        </label>
-                        <input
-                          style={inputStyle}
-                          type="text"
-                          id="reference"
-                          value={reference || ""}
-                          onChange={(e) => setReference(e.target.value)}
-                          placeholder="Enter reference details"
-                        />
-                      </>
-                    )}
-                  </>
-                )}
-
-                <label style={labelStyle} htmlFor="account">
-                  Account*
-                </label>
-                <Autocomplete
-                  options={accounts}
-                  getOptionLabel={(option) => option.accountId || "N/A"}
-                  value={selectedAccount}
-                  onChange={(e, newValue) => setSelectedAccount(newValue)}
-                  renderInput={(params) => (
-                    <input
-                      {...params}
-                      style={{
-                        ...selectStyle,
-                        borderColor: formErrors.account ? "red" : "#ddd",
-                      }}
-                      placeholder="Select Account"
-                      required
-                    />
-                  )}
-                />
-                {formErrors.account && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.account}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="amount">
-                  Amount*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: formErrors.amount ? "red" : "#ddd",
-                  }}
-                  type="number"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter amount"
-                  required
-                />
-                {formErrors.amount && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.amount}
-                  </span>
-                )}
-
-                <label style={labelStyle} htmlFor="date">
-                  Date*
-                </label>
-                <input
-                  style={{
-                    ...inputStyle,
-                    borderColor: formErrors.date ? "red" : "#ddd",
-                  }}
-                  type="date"
-                  id="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                />
-                {formErrors.date && (
-                  <span style={{ color: "red", fontSize: "12px" }}>
-                    {formErrors.date}
-                  </span>
-                )}
-              </form>
-            </fieldset>
-          </DialogContent>
-          <DialogActions
-            sx={{ padding: "16px 24px", justifyContent: "center" }}
-          >
-            <button style={buttonStyle} onClick={handleClose}>
-              Cancel
-            </button>
-            <button style={buttonStyle} onClick={handleAddEarning}>
-              Save
-            </button>
-          </DialogActions>
-        </Dialog>
-      )}
-
-      <Dialog
-        open={viewDetailsOpen}
-        onClose={() => setViewDetailsOpen(false)}
-        maxWidth="md"
-        fullWidth
-        sx={{
-          "& .MuiDialog-paper": {
-            backgroundColor: darkMode
-              ? "background.default"
-              : "background.paper",
-          },
-        }}
-      >
-        <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-          Earning Details
-        </DialogTitle>
-        <DialogContent>
-          {selectedEarning && (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} sm={6}>
-                <EarningDetails
-                  label="Earning ID"
-                  value={selectedEarning.earningId || "N/A"}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <EarningDetails
-                  label="Category"
-                  value={selectedEarning.category || "N/A"}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <EarningDetails
-                  label="Reference"
-                  value={selectedEarning.referenceId || "N/A"}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <EarningDetails
-                  label="Account ID"
-                  value={selectedEarning.accountId || "N/A"}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <EarningDetails
-                  label="Amount"
-                  value={`$${Number(selectedEarning.amount || 0).toFixed(2)}`}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <EarningDetails
-                  label="Date"
-                  value={selectedEarning.date || "N/A"}
-                />
-              </Grid>
-            </Grid>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewDetailsOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

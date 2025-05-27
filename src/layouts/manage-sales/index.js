@@ -2,10 +2,6 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import {
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   TextField,
   Grid,
   Card,
@@ -16,7 +12,6 @@ import {
   Tooltip,
   CircularProgress,
   MenuItem,
-  Typography,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -96,6 +91,74 @@ const ManageSales = () => {
     teamName: "",
     quota: "",
   });
+
+  // Common styles adapted from ManageMarketing
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "90%",
+    maxWidth: "600px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    textAlign: "center",
+    margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
+  };
+
+  const formInputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "6px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px",
+  };
+
+  const formSelectStyle = {
+    ...formInputStyle,
+    padding: "8px",
+    borderRadius: "5px",
+    height: "32px",
+  };
+
+  const formButtonStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    margin: "10px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "14px",
+  };
+
+  const formLabelStyle = {
+    fontSize: "14px",
+    display: "block",
+    width: "100%",
+    marginTop: "6px",
+    marginBottom: "4px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const formHeadingStyle = {
+    fontSize: "large",
+    textAlign: "center",
+    color: "#327c35",
+    margin: "10px 0",
+  };
 
   // Fetch user roles
   useEffect(() => {
@@ -531,113 +594,128 @@ const ManageSales = () => {
               transform: "scale(1.02)",
             },
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
           }}
         >
-          {isDeal && (
-            <Box
-              sx={{
-                width: "120px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor:
-                  data.team && data.team !== "All" ? "#4caf50" : darkMode ? "#757575" : "#f5f5f5",
-                borderRadius: "8px 0 0 8px",
-                marginRight: "16px",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-              }}
+          <Box
+            sx={{
+              width: { xs: "100%", sm: "120px" },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: isDeal ? "#4caf50" : "#2196f3",
+              borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+              marginRight: { sm: "16px" },
+              marginBottom: { xs: "16px", sm: 0 },
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            }}
+          >
+            <MDTypography
+              variant="body2"
+              color="white"
+              sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
             >
-              <MDTypography
-                variant="body2"
-                color={darkMode ? "white" : "white"}
-                sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
-              >
-                {data.team && data.team !== "All" ? data.team : "No Team"}
-              </MDTypography>
-            </Box>
-          )}
-          <Box sx={{ flexGrow: 1 }}>
+              {isDeal ? "Deal" : "Team"}
+            </MDTypography>
+          </Box>
+          <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
             <CardContent>
               <Grid container spacing={2}>
                 {isDeal ? (
                   <>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Deal ID:</strong> {data.dealId || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Deal ID: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.dealId || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Stage:</strong> {data.stage || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Stage: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.stage || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Value:</strong> ${Number(data.value)?.toLocaleString() || "0"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Value: </span>
+                        <span style={{ fontWeight: "bold" }}>${Number(data.value)?.toLocaleString() || "0"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Client Category:</strong> {data.clientCategory || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Client Category: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.clientCategory || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Region:</strong> {data.region || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Region: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.region || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Product:</strong> {data.product || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Product: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.product || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Upsell Revenue:</strong> $
-                        {Number(data.upsellRevenue)?.toLocaleString() || "0"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Upsell Revenue: </span>
+                        <span style={{ fontWeight: "bold" }}>${Number(data.upsellRevenue)?.toLocaleString() || "0"}</span>
                       </MDTypography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Cross-Sell Revenue:</strong> $
-                        {Number(data.crossSellRevenue)?.toLocaleString() || "0"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Cross-Sell Revenue: </span>
+                        <span style={{ fontWeight: "bold" }}>${Number(data.crossSellRevenue)?.toLocaleString() || "0"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Project:</strong> {data.project || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Project: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.project || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Account:</strong> {data.account || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Account: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.account || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Salesperson:</strong> {data.salesperson || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Salesperson: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.salesperson || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Outcome:</strong> {data.outcome || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Outcome: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.outcome || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Sales Cycle:</strong>{" "}
-                        {data.dateEntered && data.dateClosed
-                          ? `${Math.round(
-                              (new Date(data.dateClosed) - new Date(data.dateEntered)) /
-                                (1000 * 60 * 60 * 24)
-                            )} days`
-                          : "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Sales Cycle: </span>
+                        <span style={{ fontWeight: "bold" }}>
+                          {data.dateEntered && data.dateClosed
+                            ? `${Math.round(
+                                (new Date(data.dateClosed) - new Date(data.dateEntered)) /
+                                  (1000 * 60 * 60 * 24)
+                              )} days`
+                            : "N/A"}
+                        </span>
                       </MDTypography>
                     </Grid>
                   </>
                 ) : (
                   <>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Team Name:</strong> {data.teamName || "N/A"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Team Name: </span>
+                        <span style={{ fontWeight: "bold" }}>{data.teamName || "N/A"}</span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Quota:</strong> ${Number(data.quota)?.toLocaleString() || "0"}
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Quota: </span>
+                        <span style={{ fontWeight: "bold" }}>${Number(data.quota)?.toLocaleString() || "0"}</span>
                       </MDTypography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Quota Attainment:</strong>{" "}
-                        {(
-                          teamMetrics?.find((tm) => tm.teamName === data.teamName)
-                            ?.quotaAttainment ?? 0
-                        ).toFixed(2)}
-                        %
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Quota Attainment: </span>
+                        <span style={{ fontWeight: "bold" }}>
+                          {(
+                            teamMetrics?.find((tm) => tm.teamName === data.teamName)
+                              ?.quotaAttainment ?? 0
+                          ).toFixed(2)}%
+                        </span>
                       </MDTypography>
-                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                        <strong>Win Rate:</strong>{" "}
-                        {(
-                          teamMetrics?.find((tm) => tm.teamName === data.teamName)?.winRate ?? 0
-                        ).toFixed(2)}
-                        %
+                      <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                        <span>Win Rate: </span>
+                        <span style={{ fontWeight: "bold" }}>
+                          {(
+                            teamMetrics?.find((tm) => tm.teamName === data.teamName)?.winRate ?? 0
+                          ).toFixed(2)}%
+                        </span>
                       </MDTypography>
                     </Grid>
                   </>
@@ -645,15 +723,42 @@ const ManageSales = () => {
               </Grid>
             </CardContent>
             {!isReadOnly && (
-              <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
+              <CardActions
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 1,
+                  justifyContent: { xs: "space-between", sm: "flex-end" },
+                  alignItems: "center",
+                  padding: "8px 16px",
+                }}
+              >
                 <MDButton
                   variant="gradient"
                   color={darkMode ? "dark" : "info"}
                   onClick={() => handleDialogOpen(data.type, data)}
+                  sx={{
+                    flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                    minWidth: { xs: "100px", sm: "100px" },
+                    maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                    padding: "8px 16px",
+                    fontSize: "14px",
+                  }}
                 >
                   <Icon fontSize="medium">edit</Icon> Edit
                 </MDButton>
-                <MDButton variant="gradient" color="error" onClick={() => handleDelete(data)}>
+                <MDButton
+                  variant="gradient"
+                  color="error"
+                  onClick={() => handleDelete(data)}
+                  sx={{
+                    flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                    minWidth: { xs: "100px", sm: "100px" },
+                    maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                    padding: "8px 16px",
+                    fontSize: "14px",
+                  }}
+                >
                   <Icon fontSize="medium">delete</Icon> Delete
                 </MDButton>
               </CardActions>
@@ -667,7 +772,13 @@ const ManageSales = () => {
   if (loadingRoles || loadingData || loadingProjects || loadingAccounts) {
     return (
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
+        }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
           Loading...
@@ -686,14 +797,13 @@ const ManageSales = () => {
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box
         sx={{
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           minHeight: "100vh",
         }}
       >
         <DashboardNavbar
           absolute
           light={!darkMode}
-          isMini={false}
           sx={{
             backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
             backdropFilter: "blur(10px)",
@@ -703,6 +813,8 @@ const ManageSales = () => {
             top: "8px",
             left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
             width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         />
         <MDBox
@@ -710,10 +822,9 @@ const ManageSales = () => {
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
             marginTop: { xs: "140px", md: "100px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
+            backgroundColor: darkMode ? "#212121" : "#f3f3f3",
             minHeight: "calc(100vh - 80px)",
             paddingTop: { xs: "32px", md: "24px" },
-            zIndex: 1000,
           }}
         >
           <Grid container spacing={3}>
@@ -738,17 +849,24 @@ const ManageSales = () => {
                   pb={2}
                   px={2}
                   display="flex"
-                  alignItems="center"
+                  flexDirection={{ xs: "column", sm: "row" }}
+                  alignItems={{ xs: "stretch", sm: "center" }}
                   gap={2}
                   justifyContent="space-between"
                 >
-                  <Box display="flex" gap={2}>
+                  <Box
+                    display="flex"
+                    flexDirection={{ xs: "column", sm: "row" }}
+                    gap={2}
+                    width={{ xs: "100%", sm: "auto" }}
+                  >
                     {!isReadOnly && (
                       <>
                         <MDButton
                           variant="gradient"
                           color={darkMode ? "dark" : "info"}
                           onClick={() => handleDialogOpen("deal")}
+                          fullWidth={{ xs: true, sm: false }}
                         >
                           Add Deal
                         </MDButton>
@@ -756,6 +874,7 @@ const ManageSales = () => {
                           variant="gradient"
                           color={darkMode ? "dark" : "info"}
                           onClick={() => handleDialogOpen("team")}
+                          fullWidth={{ xs: true, sm: false }}
                         >
                           Add Team
                         </MDButton>
@@ -768,38 +887,61 @@ const ManageSales = () => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       sx={{
-                        maxWidth: 300,
+                        width: { xs: "100%", sm: 300 },
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "8px",
                           backgroundColor: darkMode ? "#424242" : "#fff",
                           color: darkMode ? "white" : "black",
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: darkMode ? "#fff" : "#ddd",
+                          },
                         },
-                        "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
+                        "& .MuiInputLabel-root": {
+                          color: darkMode ? "white" : "black",
+                        },
                       }}
                     />
                   </Box>
-                  <Box display="flex" gap={2} alignItems="center">
+                  <Box
+                    display="flex"
+                    gap={2}
+                    alignItems="center"
+                    width={{ xs: "100%", sm: "auto" }}
+                  >
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchSalesData}>
-                        <RefreshIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
+                        <RefreshIcon
+                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Filter by Date">
-                      <IconButton onClick={() => setOpenDateFilterDialog(true)}>
-                        <CalendarTodayIcon sx={{ color: darkMode ? "#fff" : "#1976d2" }} />
-                      </IconButton>
-                    </Tooltip>
+                    <MDButton
+                      variant="outlined"
+                      onClick={() => setOpenDateFilterDialog(true)}
+                      sx={{
+                        height: 40,
+                        color: darkMode ? "white" : "#1976d2",
+                        borderColor: darkMode ? "white" : "#1976d2",
+                        width: { xs: "100%", sm: "auto" },
+                      }}
+                    >
+                      <CalendarTodayIcon sx={{ mr: 1 }} />
+                      Filter by Date
+                    </MDButton>
                   </Box>
                 </MDBox>
                 <MDBox px={2} pb={2}>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Lead Conversion Rate:</strong> {leadConversionRate.toFixed(2)}%
+                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                    <span>Lead Conversion Rate: </span>
+                    <span style={{ fontWeight: "bold" }}>{leadConversionRate.toFixed(2)}%</span>
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Average Deal Size:</strong> ${averageDealSize.toFixed(2)}
+                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                    <span>Average Deal Size: </span>
+                    <span style={{ fontWeight: "bold" }}>${averageDealSize.toFixed(0)}</span>
                   </MDTypography>
-                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
-                    <strong>Average Sales Cycle:</strong> {averageSalesCycle.toFixed(2)} days
+                  <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} mb={2}>
+                    <span>Average Sales Cycle: </span>
+                    <span style={{ fontWeight: "bold" }}>{averageSalesCycle.toFixed(0)} days</span>
                   </MDTypography>
                 </MDBox>
                 <Grid container spacing={3} sx={{ padding: "16px" }}>
@@ -823,8 +965,7 @@ const ManageSales = () => {
         <Box
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            backgroundColor: darkMode ? "background.default" : "background.paper",
-            zIndex: 1100,
+            backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           }}
         >
           <Footer />
@@ -833,23 +974,13 @@ const ManageSales = () => {
         {!isReadOnly && (
           <>
             {/* Deal Dialog */}
-            <Dialog
-              open={openDealDialog}
-              onClose={() => handleDialogClose("deal")}
-              maxWidth="md"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                {editData ? "Edit Deal" : "Add Deal"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
+            <Box sx={{ ...formContainerStyle, display: openDealDialog ? "block" : "none" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmitDeal(); }}>
+                <MDTypography sx={formHeadingStyle}>
+                  {editData ? "Edit Deal" : "Add Deal"}
+                </MDTypography>
                 {dealFormError && (
-                  <MDTypography color="error" mb={2}>
+                  <MDTypography color="error" mb={2} sx={{ fontSize: "14px" }}>
                     {dealFormError}
                   </MDTypography>
                 )}
@@ -863,199 +994,204 @@ const ManageSales = () => {
                   projects={projects}
                   accounts={accounts}
                   darkMode={darkMode}
+                  formStyle={{ border: "none" }}
+                  labelStyle={formLabelStyle}
+                  inputStyle={formInputStyle}
+                  selectStyle={formSelectStyle}
                 />
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => handleDialogClose("deal")}
-                  sx={{ color: darkMode ? "white" : "black" }}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSubmitDeal}
-                  color="primary"
-                  disabled={isSubmitting}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
-                >
-                  {editData ? "Update Deal" : "Save Deal"}
-                </Button>
-              </DialogActions>
-            </Dialog>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    style={formButtonStyle}
+                    onClick={() => handleDialogClose("deal")}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={formButtonStyle}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? <CircularProgress size={20} color="inherit" /> : (editData ? "Update Deal" : "Save Deal")}
+                  </button>
+                </Box>
+              </form>
+            </Box>
 
             {/* Team Dialog */}
-            <Dialog
-              open={openTeamDialog}
-              onClose={() => handleDialogClose("team")}
-              maxWidth="md"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                {editData ? "Edit Team" : "Add Team"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
+            <Box sx={{ ...formContainerStyle, display: openTeamDialog ? "block" : "none" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmitTeam(); }}>
+                <MDTypography sx={formHeadingStyle}>
+                  {editData ? "Edit Team" : "Add Team"}
+                </MDTypography>
                 {teamFormError && (
-                  <MDTypography color="error" mb={2}>
+                  <MDTypography color="error" mb={2} sx={{ fontSize: "14px" }}>
                     {teamFormError}
                   </MDTypography>
                 )}
-                <TeamForm teamForm={teamForm} setTeamForm={setTeamForm} darkMode={darkMode} />
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={() => handleDialogClose("team")}
-                  sx={{ color: darkMode ? "white" : "black" }}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSubmitTeam}
-                  color="primary"
-                  disabled={isSubmitting}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
-                >
-                  {editData ? "Update Team" : "Save Team"}
-                </Button>
-              </DialogActions>
-            </Dialog>
+                <TeamForm
+                  teamForm={teamForm}
+                  setTeamForm={setTeamForm}
+                  darkMode={darkMode}
+                  formStyle={{ border: "none" }}
+                  labelStyle={formLabelStyle}
+                  inputStyle={formInputStyle}
+                />
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    style={formButtonStyle}
+                    onClick={() => handleDialogClose("team")}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    style={formButtonStyle}
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? <CircularProgress size={20} color="inherit" /> : (editData ? "Update Team" : "Save Team")}
+                  </button>
+                </Box>
+              </form>
+            </Box>
 
             {/* Delete Confirmation Dialog */}
-            <Dialog
-              open={confirmDeleteOpen}
-              onClose={() => setConfirmDeleteOpen(false)}
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
+            <Box sx={{ ...formContainerStyle, display: confirmDeleteOpen ? "block" : "none" }}>
+              <MDTypography sx={formHeadingStyle}>
                 Want to delete {deleteItem?.type === "deal" ? "deal" : "team"}?
-              </DialogTitle>
-              <DialogActions>
-                <Button
+              </MDTypography>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button
+                  type="button"
+                  style={formButtonStyle}
                   onClick={() => setConfirmDeleteOpen(false)}
-                  sx={{ color: darkMode ? "white" : "black" }}
                   disabled={isSubmitting}
                 >
                   Cancel
-                </Button>
-                <Button
+                </button>
+                <button
+                  type="button"
+                  style={{ ...formButtonStyle, backgroundColor: "#f44336" }}
                   onClick={handleDeleteConfirm}
-                  color="error"
                   disabled={isSubmitting || !deleteItem}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : null}
                 >
-                  Delete
-                </Button>
-              </DialogActions>
-            </Dialog>
+                  {isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Delete"}
+                </button>
+              </Box>
+            </Box>
 
             {/* Date Filter Dialog */}
-            <Dialog
-              open={openDateFilterDialog}
-              onClose={() => setOpenDateFilterDialog(false)}
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode ? "background.default" : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Filter by Date Range
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Box sx={{ mb: 2, bgcolor: darkMode ? "black" : "white" }}>
+            <Box sx={{ ...formContainerStyle, display: openDateFilterDialog ? "block" : "none" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleDateFilterApply(); }}>
+                <MDTypography sx={formHeadingStyle}>Filter by Date Range</MDTypography>
+                <Box sx={{ mb: 2, display: "flex", flexWrap: "wrap", gap: 1 }}>
                   <Button
                     variant="outlined"
                     onClick={() => handlePresetDateFilter(1)}
                     sx={{
-                      mr: 1,
-                      color: "blue",
-                      borderColor: "green",
+                      color: darkMode ? "white" : "#1976d2",
+                      borderColor: darkMode ? "white" : "#1976d2",
+                      fontSize: "12px",
+                      padding: "6px 12px",
+                      flex: { xs: "1 1 calc(33% - 8px)", sm: "0 0 auto" },
                     }}
                   >
                     Last 1 Month
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => handlePresetDateFilter(1)}
+                    onClick={() => handlePresetDateFilter(3)}
                     sx={{
-                      mr: 1,
-                      color: "blue",
-                      borderColor: "green",
+                      color: darkMode ? "white" : "#1976d2",
+                      borderColor: darkMode ? "white" : "#1976d2",
+                      fontSize: "12px",
+                      padding: "6px 12px",
+                      flex: { xs: "1 1 calc(33% - 8px)", sm: "0 0 auto" },
                     }}
                   >
                     Last 3 Months
                   </Button>
                   <Button
                     variant="outlined"
-                    onClick={() => handlePresetDateFilter(1)}
+                    onClick={() => handlePresetDateFilter(6)}
                     sx={{
-                      mr: 1,
-                      color: "blue",
-                      borderColor: "green",
+                      color: darkMode ? "white" : "#1976d2",
+                      borderColor: darkMode ? "white" : "#1976d2",
+                      fontSize: "12px",
+                      padding: "6px 12px",
+                      flex: { xs: "1 1 calc(33% - 8px)", sm: "0 0 auto" },
                     }}
                   >
                     Last 6 Months
                   </Button>
                 </Box>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <DatePicker
-                      label="Start Date"
-                      value={dateRange.startDate}
-                      onChange={(newValue) => setDateRange({ ...dateRange, startDate: newValue })}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          fullWidth
-                          sx={{
-                            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-                            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                          }}
-                        />
-                      )}
+                <label style={formLabelStyle}>Start Date</label>
+                <DatePicker
+                  value={dateRange.startDate}
+                  onChange={(newValue) =>
+                    setDateRange({ ...dateRange, startDate: newValue })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          ...formInputStyle,
+                          padding: "6px",
+                          fontSize: "12px",
+                        },
+                        "& .MuiInputLabel-root": {
+                          ...formLabelStyle,
+                          fontSize: "14px",
+                        },
+                        marginBottom: "10px",
+                      }}
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <DatePicker
-                      label="End Date"
-                      value={dateRange.endDate}
-                      onChange={(newValue) => setDateRange({ ...dateRange, endDate: newValue })}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          fullWidth
-                          sx={{
-                            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-                            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-                          }}
-                        />
-                      )}
+                  )}
+                />
+                <label style={formLabelStyle}>End Date</label>
+                <DatePicker
+                  value={dateRange.endDate}
+                  onChange={(newValue) =>
+                    setDateRange({ ...dateRange, endDate: newValue })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          ...formInputStyle,
+                          padding: "6px",
+                          fontSize: "12px",
+                        },
+                        "& .MuiInputLabel-root": {
+                          ...formLabelStyle,
+                          fontSize: "14px",
+                        },
+                        marginBottom: "10px",
+                      }}
                     />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={handleDateFilterReset}
-                  sx={{ color: darkMode ? "white" : "black" }}
-                >
-                  Reset
-                </Button>
-                <Button onClick={handleDateFilterApply} color="primary">
-                  Apply
-                </Button>
-              </DialogActions>
-            </Dialog>
+                  )}
+                />
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    style={formButtonStyle}
+                    onClick={handleDateFilterReset}
+                  >
+                    Reset
+                  </button>
+                  <button type="submit" style={formButtonStyle}>
+                    Apply
+                  </button>
+                </Box>
+              </form>
+            </Box>
           </>
         )}
       </Box>
@@ -1068,309 +1204,219 @@ const DealForm = ({
   dealForm,
   setDealForm,
   stages,
-  outcomes,
   teams,
+  outcomes,
   clientCategories,
   projects,
   accounts,
   darkMode,
+  formStyle,
+  labelStyle,
+  inputStyle,
+  selectStyle,
 }) => {
   return (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Deal ID"
-          value={dealForm.dealId}
-          onChange={(e) => setDealForm({ ...dealForm, dealId: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          required
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Stage"
-          value={dealForm.stage}
-          onChange={(e) => setDealForm({ ...dealForm, stage: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
-          required
-        >
-          {stages.map((s) => (
-            <MenuItem key={s} value={s}>
-              {s}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Value ($)"
-          type="number"
-          value={dealForm.value}
-          onChange={(e) => setDealForm({ ...dealForm, value: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Date Entered"
-          type="date"
-          value={dealForm.dateEntered}
-          onChange={(e) => setDealForm({ ...dealForm, dateEntered: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputLabelProps={{ shrink: true }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Date Closed"
-          type="date"
-          value={dealForm.dateClosed}
-          onChange={(e) => setDealForm({ ...dealForm, dateClosed: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputLabelProps={{ shrink: true }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Team"
-          value={dealForm.team}
-          onChange={(e) => setDealForm({ ...dealForm, team: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
-        >
-          {teams.map((t) => (
-            <MenuItem key={t} value={t}>
-              {t}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Salesperson"
-          value={dealForm.salesperson}
-          onChange={(e) => setDealForm({ ...dealForm, salesperson: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Outcome"
-          value={dealForm.outcome}
-          onChange={(e) => setDealForm({ ...dealForm, outcome: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
-        >
-          {outcomes.map((o) => (
-            <MenuItem key={o} value={o}>
-              {o}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Client Category"
-          value={dealForm.clientCategory}
-          onChange={(e) => setDealForm({ ...dealForm, clientCategory: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
-        >
-          {clientCategories.map((c) => (
-            <MenuItem key={c} value={c}>
-              {c}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Region"
-          value={dealForm.region}
-          onChange={(e) => setDealForm({ ...dealForm, region: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Product"
-          value={dealForm.product}
-          onChange={(e) => setDealForm({ ...dealForm, product: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Upsell Revenue ($)"
-          type="number"
-          value={dealForm.upsellRevenue}
-          onChange={(e) => setDealForm({ ...dealForm, upsellRevenue: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Cross-Sell Revenue ($)"
-          type="number"
-          value={dealForm.crossSellRevenue}
-          onChange={(e) => setDealForm({ ...dealForm, crossSellRevenue: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Project"
-          value={dealForm.project}
-          onChange={(e) => setDealForm({ ...dealForm, project: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
-        >
-          {projects.map((p) => (
-            <MenuItem key={p.id} value={p.name}>
-              {p.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          select
-          fullWidth
-          label="Account"
-          value={dealForm.account}
-          onChange={(e) => setDealForm({ ...dealForm, account: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-            "& .MuiMenu-paper": {
-              backgroundColor: darkMode ? "#424242" : "white",
-              color: darkMode ? "white" : "black",
-            },
-          }}
-        >
-          {accounts.map((a) => (
-            <MenuItem key={a.id} value={a.name}>
-              {a.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Grid>
-    </Grid>
+    <fieldset style={formStyle}>
+      <label style={labelStyle} htmlFor="dealId">Deal ID</label>
+      <input
+        style={inputStyle}
+        type="text"
+        id="dealId"
+        value={dealForm.dealId}
+        onChange={(e) => setDealForm({ ...dealForm, dealId: e.target.value })}
+        placeholder="Enter Deal ID"
+        required
+      />
+
+      <label style={labelStyle} htmlFor="stage">Stage</label>
+      <select
+        style={selectStyle}
+        id="stage"
+        value={dealForm.stage}
+        onChange={(e) => setDealForm({ ...dealForm, stage: e.target.value })}
+        required
+      >
+        <option value="" disabled>Select Stage</option>
+        {stages.map((value) => (
+          <option key={value} value={value}>{value}</option>
+        ))}
+      </select>
+
+      <label style={labelStyle} htmlFor="value">Value ($)</label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="value"
+        value={dealForm.value}
+        onChange={(e) => setDealForm({ ...dealForm, value: e.target.value })}
+        placeholder="Enter Value"
+        min="0"
+      />
+
+      <label style={labelStyle} htmlFor="dateEntered">Date Entered</label>
+      <input
+        style={inputStyle}
+        type="date"
+        id="dateEntered"
+        value={dealForm.dateEntered}
+        onChange={(e) => setDealForm({ ...dealForm, dateEntered: e.target.value })}
+      />
+
+      <label style={labelStyle} htmlFor="dateClosed">Date Closed</label>
+      <input
+        style={inputStyle}
+        type="date"
+        id="dateClosed"
+        value={dealForm.dateClosed}
+        onChange={(e) => setDealForm({ ...dealForm, dateClosed: e.target.value })}
+      />
+
+      <label style={labelStyle} htmlFor="team">Team</label>
+      <select
+        style={selectStyle}
+        id="team"
+        value={dealForm.team}
+        onChange={(e) => setDealForm({ ...dealForm, team: e.target.value })}
+      >
+        <option value="" disabled>Select Team</option>
+        {teams.map((t) => (
+          <option key={t} value={t}>{t}</option>
+        ))}
+      </select>
+
+      <label style={labelStyle} htmlFor="salesperson">Salesperson</label>
+      <input
+        style={inputStyle}
+        type="text"
+        id="salesperson"
+        value={dealForm.salesperson}
+        onChange={(e) => setDealForm({ ...dealForm, salesperson: e.target.value })}
+        placeholder="Enter Salesperson"
+      />
+
+      <label style={labelStyle} htmlFor="outcome">Outcome</label>
+      <select
+        style={selectStyle}
+        id="outcome"
+        value={dealForm.outcome}
+        onChange={(e) => setDealForm({ ...dealForm, outcome: e.target.value })}
+      >
+        <option value="" disabled>Select Outcome</option>
+        {outcomes.map((o) => (
+          <option key={o} value={o}>{o}</option>
+        ))}
+      </select>
+
+      <label style={labelStyle} htmlFor="clientCategory">Client Category</label>
+      <select
+        style={selectStyle}
+        id="clientCategory"
+        value={dealForm.clientCategory}
+        onChange={(e) => setDealForm({ ...dealForm, clientCategory: e.target.value })}
+      >
+        <option value="" disabled>Select Client Category</option>
+        {clientCategories.map((c) => (
+          <option key={c} value={c}>{c}</option>
+        ))}
+      </select>
+
+      <label style={labelStyle} htmlFor="region">Region</label>
+      <input
+        style={inputStyle}
+        type="text"
+        id="region"
+        value={dealForm.region}
+        onChange={(e) => setDealForm({ ...dealForm, region: e.target.value })}
+        placeholder="Enter Region"
+      />
+
+      <label style={labelStyle} htmlFor="product">Product</label>
+      <input
+        style={inputStyle}
+        type="text"
+        id="product"
+        value={dealForm.product}
+        onChange={(e) => setDealForm({ ...dealForm, product: e.target.value })}
+        placeholder="Enter Product"
+      />
+
+      <label style={labelStyle} htmlFor="upsellRevenue">Upsell Revenue ($)</label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="upsellRevenue"
+        value={dealForm.upsellRevenue}
+        onChange={(e) => setDealForm({ ...dealForm, upsellRevenue: e.target.value })}
+        placeholder="Enter Upsell Revenue"
+        min="0"
+      />
+
+      <label style={labelStyle} htmlFor="crossSellRevenue">Cross-Sell Revenue ($)</label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="crossSellRevenue"
+        value={dealForm.crossSellRevenue}
+        onChange={(e) => setDealForm({ ...dealForm, crossSellRevenue: e.target.value })}
+        placeholder="Enter Cross-Sell Revenue"
+        min="0"
+      />
+
+      <label style={labelStyle} htmlFor="project">Project</label>
+      <select
+        style={selectStyle}
+        id="project"
+        value={dealForm.project}
+        onChange={(e) => setDealForm({ ...dealForm, project: e.target.value })}
+      >
+        <option value="" disabled>Select Project</option>
+        {projects.map((p) => (
+          <option key={p.id} value={p.name}>{p.name}</option>
+        ))}
+      </select>
+
+      <label style={labelStyle} htmlFor="account">Account</label>
+      <select
+        style={selectStyle}
+        id="account"
+        value={dealForm.account}
+        onChange={(e) => setDealForm({ ...dealForm, account: e.target.value })}
+      >
+        <option value="" disabled>Select Account</option>
+        {accounts.map((a) => (
+          <option key={a.id} value={a.name}>{a.name}</option>
+        ))}
+      </select>
+    </fieldset>
   );
 };
 
 // TeamForm Component
-const TeamForm = ({ teamForm, setTeamForm, darkMode }) => {
+const TeamForm = ({ teamForm, setTeamForm, darkMode, formStyle, labelStyle, inputStyle }) => {
   return (
-    <Grid container spacing={2} sx={{ pt: 2 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Team Name"
-          value={teamForm.teamName}
-          onChange={(e) => setTeamForm({ ...teamForm, teamName: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          required
-        />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Quota ($)"
-          type="number"
-          value={teamForm.quota}
-          onChange={(e) => setTeamForm({ ...teamForm, quota: e.target.value })}
-          sx={{
-            "& .MuiInputBase-input": { color: darkMode ? "white" : "black" },
-            "& .MuiInputLabel-root": { color: darkMode ? "white" : "black" },
-          }}
-          InputProps={{ inputProps: { min: 0 } }}
-        />
-      </Grid>
-    </Grid>
+    <fieldset style={formStyle}>
+      <label style={labelStyle} htmlFor="teamName">Team Name</label>
+      <input
+        style={inputStyle}
+        type="text"
+        id="teamName"
+        value={teamForm.teamName}
+        onChange={(e) => setTeamForm({ ...teamForm, teamName: e.target.value })}
+        placeholder="Enter Team Name"
+        required
+      />
+
+      <label style={labelStyle} htmlFor="quota">Quota ($)</label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="quota"
+        value={teamForm.quota}
+        onChange={(e) => setTeamForm({ ...teamForm, quota: e.target.value })}
+        placeholder="Enter Quota"
+        min="0"
+      />
+    </fieldset>
   );
 };
 
@@ -1395,8 +1441,8 @@ DealForm.propTypes = {
   }).isRequired,
   setDealForm: PropTypes.func.isRequired,
   stages: PropTypes.arrayOf(PropTypes.string).isRequired,
-  outcomes: PropTypes.arrayOf(PropTypes.string).isRequired,
   teams: PropTypes.arrayOf(PropTypes.string).isRequired,
+  outcomes: PropTypes.arrayOf(PropTypes.string).isRequired,
   clientCategories: PropTypes.arrayOf(PropTypes.string).isRequired,
   projects: PropTypes.arrayOf(
     PropTypes.shape({
@@ -1411,6 +1457,10 @@ DealForm.propTypes = {
     })
   ).isRequired,
   darkMode: PropTypes.bool.isRequired,
+  formStyle: PropTypes.object.isRequired,
+  labelStyle: PropTypes.object.isRequired,
+  inputStyle: PropTypes.object.isRequired,
+  selectStyle: PropTypes.object.isRequired,
 };
 
 TeamForm.propTypes = {
@@ -1420,6 +1470,9 @@ TeamForm.propTypes = {
   }).isRequired,
   setTeamForm: PropTypes.func.isRequired,
   darkMode: PropTypes.bool.isRequired,
+  formStyle: PropTypes.object.isRequired,
+  labelStyle: PropTypes.object.isRequired,
+  inputStyle: PropTypes.object.isRequired,
 };
 
 export default ManageSales;

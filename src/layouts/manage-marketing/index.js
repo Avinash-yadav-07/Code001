@@ -15,7 +15,6 @@ import {
   IconButton,
   Tooltip,
   Icon,
-  MenuItem,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -97,6 +96,74 @@ const ManageMarketing = () => {
     project: "",
     account: "",
   });
+
+  // Common styles adapted from ManageCustomer
+  const formContainerStyle = {
+    backgroundColor: "#fff",
+    borderRadius: "15px",
+    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
+    padding: "10px 20px",
+    width: "90%",
+    maxWidth: "500px",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    textAlign: "center",
+    margin: "auto",
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    zIndex: 1200,
+    transition: "transform 0.2s",
+  };
+
+  const formInputStyle = {
+    display: "block",
+    width: "100%",
+    padding: "6px",
+    boxSizing: "border-box",
+    border: "1px solid #ddd",
+    borderRadius: "3px",
+    fontSize: "12px",
+    marginBottom: "10px",
+  };
+
+  const formSelectStyle = {
+    ...formInputStyle,
+    padding: "8px",
+    borderRadius: "5px",
+    height: "32px",
+  };
+
+  const formButtonStyle = {
+    padding: "10px",
+    borderRadius: "10px",
+    margin: "10px",
+    border: "none",
+    color: "white",
+    cursor: "pointer",
+    backgroundColor: "#4caf50",
+    width: "40%",
+    fontSize: "14px",
+  };
+
+  const formLabelStyle = {
+    fontSize: "14px",
+    display: "block",
+    width: "100%",
+    marginTop: "6px",
+    marginBottom: "4px",
+    textAlign: "left",
+    color: "#555",
+    fontWeight: "bold",
+  };
+
+  const formHeadingStyle = {
+    fontSize: "large",
+    textAlign: "center",
+    color: "#327c35",
+    margin: "10px 0",
+  };
 
   // Fetch user roles
   useEffect(() => {
@@ -432,207 +499,293 @@ const ManageMarketing = () => {
             boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
             transform: "scale(1.02)",
           },
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <CardContent>
-          <Grid container spacing={2}>
-            {data.type === "lead" ? (
-              <>
-                <Grid item xs={12} sm={6}>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Channel:</strong> {data.channel || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Leads:</strong> {data.leads || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Marketing Qualified Leads (MQLs):</strong>{" "}
-                    {data.marketingQualifiedLeads || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Sales Qualified Leads (SQLs):</strong>{" "}
-                    {data.salesQualifiedLeads || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Conversions:</strong> {data.conversions || 0}
-                  </MDTypography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Spend:</strong> ${data.spend || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Team:</strong> {data.team || "All"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Project:</strong> {data.project || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Account:</strong> {data.account || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>
-                      Marketing Qualified Leads (MQLs) → Sales Qualified Leads
-                      (SQLs):
-                    </strong>{" "}
-                    {data.marketingQualifiedLeads
-                      ? `${Math.round(
-                          (data.salesQualifiedLeads /
-                            data.marketingQualifiedLeads) *
-                            100
-                        )}%`
-                      : "0%"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Cost Per Lead (CPL):</strong>{" "}
-                    {data.leads
-                      ? `$${Math.round(data.spend / data.leads)}`
-                      : "$0"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Conversion Rate:</strong>{" "}
-                    {data.leads
-                      ? `${Math.round((data.conversions / data.leads) * 100)}%`
-                      : "0%"}
-                  </MDTypography>
-                </Grid>
-              </>
-            ) : (
-              <>
-                <Grid item xs={12} sm={6}>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Name:</strong> {data.name || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Type:</strong> {data.type || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Cost:</strong> ${data.cost || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Revenue:</strong> ${data.revenue || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Click-Through Rate (CTR):</strong>{" "}
-                    {data.clickThroughRate || 0}%
-                  </MDTypography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Likes:</strong> {data.likes || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Impressions:</strong> {data.impressions || 0}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Team:</strong> {data.team || "All"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Project:</strong> {data.project || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>Account:</strong> {data.account || "N/A"}
-                  </MDTypography>
-                  <MDTypography
-                    variant="body2"
-                    color={darkMode ? "white" : "textSecondary"}
-                  >
-                    <strong>ROI:</strong>{" "}
-                    {data.cost
-                      ? `${Math.round(
-                          ((data.revenue - data.cost) / data.cost) * 100
-                        )}%`
-                      : "0%"}
-                  </MDTypography>
-                </Grid>
-              </>
-            )}
-          </Grid>
-        </CardContent>
-        {!isReadOnly && (
-          <CardActions sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <MDButton
-              variant="gradient"
-              color={darkMode ? "dark" : "info"}
-              onClick={() => handleDialogOpen(data.type, data)}
+        <Box
+          sx={{
+            width: { xs: "100%", sm: "120px" },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: data.type === "lead" ? "#4caf50" : "#2196f3",
+            borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+            marginRight: { sm: "16px" },
+            marginBottom: { xs: "16px", sm: 0 },
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          }}
+        >
+          <MDTypography
+            variant="body2"
+            color="white"
+            sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
+          >
+            {data.type === "lead" ? "Lead" : "Campaign"}
+          </MDTypography>
+        </Box>
+        <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
+          <CardContent>
+            <Grid container spacing={2}>
+              {data.type === "lead" ? (
+                <>
+                  <Grid item xs={12} sm={6}>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Channel: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.channel || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Leads: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.leads || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Marketing Qualified Leads (MQLs): </span>
+                      <span style={{ fontWeight: "bold" }}>{data.marketingQualifiedLeads || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Sales Qualified Leads (SQLs): </span>
+                      <span style={{ fontWeight: "bold" }}>{data.salesQualifiedLeads || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Conversions: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.conversions || 0}</span>
+                    </MDTypography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Spend: </span>
+                      <span style={{ fontWeight: "bold" }}>${data.spend || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Team: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.team || "All"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Project: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.project || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Account: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.account || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>MQLs → SQLs: </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        {data.marketingQualifiedLeads
+                          ? `${Math.round(
+                              (data.salesQualifiedLeads / data.marketingQualifiedLeads) * 100
+                            )}%`
+                          : "0%"}
+                      </span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Cost Per Lead (CPL): </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        {data.leads ? `$${Math.round(data.spend / data.leads)}` : "$0"}
+                      </span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Conversion Rate: </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        {data.leads
+                          ? `${Math.round((data.conversions / data.leads) * 100)}%`
+                          : "0%"}
+                      </span>
+                    </MDTypography>
+                  </Grid>
+                </>
+              ) : (
+                <>
+                  <Grid item xs={12} sm={6}>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Name: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.name || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Type: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.type || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Cost: </span>
+                      <span style={{ fontWeight: "bold" }}>${data.cost || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Revenue: </span>
+                      <span style={{ fontWeight: "bold" }}>${data.revenue || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Click-Through Rate (CTR): </span>
+                      <span style={{ fontWeight: "bold" }}>{data.clickThroughRate || 0}%</span>
+                    </MDTypography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Likes: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.likes || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Impressions: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.impressions || 0}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Team: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.team || "All"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Project: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.project || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>Account: </span>
+                      <span style={{ fontWeight: "bold" }}>{data.account || "N/A"}</span>
+                    </MDTypography>
+                    <MDTypography
+                      variant="body2"
+                      color={darkMode ? "white" : "textSecondary"}
+                      sx={{ mb: 1 }}
+                    >
+                      <span>ROI: </span>
+                      <span style={{ fontWeight: "bold" }}>
+                        {data.cost
+                          ? `${Math.round(((data.revenue - data.cost) / data.cost) * 100)}%`
+                          : "0%"}
+                      </span>
+                    </MDTypography>
+                  </Grid>
+                </>
+              )}
+            </Grid>
+          </CardContent>
+          {!isReadOnly && (
+            <CardActions
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 1,
+                justifyContent: { xs: "space-between", sm: "flex-end" },
+                alignItems: "center",
+                padding: "8px 16px",
+              }}
             >
-              <Icon fontSize="medium">edit</Icon> Edit
-            </MDButton>
-            <MDButton
-              variant="gradient"
-              color="error"
-              onClick={() => handleDelete(data)}
-            >
-              <Icon fontSize="medium">delete</Icon> Delete
-            </MDButton>
-          </CardActions>
-        )}
+              <MDButton
+                variant="gradient"
+                color={darkMode ? "dark" : "info"}
+                onClick={() => handleDialogOpen(data.type, data)}
+                sx={{
+                  flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                  minWidth: { xs: "100px", sm: "100px" },
+                  maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                }}
+              >
+                <Icon fontSize="medium">edit</Icon> Edit
+              </MDButton>
+              <MDButton
+                variant="gradient"
+                color="error"
+                onClick={() => handleDelete(data)}
+                sx={{
+                  flex: { xs: "1 1 calc(50% - 8px)", sm: "0 0 auto" },
+                  minWidth: { xs: "100px", sm: "100px" },
+                  maxWidth: { xs: "calc(50% - 8px)", sm: "100px" },
+                  padding: "8px 16px",
+                  fontSize: "14px",
+                }}
+              >
+                <Icon fontSize="medium">delete</Icon> Delete
+              </MDButton>
+            </CardActions>
+          )}
+        </Box>
       </Card>
     </Grid>
   );
@@ -645,6 +798,7 @@ const ManageMarketing = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
         }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
@@ -658,98 +812,28 @@ const ManageMarketing = () => {
     return <Navigate to="/unauthorized" />;
   }
 
-  // Styles for form elements (from ManageClient)
-  const formContainerStyle = {
-    backgroundColor: "#fff",
-    borderRadius: "15px",
-    boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-    padding: "10px 20px",
-    width: "500px",
-    textAlign: "center",
-    margin: "auto",
-  };
-
-  const formStyle = {
-    border: "none",
-  };
-
-  const labelStyle = {
-    fontSize: "15px",
-    display: "block",
-    width: "100%",
-    marginTop: "8px",
-    marginBottom: "5px",
-    textAlign: "left",
-    color: "#555",
-    fontWeight: "bold",
-  };
-
-  const inputStyle = {
-    display: "block",
-    width: "100%",
-    padding: "8px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "3px",
-    fontSize: "12px",
-  };
-
-  const selectStyle = {
-    display: "block",
-    width: "100%",
-    marginBottom: "15px",
-    padding: "10px",
-    boxSizing: "border-box",
-    border: "1px solid #ddd",
-    borderRadius: "5px",
-    fontSize: "12px",
-  };
-
-  const buttonStyle = {
-    padding: "15px",
-    borderRadius: "10px",
-    margin: "15px",
-    border: "none",
-    color: "white",
-    cursor: "pointer",
-    backgroundColor: "#4caf50",
-    width: "40%",
-    fontSize: "16px",
-    fontWeight: "bold",
-  };
-
-  const titleStyle = {
-    fontSize: "x-large",
-    textAlign: "center",
-    color: "#327c35",
-  };
-
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box
         sx={{
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           minHeight: "100vh",
         }}
       >
         <DashboardNavbar
           absolute
           light={!darkMode}
-          isMini={false}
           sx={{
-            backgroundColor: darkMode
-              ? "rgba(33, 33, 33, 0.9)"
-              : "rgba(255, 255, 255, 0.9)",
+            backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
             backdropFilter: "blur(10px)",
             zIndex: 1100,
             padding: "0 16px",
             minHeight: "60px",
             top: "8px",
             left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            width: {
-              xs: "100%",
-              md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)",
-            },
+            width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+            borderRadius: "12px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
           }}
         />
         <MDBox
@@ -757,12 +841,9 @@ const ManageMarketing = () => {
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
             marginTop: { xs: "140px", md: "100px" },
-            backgroundColor: darkMode
-              ? "background.default"
-              : "background.paper",
+            backgroundColor: darkMode ? "#212121" : "#f3f3f3",
             minHeight: "calc(100vh - 80px)",
             paddingTop: { xs: "32px", md: "24px" },
-            zIndex: 1000,
           }}
         >
           <Grid container spacing={3}>
@@ -787,17 +868,24 @@ const ManageMarketing = () => {
                   pb={2}
                   px={2}
                   display="flex"
-                  alignItems="center"
+                  flexDirection={{ xs: "column", sm: "row" }}
+                  alignItems={{ xs: "stretch", sm: "center" }}
                   gap={2}
                   justifyContent="space-between"
                 >
-                  <Box display="flex" gap={2}>
+                  <Box
+                    display="flex"
+                    flexDirection={{ xs: "column", sm: "row" }}
+                    gap={2}
+                    width={{ xs: "100%", sm: "auto" }}
+                  >
                     {!isReadOnly && (
                       <>
                         <MDButton
                           variant="gradient"
                           color={darkMode ? "dark" : "info"}
                           onClick={() => handleDialogOpen("lead")}
+                          fullWidth={{ xs: true, sm: false }}
                         >
                           Add Lead
                         </MDButton>
@@ -805,6 +893,7 @@ const ManageMarketing = () => {
                           variant="gradient"
                           color={darkMode ? "dark" : "info"}
                           onClick={() => handleDialogOpen("campaign")}
+                          fullWidth={{ xs: true, sm: false }}
                         >
                           Add Campaign
                         </MDButton>
@@ -817,11 +906,14 @@ const ManageMarketing = () => {
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       sx={{
-                        maxWidth: 300,
+                        width: { xs: "100%", sm: 300 },
                         "& .MuiOutlinedInput-root": {
                           borderRadius: "8px",
                           backgroundColor: darkMode ? "#424242" : "#fff",
                           color: darkMode ? "white" : "black",
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: darkMode ? "#fff" : "#ddd",
+                          },
                         },
                         "& .MuiInputLabel-root": {
                           color: darkMode ? "white" : "black",
@@ -829,7 +921,12 @@ const ManageMarketing = () => {
                       }}
                     />
                   </Box>
-                  <Box display="flex" gap={2} alignItems="center">
+                  <Box
+                    display="flex"
+                    gap={2}
+                    alignItems="center"
+                    width={{ xs: "100%", sm: "auto" }}
+                  >
                     <Tooltip title="Refresh Data">
                       <IconButton onClick={fetchMarketingData}>
                         <RefreshIcon
@@ -837,13 +934,19 @@ const ManageMarketing = () => {
                         />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Filter by Date">
-                      <IconButton onClick={() => setOpenDateFilterDialog(true)}>
-                        <CalendarTodayIcon
-                          sx={{ color: darkMode ? "#fff" : "#1976d2" }}
-                        />
-                      </IconButton>
-                    </Tooltip>
+                    <MDButton
+                      variant="outlined"
+                      onClick={() => setOpenDateFilterDialog(true)}
+                      sx={{
+                        height: 40,
+                        color: darkMode ? "white" : "#1976d2",
+                        borderColor: darkMode ? "white" : "black",
+                        width: { xs: "100%", sm: "auto" },
+                      }}
+                    >
+                      <CalendarTodayIcon sx={{ mr: 1 }} />
+                      Filter by Date
+                    </MDButton>
                   </Box>
                 </MDBox>
                 <Grid container spacing={3} sx={{ padding: "16px" }}>
@@ -867,10 +970,7 @@ const ManageMarketing = () => {
         <Box
           sx={{
             marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-            backgroundColor: darkMode
-              ? "background.default"
-              : "background.paper",
-            zIndex: 1100,
+            backgroundColor: darkMode ? "#212121" : "#f3f3f3",
           }}
         >
           <Footer />
@@ -879,25 +979,11 @@ const ManageMarketing = () => {
         {!isReadOnly && (
           <>
             {/* Lead Dialog */}
-            <Dialog
-              open={openLeadDialog}
-              onClose={() => handleDialogClose("lead")}
-              maxWidth="md"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: "#f3f3f3",
-                  borderRadius: "15px",
-                  boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-                  width: "500px",
-                  margin: "auto",
-                },
-              }}
-            >
-              <DialogTitle sx={{ ...titleStyle }}>
-                {editData ? "Edit Lead" : "Add Lead"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
+            <Box sx={{ ...formContainerStyle, display: openLeadDialog ? "block" : "none" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmitLead(); }}>
+                <MDTypography sx={formHeadingStyle}>
+                  {editData ? "Edit Lead" : "Add Lead"}
+                </MDTypography>
                 <LeadForm
                   leadForm={leadForm}
                   setLeadForm={setLeadForm}
@@ -906,47 +992,32 @@ const ManageMarketing = () => {
                   projects={projects}
                   accounts={accounts}
                   darkMode={darkMode}
-                  formStyle={formStyle}
-                  labelStyle={labelStyle}
-                  inputStyle={inputStyle}
-                  selectStyle={selectStyle}
+                  formStyle={{ border: "none" }}
+                  labelStyle={formLabelStyle}
+                  inputStyle={formInputStyle}
+                  selectStyle={formSelectStyle}
                 />
-              </DialogContent>
-              <DialogActions
-                sx={{ padding: "16px 24px", justifyContent: "center" }}
-              >
-                <button
-                  style={buttonStyle}
-                  onClick={() => handleDialogClose("lead")}
-                >
-                  Cancel
-                </button>
-                <button style={buttonStyle} onClick={handleSubmitLead}>
-                  {editData ? "Update Lead" : "Save Lead"}
-                </button>
-              </DialogActions>
-            </Dialog>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    style={formButtonStyle}
+                    onClick={() => handleDialogClose("lead")}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" style={formButtonStyle}>
+                    {editData ? "Update Lead" : "Save Lead"}
+                  </button>
+                </Box>
+              </form>
+            </Box>
 
             {/* Campaign Dialog */}
-            <Dialog
-              open={openCampaignDialog}
-              onClose={() => handleDialogClose("campaign")}
-              maxWidth="md"
-              fullWidth
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: "#f3f3f3",
-                  borderRadius: "15px",
-                  boxShadow: "0 0 20px rgba(0, 0, 0, 0.2)",
-                  width: "500px",
-                  margin: "auto",
-                },
-              }}
-            >
-              <DialogTitle sx={{ ...titleStyle }}>
-                {editData ? "Edit Campaign" : "Add Campaign"}
-              </DialogTitle>
-              <DialogContent sx={{ py: 2, padding: "10px 20px" }}>
+            <Box sx={{ ...formContainerStyle, display: openCampaignDialog ? "block" : "none" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleSubmitCampaign(); }}>
+                <MDTypography sx={formHeadingStyle}>
+                  {editData ? "Edit Campaign" : "Add Campaign"}
+                </MDTypography>
                 <CampaignForm
                   campaignForm={campaignForm}
                   setCampaignForm={setCampaignForm}
@@ -955,133 +1026,117 @@ const ManageMarketing = () => {
                   projects={projects}
                   accounts={accounts}
                   darkMode={darkMode}
-                  formStyle={formStyle}
-                  labelStyle={labelStyle}
-                  inputStyle={inputStyle}
-                  selectStyle={selectStyle}
+                  formStyle={{ border: "none" }}
+                  labelStyle={formLabelStyle}
+                  inputStyle={formInputStyle}
+                  selectStyle={formSelectStyle}
                 />
-              </DialogContent>
-              <DialogActions
-                sx={{ padding: "16px 24px", justifyContent: "center" }}
-              >
-                <button
-                  style={buttonStyle}
-                  onClick={() => handleDialogClose("campaign")}
-                >
-                  Cancel
-                </button>
-                <button style={buttonStyle} onClick={handleSubmitCampaign}>
-                  {editData ? "Update Campaign" : "Save Campaign"}
-                </button>
-              </DialogActions>
-            </Dialog>
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    style={formButtonStyle}
+                    onClick={() => handleDialogClose("campaign")}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" style={formButtonStyle}>
+                    {editData ? "Update Campaign" : "Save Campaign"}
+                  </button>
+                </Box>
+              </form>
+            </Box>
 
             {/* Delete Confirmation Dialog */}
-            <Dialog
-              open={confirmDeleteOpen}
-              onClose={() => setConfirmDeleteOpen(false)}
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode
-                    ? "background.default"
-                    : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Want to delete{" "}
-                {deleteItem?.type === "lead" ? "lead" : "campaign"}?
-              </DialogTitle>
-              <DialogActions>
-                <Button
+            <Box sx={{ ...formContainerStyle, display: confirmDeleteOpen ? "block" : "none" }}>
+              <MDTypography sx={formHeadingStyle}>
+                Want to delete {deleteItem?.type === "lead" ? "lead" : "campaign"}?
+              </MDTypography>
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <button
+                  type="button"
+                  style={formButtonStyle}
                   onClick={() => setConfirmDeleteOpen(false)}
-                  sx={{ color: darkMode ? "white" : "black" }}
                 >
                   Cancel
-                </Button>
-                <Button onClick={handleDeleteConfirm} color="error">
+                </button>
+                <button
+                  type="button"
+                  style={{ ...formButtonStyle, backgroundColor: "#f44336" }}
+                  onClick={handleDeleteConfirm}
+                >
                   Delete
-                </Button>
-              </DialogActions>
-            </Dialog>
+                </button>
+              </Box>
+            </Box>
 
             {/* Date Filter Dialog */}
-            <Dialog
-              open={openDateFilterDialog}
-              onClose={() => setOpenDateFilterDialog(false)}
-              sx={{
-                "& .MuiDialog-paper": {
-                  backgroundColor: darkMode
-                    ? "background.default"
-                    : "background.paper",
-                },
-              }}
-            >
-              <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-                Filter by Date Range
-              </DialogTitle>
-              <DialogContent sx={{ py: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <DatePicker
-                      label="Start Date"
-                      value={dateRange.startDate}
-                      onChange={(newValue) =>
-                        setDateRange({ ...dateRange, startDate: newValue })
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          fullWidth
-                          sx={{
-                            "& .MuiInputBase-input": {
-                              color: darkMode ? "white" : "black",
-                            },
-                            "& .MuiInputLabel-root": {
-                              color: darkMode ? "white" : "black",
-                            },
-                          }}
-                        />
-                      )}
+            <Box sx={{ ...formContainerStyle, display: openDateFilterDialog ? "block" : "none" }}>
+              <form onSubmit={(e) => { e.preventDefault(); handleDateFilterApply(); }}>
+                <MDTypography sx={formHeadingStyle}>Filter by Date Range</MDTypography>
+                <label style={formLabelStyle}>Start Date</label>
+                <DatePicker
+                  value={dateRange.startDate}
+                  onChange={(newValue) =>
+                    setDateRange({ ...dateRange, startDate: newValue })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          ...formInputStyle,
+                          padding: "6px",
+                          fontSize: "12px",
+                        },
+                        "& .MuiInputLabel-root": {
+                          ...formLabelStyle,
+                          fontSize: "14px",
+                        },
+                        marginBottom: "10px",
+                      }}
                     />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <DatePicker
-                      label="End Date"
-                      value={dateRange.endDate}
-                      onChange={(newValue) =>
-                        setDateRange({ ...dateRange, endDate: newValue })
-                      }
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          fullWidth
-                          sx={{
-                            "& .MuiInputBase-input": {
-                              color: darkMode ? "white" : "black",
-                            },
-                            "& .MuiInputLabel-root": {
-                              color: darkMode ? "white" : "black",
-                            },
-                          }}
-                        />
-                      )}
+                  )}
+                />
+                <label style={formLabelStyle}>End Date</label>
+                <DatePicker
+                  value={dateRange.endDate}
+                  onChange={(newValue) =>
+                    setDateRange({ ...dateRange, endDate: newValue })
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          ...formInputStyle,
+                          padding: "6px",
+                          fontSize: "12px",
+                        },
+                        "& .MuiInputLabel-root": {
+                          ...formLabelStyle,
+                          fontSize: "14px",
+                        },
+                        marginBottom: "10px",
+                      }}
                     />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button
-                  onClick={handleDateFilterReset}
-                  sx={{ color: darkMode ? "white" : "black" }}
-                >
-                  Reset
-                </Button>
-                <Button onClick={handleDateFilterApply} color="primary">
-                  Apply
-                </Button>
-              </DialogActions>
-            </Dialog>
+                  )}
+                />
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <button
+                    type="button"
+                    style={formButtonStyle}
+                    onClick={handleDateFilterReset}
+                  >
+                    Reset
+                  </button>
+                  <button type="submit" style={formButtonStyle}>
+                    Apply
+                  </button>
+                </Box>
+              </form>
+            </Box>
           </>
         )}
       </Box>
@@ -1105,182 +1160,169 @@ const LeadForm = ({
 }) => {
   return (
     <fieldset style={formStyle}>
-      <form action="#" method="get">
-        <label style={labelStyle} htmlFor="channel">
-          Channel*
-        </label>
-        <select
-          style={selectStyle}
-          id="channel"
-          value={leadForm.channel}
-          onChange={(e) =>
-            setLeadForm({ ...leadForm, channel: e.target.value })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Channel
+      <label style={labelStyle} htmlFor="channel">
+        Channel*
+      </label>
+      <select
+        style={selectStyle}
+        id="channel"
+        value={leadForm.channel}
+        onChange={(e) => setLeadForm({ ...leadForm, channel: e.target.value })}
+        required
+      >
+        <option value="" disabled>
+          Select Channel
+        </option>
+        {channels.map((channel) => (
+          <option key={channel} value={channel}>
+            {channel}
           </option>
-          {channels.map((channel) => (
-            <option key={channel} value={channel}>
-              {channel}
-            </option>
-          ))}
-        </select>
+        ))}
+      </select>
 
-        <label style={labelStyle} htmlFor="leads">
-          Leads
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="leads"
-          value={leadForm.leads}
-          onChange={(e) => setLeadForm({ ...leadForm, leads: e.target.value })}
-          placeholder="Enter Leads"
-        />
+      <label style={labelStyle} htmlFor="leads">
+        Leads
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="leads"
+        value={leadForm.leads}
+        onChange={(e) => setLeadForm({ ...leadForm, leads: e.target.value })}
+        placeholder="Enter Leads"
+      />
 
-        <label style={labelStyle} htmlFor="marketingQualifiedLeads">
-          Marketing Qualified Leads (MQLs)
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="marketingQualifiedLeads"
-          value={leadForm.marketingQualifiedLeads}
-          onChange={(e) =>
-            setLeadForm({
-              ...leadForm,
-              marketingQualifiedLeads: e.target.value,
-            })
-          }
-          placeholder="Enter MQLs"
-        />
+      <label style={labelStyle} htmlFor="marketingQualifiedLeads">
+        Marketing Qualified Leads (MQLs)
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="marketingQualifiedLeads"
+        value={leadForm.marketingQualifiedLeads}
+        onChange={(e) =>
+          setLeadForm({ ...leadForm, marketingQualifiedLeads: e.target.value })
+        }
+        placeholder="Enter MQLs"
+      />
 
-        <label style={labelStyle} htmlFor="salesQualifiedLeads">
-          Sales Qualified Leads (SQLs)
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="salesQualifiedLeads"
-          value={leadForm.salesQualifiedLeads}
-          onChange={(e) =>
-            setLeadForm({ ...leadForm, salesQualifiedLeads: e.target.value })
-          }
-          placeholder="Enter SQLs"
-        />
+      <label style={labelStyle} htmlFor="salesQualifiedLeads">
+        Sales Qualified Leads (SQLs)
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="salesQualifiedLeads"
+        value={leadForm.salesQualifiedLeads}
+        onChange={(e) =>
+          setLeadForm({ ...leadForm, salesQualifiedLeads: e.target.value })
+        }
+        placeholder="Enter SQLs"
+      />
 
-        <label style={labelStyle} htmlFor="conversions">
-          Conversions
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="conversions"
-          value={leadForm.conversions}
-          onChange={(e) =>
-            setLeadForm({ ...leadForm, conversions: e.target.value })
-          }
-          placeholder="Enter Conversions"
-        />
+      <label style={labelStyle} htmlFor="conversions">
+        Conversions
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="conversions"
+        value={leadForm.conversions}
+        onChange={(e) => setLeadForm({ ...leadForm, conversions: e.target.value })}
+        placeholder="Enter Conversions"
+      />
 
-        <label style={labelStyle} htmlFor="spend">
-          Spend
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="spend"
-          value={leadForm.spend}
-          onChange={(e) => setLeadForm({ ...leadForm, spend: e.target.value })}
-          placeholder="Enter Spend"
-        />
+      <label style={labelStyle} htmlFor="spend">
+        Spend
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="spend"
+        value={leadForm.spend}
+        onChange={(e) => setLeadForm({ ...leadForm, spend: e.target.value })}
+        placeholder="Enter Spend"
+      />
 
-        <label style={labelStyle} htmlFor="team">
-          Team*
-        </label>
-        <select
-          style={selectStyle}
-          id="team"
-          value={leadForm.team}
-          onChange={(e) =>
-            setLeadForm({ ...leadForm, team: e.target.value, customTeam: "" })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Team
+      <label style={labelStyle} htmlFor="team">
+        Team*
+      </label>
+      <select
+        style={selectStyle}
+        id="team"
+        value={leadForm.team}
+        onChange={(e) =>
+          setLeadForm({ ...leadForm, team: e.target.value, customTeam: "" })
+        }
+        required
+      >
+        <option value="" disabled>
+          Select Team
+        </option>
+        {teams.map((team) => (
+          <option key={team} value={team}>
+            {team}
           </option>
-          {teams.map((team) => (
-            <option key={team} value={team}>
-              {team}
-            </option>
-          ))}
-        </select>
+        ))}
+      </select>
 
-        {leadForm.team === "Custom" && (
-          <>
-            <label style={labelStyle} htmlFor="customTeam">
-              Custom Team Name
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              id="customTeam"
-              value={leadForm.customTeam}
-              onChange={(e) =>
-                setLeadForm({ ...leadForm, customTeam: e.target.value })
-              }
-              placeholder="Enter Custom Team Name"
-            />
-          </>
-        )}
+      {leadForm.team === "Custom" && (
+        <>
+          <label style={labelStyle} htmlFor="customTeam">
+            Custom Team Name
+          </label>
+          <input
+            style={inputStyle}
+            type="text"
+            id="customTeam"
+            value={leadForm.customTeam}
+            onChange={(e) =>
+              setLeadForm({ ...leadForm, customTeam: e.target.value })
+            }
+            placeholder="Enter Custom Team Name"
+          />
+        </>
+      )}
 
-        <label style={labelStyle} htmlFor="project">
-          Project*
-        </label>
-        <select
-          style={selectStyle}
-          id="project"
-          value={leadForm.project}
-          onChange={(e) =>
-            setLeadForm({ ...leadForm, project: e.target.value })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Project
+      <label style={labelStyle} htmlFor="project">
+        Project*
+      </label>
+      <select
+        style={selectStyle}
+        id="project"
+        value={leadForm.project}
+        onChange={(e) => setLeadForm({ ...leadForm, project: e.target.value })}
+        required
+      >
+        <option value="" disabled>
+          Select Project
+        </option>
+        {projects.map((project) => (
+          <option key={project.id} value={project.name}>
+            {project.name}
           </option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.name}>
-              {project.name}
-            </option>
-          ))}
-        </select>
+        ))}
+      </select>
 
-        <label style={labelStyle} htmlFor="account">
-          Account*
-        </label>
-        <select
-          style={selectStyle}
-          id="account"
-          value={leadForm.account}
-          onChange={(e) =>
-            setLeadForm({ ...leadForm, account: e.target.value })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Account
+      <label style={labelStyle} htmlFor="account">
+        Account*
+      </label>
+      <select
+        style={selectStyle}
+        id="account"
+        value={leadForm.account}
+        onChange={(e) => setLeadForm({ ...leadForm, account: e.target.value })}
+        required
+      >
+        <option value="" disabled>
+          Select Account
+        </option>
+        {accounts.map((account) => (
+          <option key={account.id} value={account.name}>
+            {account.name}
           </option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.name}>
-              {account.name}
-            </option>
-          ))}
-        </select>
-      </form>
+        ))}
+      </select>
     </fieldset>
   );
 };
@@ -1301,205 +1343,182 @@ const CampaignForm = ({
 }) => {
   return (
     <fieldset style={formStyle}>
-      <form action="#" method="get">
-        <label style={labelStyle} htmlFor="name">
-          Campaign Name*
-        </label>
-        <input
-          style={inputStyle}
-          type="text"
-          id="name"
-          value={campaignForm.name}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, name: e.target.value })
-          }
-          placeholder="Enter Campaign Name"
-          required
-        />
+      <label style={labelStyle} htmlFor="name">
+        Campaign Name*
+      </label>
+      <input
+        style={inputStyle}
+        type="text"
+        id="name"
+        value={campaignForm.name}
+        onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+        placeholder="Enter Campaign Name"
+        required
+      />
 
-        <label style={labelStyle} htmlFor="type">
-          Campaign Type*
-        </label>
-        <select
-          style={selectStyle}
-          id="type"
-          value={campaignForm.type}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, type: e.target.value })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Campaign Type
+      <label style={labelStyle} htmlFor="type">
+        Campaign Type*
+      </label>
+      <select
+        style={selectStyle}
+        id="type"
+        value={campaignForm.type}
+        onChange={(e) => setCampaignForm({ ...campaignForm, type: e.target.value })}
+        required
+      >
+        <option value="" disabled>
+          Select Campaign Type
+        </option>
+        {campaignTypes.map((type) => (
+          <option key={type} value={type}>
+            {type}
           </option>
-          {campaignTypes.map((type) => (
-            <option key={type} value={type}>
-              {type}
-            </option>
-          ))}
-        </select>
+        ))}
+      </select>
 
-        <label style={labelStyle} htmlFor="cost">
-          Cost
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="cost"
-          value={campaignForm.cost}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, cost: e.target.value })
-          }
-          placeholder="Enter Cost"
-        />
+      <label style={labelStyle} htmlFor="cost">
+        Cost
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="cost"
+        value={campaignForm.cost}
+        onChange={(e) => setCampaignForm({ ...campaignForm, cost: e.target.value })}
+        placeholder="Enter Cost"
+      />
 
-        <label style={labelStyle} htmlFor="revenue">
-          Revenue
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="revenue"
-          value={campaignForm.revenue}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, revenue: e.target.value })
-          }
-          placeholder="Enter Revenue"
-        />
+      <label style={labelStyle} htmlFor="revenue">
+        Revenue
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="revenue"
+        value={campaignForm.revenue}
+        onChange={(e) => setCampaignForm({ ...campaignForm, revenue: e.target.value })}
+        placeholder="Enter Revenue"
+      />
 
-        <label style={labelStyle} htmlFor="clickThroughRate">
-          Click-Through Rate (CTR)
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="clickThroughRate"
-          value={campaignForm.clickThroughRate}
-          onChange={(e) =>
-            setCampaignForm({
-              ...campaignForm,
-              clickThroughRate: e.target.value,
-            })
-          }
-          placeholder="Enter CTR"
-        />
+      <label style={labelStyle} htmlFor="clickThroughRate">
+        Click-Through Rate (CTR)
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="clickThroughRate"
+        value={campaignForm.clickThroughRate}
+        onChange={(e) =>
+          setCampaignForm({ ...campaignForm, clickThroughRate: e.target.value })
+        }
+        placeholder="Enter CTR"
+      />
 
-        <label style={labelStyle} htmlFor="likes">
-          Likes
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="likes"
-          value={campaignForm.likes}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, likes: e.target.value })
-          }
-          placeholder="Enter Likes"
-        />
+      <label style={labelStyle} htmlFor="likes">
+        Likes
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="likes"
+        value={campaignForm.likes}
+        onChange={(e) => setCampaignForm({ ...campaignForm, likes: e.target.value })}
+        placeholder="Enter Likes"
+      />
 
-        <label style={labelStyle} htmlFor="impressions">
-          Impressions
-        </label>
-        <input
-          style={inputStyle}
-          type="number"
-          id="impressions"
-          value={campaignForm.impressions}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, impressions: e.target.value })
-          }
-          placeholder="Enter Impressions"
-        />
+      <label style={labelStyle} htmlFor="impressions">
+        Impressions
+      </label>
+      <input
+        style={inputStyle}
+        type="number"
+        id="impressions"
+        value={campaignForm.impressions}
+        onChange={(e) =>
+          setCampaignForm({ ...campaignForm, impressions: e.target.value })
+        }
+        placeholder="Enter Impressions"
+      />
 
-        <label style={labelStyle} htmlFor="team">
-          Team*
-        </label>
-        <select
-          style={selectStyle}
-          id="team"
-          value={campaignForm.team}
-          onChange={(e) =>
-            setCampaignForm({
-              ...campaignForm,
-              team: e.target.value,
-              customTeam: "",
-            })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Team
+      <label style={labelStyle} htmlFor="team">
+        Team*
+      </label>
+      <select
+        style={selectStyle}
+        id="team"
+        value={campaignForm.team}
+        onChange={(e) =>
+          setCampaignForm({ ...campaignForm, team: e.target.value, customTeam: "" })
+        }
+        required
+      >
+        <option value="" disabled>
+          Select Team
+        </option>
+        {teams.map((team) => (
+          <option key={team} value={team}>
+            {team}
           </option>
-          {teams.map((team) => (
-            <option key={team} value={team}>
-              {team}
-            </option>
-          ))}
-        </select>
+        ))}
+      </select>
 
-        {campaignForm.team === "Custom" && (
-          <>
-            <label style={labelStyle} htmlFor="customTeam">
-              Custom Team Name
-            </label>
-            <input
-              style={inputStyle}
-              type="text"
-              id="customTeam"
-              value={campaignForm.customTeam}
-              onChange={(e) =>
-                setCampaignForm({ ...campaignForm, customTeam: e.target.value })
-              }
-              placeholder="Enter Custom Team Name"
-            />
-          </>
-        )}
+      {campaignForm.team === "Custom" && (
+        <>
+          <label style={labelStyle} htmlFor="customTeam">
+            Custom Team Name
+          </label>
+          <input
+            style={inputStyle}
+            type="text"
+            id="customTeam"
+            value={campaignForm.customTeam}
+            onChange={(e) =>
+              setCampaignForm({ ...campaignForm, customTeam: e.target.value })
+            }
+            placeholder="Enter Custom Team Name"
+          />
+        </>
+      )}
 
-        <label style={labelStyle} htmlFor="project">
-          Project*
-        </label>
-        <select
-          style={selectStyle}
-          id="project"
-          value={campaignForm.project}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, project: e.target.value })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Project
+      <label style={labelStyle} htmlFor="project">
+        Project*
+      </label>
+      <select
+        style={selectStyle}
+        id="project"
+        value={campaignForm.project}
+        onChange={(e) => setCampaignForm({ ...campaignForm, project: e.target.value })}
+        required
+      >
+        <option value="" disabled>
+          Select Project
+        </option>
+        {projects.map((project) => (
+          <option key={project.id} value={project.name}>
+            {project.name}
           </option>
-          {projects.map((project) => (
-            <option key={project.id} value={project.name}>
-              {project.name}
-            </option>
-          ))}
-        </select>
+        ))}
+      </select>
 
-        <label style={labelStyle} htmlFor="account">
-          Account*
-        </label>
-        <select
-          style={selectStyle}
-          id="account"
-          value={campaignForm.account}
-          onChange={(e) =>
-            setCampaignForm({ ...campaignForm, account: e.target.value })
-          }
-          required
-        >
-          <option value="" disabled>
-            Select Account
+      <label style={labelStyle} htmlFor="account">
+        Account*
+      </label>
+      <select
+        style={selectStyle}
+        id="account"
+        value={campaignForm.account}
+        onChange={(e) => setCampaignForm({ ...campaignForm, account: e.target.value })}
+        required
+      >
+        <option value="" disabled>
+          Select Account
+        </option>
+        {accounts.map((account) => (
+          <option key={account.id} value={account.name}>
+            {account.name}
           </option>
-          {accounts.map((account) => (
-            <option key={account.id} value={account.name}>
-              {account.name}
-            </option>
-          ))}
-        </select>
-      </form>
+        ))}
+      </select>
     </fieldset>
   );
 };

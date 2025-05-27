@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from "react";
 import {
   Button,
@@ -28,7 +29,6 @@ import {
 } from "firebase/firestore";
 import { Timestamp } from "firebase/firestore";
 import MDBox from "components/MDBox";
-import InputAdornment from "@mui/material/InputAdornment";
 import MDTypography from "components/MDTypography";
 import MDButton from "components/MDButton";
 import Icon from "@mui/material/Icon";
@@ -273,8 +273,8 @@ const ManageRoles = () => {
   return (
     <Box
       sx={{
-        backgroundColor: darkMode ? "background.default" : "background.paper",
         minHeight: "100vh",
+        backgroundColor: "transparent",
       }}
     >
       <DashboardNavbar
@@ -302,10 +302,11 @@ const ManageRoles = () => {
         sx={{
           marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
           marginTop: { xs: "140px", md: "100px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
           minHeight: "calc(100vh - 80px)",
           paddingTop: { xs: "32px", md: "24px" },
           zIndex: 1000,
+          backgroundColor: "transparent",
+          boxShadow: "none",
         }}
       >
         <Grid container spacing={3}>
@@ -510,7 +511,7 @@ const ManageRoles = () => {
       <Box
         sx={{
           marginLeft: { xs: "0", md: miniSidenav ? "80px" : "260px" },
-          backgroundColor: darkMode ? "background.default" : "background.paper",
+          backgroundColor: "transparent",
           zIndex: 1100,
         }}
       >
@@ -561,9 +562,7 @@ const ManageRoles = () => {
                   width: "100%",
                   padding: "8px",
                   boxSizing: "border-box",
-                  border: formErrors.roleName
-                    ? "1px solid red"
-                    : "1px solid #ddd",
+                  border: formErrors.roleName ? "1px solid red" : "1px solid #ddd",
                   borderRadius: "3px",
                   fontSize: "12px",
                 }}
@@ -1013,7 +1012,7 @@ const ManageRoles = () => {
         }}
       >
         <DialogTitle sx={{ color: darkMode ? "white" : "black" }}>
-          Want to delete role data?
+          Want to delete this role?
         </DialogTitle>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteOpen(false)}>Cancel</Button>

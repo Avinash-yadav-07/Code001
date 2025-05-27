@@ -1,5 +1,5 @@
 import React from "react";
-import Customer from "layouts/billing";
+import Customer from "layouts/Customer-Dashboard";
 import ManageEmployee from "layouts/manage-employee";
 import ManageProjects from "./layouts/manage-projects";
 import ManageClient from "./layouts/manage-client";
