@@ -1,6 +1,7 @@
 import React from "react";
 import Customer from "layouts/Customer-Dashboard";
 import ManageEmployee from "layouts/manage-employee";
+import ManageLeave from "layouts/manage-leaves";
 import ManageProjects from "./layouts/manage-projects";
 import ManageClient from "./layouts/manage-client";
 import ManageRoles from "layouts/manage-roles";
@@ -55,6 +56,19 @@ const routes = [
           </ProtectedRoute>
         ),
         onClick: () => handleManageButtonClick("Manage Employee"), // Added onClick
+      },
+      {
+        type: "collapse",
+        name: "Manage Leaves",
+        key: "manage-leaves",
+        icon: <Icon fontSize="small">people</Icon>,
+        route: "/manage/leaves",
+        component: (
+          <ProtectedRoute allowedRoles={["ManageEmployee:full access"]}>
+            <ManageEmployee />
+          </ProtectedRoute>
+        ),
+        onClick: () => handleManageButtonClick("Manage Leaves"), // Added onClick
       },
       {
         name: "Manage Clients",
