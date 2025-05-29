@@ -36,19 +36,6 @@ import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useMaterialUIController } from "context";
 import * as XLSX from "xlsx";
 
-// Note: If the error persists, check the following component files for correct exports:
-// - components/MDBox.js
-// - components/MDTypography.js
-// - components/MDBadge.js
-// - examples/Tables/DataTable.js
-// - examples/Navbars/DashboardNavbar.js
-// - examples/Footer.js
-// Ensure each file has: `export default ComponentName`
-// If named exports are used (e.g., `export const MDBox`), update imports to:
-// import { MDBox } from "components/MDBox";
-// import { MDTypography } from "components/MDTypography";
-// etc.
-
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = getAuth(secondaryApp);
 
@@ -124,6 +111,8 @@ const ManageEmployee = () => {
   const [exitDate, setExitDate] = useState("");
   const [salary, setSalary] = useState("");
   const [status, setStatus] = useState("");
+  const [totalLeave, setTotalLeave] = useState("");
+  const [takenLeave, setTakenLeave] = useState("");
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [controller] = useMaterialUIController();
   const { miniSidenav, darkMode } = controller;
@@ -402,6 +391,8 @@ const ManageEmployee = () => {
           if (cleanName.includes("salary")) return "Salary";
           if (cleanName.includes("status")) return "Status";
           if (cleanName.includes("roles")) return "Roles";
+          if (cleanName.includes("totalleave") || cleanName.includes("total")) return "Total Leave";
+          if (cleanName.includes("takenleave") || cleanName.includes("taken")) return "Taken Leave";
           return name;
         };
 
@@ -420,7 +411,8 @@ const ManageEmployee = () => {
             !employee["Department"]?.trim() ||
             !employee["Designation"]?.trim() ||
             !employee["Joining Date"]?.trim() ||
-            !employee["Status"]?.trim()
+            !employee["Status"]?.trim() ||
+            !employee["Total Leave"]
           ) {
             console.error(
               "Missing required fields in employee:",
@@ -429,7 +421,7 @@ const ManageEmployee = () => {
             alert(
               `Missing required fields for employee ${
                 employee["Name"] || "unknown"
-              }. Required: Name, Email, Department, Designation, Joining Date, Status.`
+              }. Required: Name, Email, Department, Designation, Joining Date, Status, Total Leave.`
             );
             return;
           }
@@ -501,6 +493,25 @@ const ManageEmployee = () => {
             console.error("Invalid salary for employee:", employee["Name"]);
             alert(
               `Invalid salary "${employee["Salary"]}" for employee ${employee["Name"]}.`
+            );
+            return;
+          }
+
+          if (isNaN(Number(employee["Total Leave"]))) {
+            console.error("Invalid total leave for employee:", employee["Name"]);
+            alert(
+              `Invalid total leave "${employee["Total Leave"]}" for employee ${employee["Name"]}.`
+            );
+            return;
+          }
+
+          if (
+            employee["Taken Leave"] &&
+            isNaN(Number(employee["Taken Leave"]))
+          ) {
+            console.error("Invalid taken leave for employee:", employee["Name"]);
+            alert(
+              `Invalid taken leave "${employee["Taken Leave"]}" for employee ${employee["Name"]}.`
             );
             return;
           }
@@ -583,6 +594,10 @@ const ManageEmployee = () => {
               ? Number(employee["Salary"]).toString()
               : "",
             status: normalizedStatus,
+            totalLeave: Number(employee["Total Leave"]).toString(),
+            takenLeave: employee["Taken Leave"]
+              ? Number(employee["Taken Leave"]).toString()
+              : "",
             roles: employeeRoles,
             uid: user.uid,
           };
@@ -615,7 +630,7 @@ const ManageEmployee = () => {
       } catch (error) {
         console.error("Error processing Excel file:", error);
         alert(
-          "Failed to process Excel file. Please ensure it contains the required fields (Name, Email, Department, Designation, Joining Date, Status) and is in a valid format (.xlsx, .xls, .csv)."
+          "Failed to process Excel file. Please ensure it contains the required fields (Name, Email, Department, Designation, Joining Date, Status, Total Leave) and is in a valid format (.xlsx, .xls, .csv)."
         );
       }
     };
@@ -638,6 +653,8 @@ const ManageEmployee = () => {
       "Exit Date": employee.exitDate || "",
       Salary: employee.salary || "",
       Status: employee.status,
+      "Total Leave": employee.totalLeave || "",
+      "Taken Leave": employee.takenLeave || "",
       Roles: employee.roles ? employee.roles.join(", ") : "",
     }));
 
@@ -659,6 +676,8 @@ const ManageEmployee = () => {
         "Exit Date": "",
         Salary: "",
         Status: "",
+        "Total Leave": "",
+        "Taken Leave": "",
         Roles: "",
       },
     ];
@@ -685,6 +704,8 @@ const ManageEmployee = () => {
     setExitDate(employee.exitDate);
     setSalary(employee.salary);
     setStatus(employee.status);
+    setTotalLeave(employee.totalLeave || "");
+    setTakenLeave(employee.takenLeave || "");
     setSelectedRoles(employee.roles || []);
     setErrors({});
     setViewDetailsOpen(false);
@@ -710,8 +731,13 @@ const ManageEmployee = () => {
     if (!designation.trim()) newErrors.designation = "Designation is required";
     if (!joiningDate) newErrors.joiningDate = "Joining Date is required";
     if (!status) newErrors.status = "Status is required";
+    if (!totalLeave) newErrors.totalLeave = "Total Leave is required";
     if (salary && isNaN(Number(salary)))
       newErrors.salary = "Salary must be a number";
+    if (totalLeave && isNaN(Number(totalLeave)))
+      newErrors.totalLeave = "Total Leave must be a number";
+    if (takenLeave && isNaN(Number(takenLeave)))
+      newErrors.takenLeave = "Taken Leave must be a number";
     if (exitDate && !/^\d{4}-\d{2}-\d{2}$/.test(exitDate))
       newErrors.exitDate = "Exit Date must be in YYYY-MM-DD format";
 
@@ -764,6 +790,8 @@ const ManageEmployee = () => {
         exitDate,
         salary,
         status,
+        totalLeave,
+        takenLeave,
         roles: selectedRoles,
         uid: editingEmployee.uid,
       };
@@ -829,6 +857,8 @@ const ManageEmployee = () => {
           exitDate,
           salary,
           status,
+          totalLeave,
+          takenLeave,
           roles: selectedRoles,
           uid: user.uid,
         };
@@ -859,6 +889,8 @@ const ManageEmployee = () => {
     setExitDate("");
     setSalary("");
     setStatus("");
+    setTotalLeave("");
+    setTakenLeave("");
     setSelectedRoles([]);
     setEditingEmployee(null);
     setErrors({});
@@ -1341,6 +1373,35 @@ const ManageEmployee = () => {
               {errors.salary && (
                 <span style={{ color: "red", fontSize: "12px" }}>{errors.salary}</span>
               )}
+              <label style={formLabelStyle}>Total Leave*</label>
+              <input
+                type="number"
+                value={totalLeave}
+                onChange={(e) => setTotalLeave(e.target.value)}
+                placeholder="Enter Total Leave"
+                required
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.totalLeave ? "red" : "#ddd",
+                }}
+              />
+              {errors.totalLeave && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.totalLeave}</span>
+              )}
+              <label style={formLabelStyle}>Taken Leave</label>
+              <input
+                type="number"
+                value={takenLeave}
+                onChange={(e) => setTakenLeave(e.target.value)}
+                placeholder="Enter Taken Leave"
+                style={{
+                  ...formInputStyle,
+                  borderColor: errors.takenLeave ? "red" : "#ddd",
+                }}
+              />
+              {errors.takenLeave && (
+                <span style={{ color: "red", fontSize: "12px" }}>{errors.takenLeave}</span>
+              )}
               <label style={formLabelStyle}>Status*</label>
               <select
                 value={status}
@@ -1468,6 +1529,8 @@ const ManageEmployee = () => {
               { label: "Joining Date", value: selectedEmployee.joiningDate },
               { label: "Exit Date", value: selectedEmployee.exitDate || "N/A" },
               { label: "Salary", value: selectedEmployee.salary || "N/A" },
+              { label: "Total Leave", value: selectedEmployee.totalLeave || "N/A" },
+              { label: "Taken Leave", value: selectedEmployee.takenLeave || "N/A" },
               { label: "Status", value: selectedEmployee.status },
               {
                 label: "Roles",
