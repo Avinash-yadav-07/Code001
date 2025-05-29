@@ -1,7 +1,6 @@
 import React from "react";
 import Customer from "layouts/Customer-Dashboard";
 import ManageEmployee from "layouts/manage-employee";
-import ManageLeave from "layouts/manage-leaves";
 import ManageProjects from "./layouts/manage-projects";
 import ManageClient from "./layouts/manage-client";
 import ManageRoles from "layouts/manage-roles";
@@ -19,7 +18,7 @@ import ManageMarketing from "layouts/manage-marketing";
 import ManageSales from "layouts/manage-sales";
 import DashboardPage from "layouts/Sales-Marketing Dashboard";
 import ProfilePage from "layouts/profile";
-
+import ManageLeave from "layouts/manage-leaves"
 // Placeholder onClick handler for Manage buttons
 const handleManageButtonClick = (buttonName) => {
   console.log(`Clicked: ${buttonName}`); // Replace with your desired effect (e.g., toggle CSS class)
@@ -57,18 +56,19 @@ const routes = [
         ),
         onClick: () => handleManageButtonClick("Manage Employee"), // Added onClick
       },
-      {
-        type: "collapse",
+       {
         name: "Manage Leaves",
         key: "manage-leaves",
-        icon: <Icon fontSize="small">people</Icon>,
+        icon: <Icon fontSize="small">attach_money</Icon>,
         route: "/manage/leaves",
         component: (
-          <ProtectedRoute allowedRoles={["ManageEmployee:full access"]}>
-            <ManageEmployee />
+          <ProtectedRoute
+            allowedRoles={["ManageEmployee:full access", "ManageEmployee:read"]}
+          >
+            <ManageLeave />
           </ProtectedRoute>
         ),
-        onClick: () => handleManageButtonClick("Manage Leaves"), // Added onClick
+        onClick: () => handleManageButtonClick("Manage Earnings"), // Added onClick
       },
       {
         name: "Manage Clients",
