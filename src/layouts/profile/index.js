@@ -9,46 +9,42 @@
 * Adapted to match student profile layout with Card 1 centered in first row, Card 2 and Card 3 side by side in second row
 * Reduced gap between rows, no employee name in Card 3, adjustable Card 1 position
 * Form CSS updated to match ManageAccount styling
+* Added Leave Application Status section with leave metrics for 2025
 */
 
 // @mui material components
 import Grid from "@mui/material/Grid";
-import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Fab from "@mui/material/Fab";
 import EditIcon from "@mui/icons-material/Edit";
 import Tooltip from "@mui/material/Tooltip";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-// Material Dashboard 2 React components
+// Material Dashboard components
 import MDBox from "components/MDBox";
 import MDTypography from "components/MDTypography";
 import MDAvatar from "components/MDAvatar";
 
-// Material Dashboard 2 React example components
+// Material Dashboard example components
 import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
 import DashboardNavbar from "examples/Navbars/DashboardNavbar";
 import Footer from "examples/Footer";
 
-// Firebase imports
+// Firebase Imports
 import { db, auth } from "../manage-employee/firebase";
 import {
   collection,
@@ -65,7 +61,6 @@ import { onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
 // React hooks and Framer Motion
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-
 // Animation variants
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -174,7 +169,7 @@ function ProfilePage() {
     department: "",
     status: "",
   });
-  const [leaveForm, setLeaveForm] = useState({
+  const [leaveFormData, setLeaveFormData] = useState({
     employeeId: "",
     name: "",
     leaveType: "",
@@ -191,6 +186,12 @@ function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState([]);
   const [formErrors, setFormErrors] = useState({});
+  const [leaves, setLeaves] = useState([]); // New state for leave applications
+  const [leaveMetrics, setLeaveMetrics] = useState({
+    totalLeaves: 0,
+    approvedLeaves: 0,
+    rejectedLeaves: 0,
+  });
 
   // Function to filter and clean roles
   const filterRoles = (roles) => {
@@ -221,56 +222,100 @@ function ProfilePage() {
     fetchEmployees();
   }, []);
 
+  // Fetch leave applications for the current user
+  useEffect(() => {
+    if (!userData.employeeId) return;
+
+    const q = query(
+      collection(db, "leaveApplications"),
+      where("employeeId", "==", userData.employeeId)
+    );
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const leaveData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setLeaves(leaveData);
+
+        // Calculate leave metrics for 2025
+        const currentYear = 2025;
+        const yearlyLeaves = leaveData.filter((leave) => {
+          const appliedDate = leave.appliedDate?.toDate
+            ? leave.appliedDate.toDate()
+            : new Date(leave.appliedDate);
+          return appliedDate && appliedDate.getFullYear() === currentYear;
+        });
+        const totalLeaves = yearlyLeaves.length;
+        const approvedLeaves = yearlyLeaves.filter((leave) => leave.status === "Approved").length;
+        const rejectedLeaves = yearlyLeaves.filter((leave) => leave.status === "Rejected").length;
+
+        setLeaveMetrics({
+          totalLeaves,
+          approvedLeaves,
+          rejectedLeaves,
+        });
+      },
+      (err) => {
+        console.error("Error fetching leave applications:", err);
+        setError("Failed to fetch leave applications: " + err.message);
+      }
+    );
+
+    return () => unsubscribe;
+  }, [userData.employeeId]);
+
   // Calculate number of days between dates
-  const calculateDays = (start, end) => {
-    if (!start || !end || isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
-    const diffTime = Math.abs(end - start);
+  const calculateDays = (startDate, endDate) => {
+    if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return 0;
+    const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
   };
 
   // Handle leave form changes
   const handleLeaveFormChange = (e) => {
     const { name, value } = e.target;
-    setLeaveForm((prev) => ({
-      ...prev,
+    setLeaveFormData((prevData) => ({
+      ...prevData,
       [name]: value,
     }));
   };
 
   // Handle date changes
   const handleDateChange = (name, date) => {
-    setLeaveForm((prev) => {
-      const updatedForm = {
-        ...prev,
+    setLeaveFormData((prevData) => {
+      const updatedFormData = {
+        ...prevData,
         [name]: date,
       };
       if (name === "startDate" || name === "endDate") {
         return {
-          ...updatedForm,
-          numberOfDays: calculateDays(updatedForm.startDate, updatedForm.endDate),
+          ...updatedFormData,
+          numberOfDays: calculateDays(updatedFormData.startDate, updatedFormData.endDate),
         };
       }
-      return updatedForm;
+      return updatedFormData;
     });
   };
 
   // Validate leave form
   const validateLeaveForm = () => {
     const errors = {};
-    if (!leaveForm.leaveType) errors.leaveType = "Leave Type is required";
-    if (!leaveForm.startDate) errors.startDate = "Start Date is required";
-    if (!leaveForm.endDate) errors.endDate = "End Date is required";
-    if (!leaveForm.reason.trim()) errors.reason = "Reason is required";
+    if (!leaveFormData.leaveType) errors.leaveType = "Leave Type is required";
+    if (!leaveFormData.startDate) errors.startDate = "Start Date is required";
+    if (!leaveFormData.endDate) errors.endDate = "End Date is required";
+    if (!leaveFormData.reason.trim()) errors.reason = "Reason is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Submit leave application
-  const submitLeaveApplication = async () => {
+  // Handle submit leave application
+  const handleSubmitLeaveApplication = async () => {
     if (!validateLeaveForm()) return;
     try {
       const leaveData = {
-        ...leaveForm,
+        ...leaveFormData,
         employeeId: userData.employeeId,
         name: userData.name,
         appliedDate: serverTimestamp(),
@@ -280,7 +325,7 @@ function ProfilePage() {
       await addDoc(collection(db, "leaveApplications"), leaveData);
       setLeaveOpen(false);
       setError("");
-      setLeaveForm({
+      setLeaveFormData({
         employeeId: "",
         name: "",
         leaveType: "",
@@ -301,74 +346,71 @@ function ProfilePage() {
 
   // Fetch and listen to user data from Firestore using email
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(
-      auth,
-      async (user) => {
-        if (user && user.email) {
-          try {
-            setLoading(true);
-            const employeesRef = collection(db, "employees");
-            const q = query(employeesRef, where("email", "==", user.email));
+    const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      if (user && user.email) {
+        try {
+          setLoading(true);
+          const employeesRef = collection(db, "employees");
+          const q = query(employeesRef, where("email", "==", user.email));
 
-            const unsubscribeSnapshot = onSnapshot(
-              q,
-              (querySnapshot) => {
-                if (!querySnapshot.empty) {
-                  const docSnap = querySnapshot.docs[0];
-                  const data = docSnap.data();
-                  const rolesArray = Array.isArray(data.roles)
-                    ? data.roles
-                    : data.roles
-                    ? data.roles.split(", ")
-                    : [];
-                  setUserData({
-                    name: data.name || "",
-                    email: user.email || "",
-                    employeeId: data.employeeId || "",
-                    designation: data.designation || "",
-                    department: data.department || "",
-                    joiningDate: data.joiningDate || "",
-                    roles: rolesArray,
-                    status: data.status || "",
-                    emailVerified: user.emailVerified || false,
-                  });
-                  setFormData({
-                    designation: data.designation || "",
-                    department: data.department || "",
-                    status: data.status || "",
-                  });
-                  setError("");
-                } else {
-                  setError(
-                    "Profile data not found for this email. Please contact the administrator."
-                  );
-                }
-                setLoading(false);
-              },
-              (err) => {
-                console.error("Firestore snapshot error:", err);
-                setError("Failed to fetch profile data: " + err.message);
-                setLoading(false);
+          const unsubscribeSnapshot = onSnapshot(
+            q,
+            (querySnapshot) => {
+              if (!querySnapshot.empty) {
+                const docSnap = querySnapshot.docs[0];
+                const data = docSnap.data();
+                const rolesArray = Array.isArray(data.roles)
+                  ? data.roles
+                  : data.roles
+                  ? data.roles.split(",").map((role) => role.trim())
+                  : [];
+
+                setUserData({
+                  name: data.name || "",
+                  email: user.email || "",
+                  employeeId: data.employeeId || "",
+                  designation: data.designation || "",
+                  department: data.department || "",
+                  joiningDate: data.joiningDate || "",
+                  roles: rolesArray,
+                  status: data.status || "",
+                  emailVerified: user.emailVerified || false,
+                });
+                setFormData({
+                  designation: data.designation || "",
+                  department: data.department || "",
+                  status: data.status || "",
+                });
+                setError("");
+              } else {
+                setError(
+                  "Profile data not found for this email. Please contact the administrator."
+                );
               }
-            );
+              setLoading(false);
+            },
+            (err) => {
+              console.error("Firestore snapshot error:", err);
+              setError("Failed to fetch profile data: " + err.message);
+              setLoading(false);
+            }
+          );
 
-            return () => unsubscribeSnapshot();
-          } catch (err) {
-            console.error("Error setting up Firestore listener:", err);
-            setError("Failed to fetch profile data: " + err.message);
-            setLoading(false);
-          }
-        } else {
-          setError("Please log in to view your profile.");
+          return () => unsubscribeSnapshot();
+        } catch (err) {
+          console.error("Error setting up Firestore listener:", err);
+          setError("Failed to fetch profile data: " + err.message);
           setLoading(false);
         }
-      },
-      (error) => {
-        console.error("Auth state error:", error);
-        setError("Authentication error: " + error.message);
+      } else {
+        setError("Please log in to view your profile.");
         setLoading(false);
       }
-    );
+    }, (error) => {
+      console.error("Auth state error:", error);
+      setError("Authentication error: " + error.message);
+      setLoading(false);
+    });
 
     return () => unsubscribeAuth();
   }, []);
@@ -380,7 +422,7 @@ function ProfilePage() {
 
   // Handle leave dialog open
   const handleLeaveOpen = useCallback(() => {
-    setLeaveForm((prev) => ({
+    setLeaveFormData((prev) => ({
       ...prev,
       employeeId: userData.employeeId,
       name: userData.name,
@@ -391,7 +433,7 @@ function ProfilePage() {
   // Handle leave dialog close
   const handleLeaveClose = useCallback(() => {
     setLeaveOpen(false);
-    setLeaveForm({
+    setLeaveFormData({
       employeeId: "",
       name: "",
       leaveType: "",
@@ -450,13 +492,13 @@ function ProfilePage() {
             status: formData.status,
           });
           setEditOpen(false);
-          setError("");
+          setError(null);
           setFormErrors({});
         } else {
           setError("No employee document found for this email.");
         }
       } catch (err) {
-        console.error("Error updating Firestore data:", err);
+        console.error("Error updating Firestore document:", err);
         setError("Failed to update profile: " + err.message);
       }
     } else {
@@ -465,7 +507,7 @@ function ProfilePage() {
   }, [formData]);
 
   // Send password reset email
-  const handleSendOtp = useCallback(async () => {
+  const handleSendPasswordReset = useCallback(async () => {
     const user = auth.currentUser;
     if (user && user.email) {
       try {
@@ -480,6 +522,13 @@ function ProfilePage() {
       setError("No user logged in");
     }
   }, []);
+
+  // Format date for display
+  const formatDate = (timestamp) => {
+    if (!timestamp) return "N/A";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString();
+  };
 
   if (loading) {
     return (
@@ -509,7 +558,7 @@ function ProfilePage() {
         <MDBox
           sx={{
             background: ({ palette: { gradients } }) =>
-              `linear-gradient(135deg, ${gradients.info.main}, ${gradients.info.state})`,
+              `linear-gradient(135deg, ${gradients.info?.main || '#0288d1'}, ${gradients.info?.state || '#26c6da'})`,
             borderRadius: "16px",
             minHeight: "10rem",
             display: "flex",
@@ -530,7 +579,7 @@ function ProfilePage() {
           </MDTypography>
         </MDBox>
 
-        <MDBox mx={{ xs: 2, md: 4 }} mt={-4}>
+        <MDBox mx={{ xs: 2, md: "12px" }} mt={-4}>
           <Grid container spacing={2} direction="column">
             {/* Row 1: Card 1 (Centered, Half-Covered) */}
             <Grid item xs={12}>
@@ -635,7 +684,7 @@ function ProfilePage() {
                       borderRadius: "20px",
                       background: ({ palette: { background } }) =>
                         background.card || "white",
-                      zIndex: 2,
+                      zIndex: 1,
                     }}
                   >
                     <MDTypography variant="h6" fontWeight="medium" mb={2}>
@@ -645,7 +694,7 @@ function ProfilePage() {
                       <MDBox
                         display="flex"
                         justifyContent="space-between"
-                        mb={1}
+                        mb={2}
                       >
                         <MDTypography
                           variant="body2"
@@ -661,7 +710,7 @@ function ProfilePage() {
                       <MDBox
                         display="flex"
                         justifyContent="space-between"
-                        mb={1}
+                        mb={2}
                       >
                         <MDTypography
                           variant="body2"
@@ -677,7 +726,7 @@ function ProfilePage() {
                       <MDBox
                         display="flex"
                         justifyContent="space-between"
-                        mb={1}
+                        mb={2}
                       >
                         <MDTypography
                           variant="body2"
@@ -693,7 +742,7 @@ function ProfilePage() {
                       <MDBox
                         display="flex"
                         justifyContent="space-between"
-                        mb={1}
+                        mb={2}
                       >
                         <MDTypography
                           variant="body2"
@@ -709,7 +758,7 @@ function ProfilePage() {
                       <MDBox
                         display="flex"
                         justifyContent="space-between"
-                        mb={1}
+                        mb={2}
                       >
                         <MDTypography
                           variant="body2"
@@ -747,7 +796,7 @@ function ProfilePage() {
                       borderRadius: "20px",
                       background: ({ palette: { background } }) =>
                         background.card || "white",
-                      zIndex: 2,
+                      zIndex: 1,
                     }}
                   >
                     <MDTypography variant="h6" fontWeight="medium" mb={2}>
@@ -815,7 +864,7 @@ function ProfilePage() {
                                 transform: "translateY(-2px)",
                               },
                             }}
-                            onClick={handleSendOtp}
+                            onClick={handleSendPasswordReset}
                           >
                             Reset Password
                           </Button>
@@ -843,6 +892,97 @@ function ProfilePage() {
                   </Card>
                 </Grid>
               </Grid>
+            </Grid>
+
+            {/* Row 3: Leave Application Status */}
+            <Grid item xs={12}>
+              <Card
+                sx={{
+                  p: 3,
+                  boxShadow: ({ boxShadows: { xl } }) => xl,
+                  borderRadius: "20px",
+                  background: ({ palette: { background } }) =>
+                    background.card || "white",
+                  zIndex: 1,
+                  mt: 3,
+                }}
+              >
+                <MDTypography variant="h6" fontWeight="medium" mb={2}>
+                  Leave Application Status (2025)
+                </MDTypography>
+                <MDBox mb={2}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={4}>
+                      <MDTypography variant="body2" color="text" sx={{ mb: 1 }}>
+                        <span>Total Leaves Applied: </span>
+                        <span style={{ fontWeight: "bold" }}>{leaveMetrics.totalLeaves}</span>
+                      </MDTypography>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <MDTypography variant="body2" color="text" sx={{ mb: 1 }}>
+                        <span>Approved Leaves: </span>
+                        <span style={{ fontWeight: "bold" }}>{leaveMetrics.approvedLeaves}</span>
+                      </MDTypography>
+                    </Grid>
+                    <Grid item xs={12} sm={4}>
+                      <MDTypography variant="body2" color="text" sx={{ mb: 1 }}>
+                        <span>Rejected Leaves: </span>
+                        <span style={{ fontWeight: "bold" }}>{leaveMetrics.rejectedLeaves}</span>
+                      </MDTypography>
+                    </Grid>
+                  </Grid>
+                </MDBox>
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 650 }} aria-label="leave status table">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Leave Type</TableCell>
+                        <TableCell>Start Date</TableCell>
+                        <TableCell>End Date</TableCell>
+                        <TableCell>Days</TableCell>
+                        <TableCell>Reason</TableCell>
+                        <TableCell>Applied Date</TableCell>
+                        <TableCell>Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {leaves.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} align="center">
+                            No leave applications found.
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        leaves.map((leave) => (
+                          <TableRow key={leave.id}>
+                            <TableCell>{leave.leaveType}</TableCell>
+                            <TableCell>{formatDate(leave.startDate)}</TableCell>
+                            <TableCell>{formatDate(leave.endDate)}</TableCell>
+                            <TableCell>
+                              {leave.numberOfDays} {leave.halfDay ? "(Half Day)" : ""}
+                            </TableCell>
+                            <TableCell>{leave.reason}</TableCell>
+                            <TableCell>{formatDate(leave.appliedDate)}</TableCell>
+                            <TableCell>
+                              <Chip
+                                label={leave.status}
+                                color={
+                                  leave.status === "Approved"
+                                    ? "success"
+                                    : leave.status === "Rejected"
+                                    ? "error"
+                                    : "warning"
+                                }
+                                size="small"
+                              />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Card>
             </Grid>
           </Grid>
         </MDBox>
@@ -917,33 +1057,31 @@ function ProfilePage() {
 
       {/* Leave Application Dialog */}
       <Box sx={{ ...formContainerStyle, display: leaveOpen ? "block" : "none" }}>
-        <form onSubmit={(e) => { e.preventDefault(); submitLeaveApplication(); }}>
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmitLeaveApplication(); }}>
           <MDTypography sx={formHeadingStyle}>Apply for Leave</MDTypography>
           <label style={formLabelStyle}>Employee ID</label>
           <select
             name="employeeId"
-            value={leaveForm.employeeId}
+            value={leaveFormData.employeeId}
             onChange={handleLeaveFormChange}
             style={formSelectStyle}
             disabled
           >
             <option value={userData.employeeId}>{userData.employeeId}</option>
           </select>
-
           <label style={formLabelStyle}>Name</label>
           <input
             type="text"
             name="name"
-            value={leaveForm.name}
+            value={leaveFormData.name}
             onChange={handleLeaveFormChange}
             style={formInputStyle}
             disabled
           />
-
           <label style={formLabelStyle}>Leave Type*</label>
           <select
             name="leaveType"
-            value={leaveForm.leaveType}
+            value={leaveFormData.leaveType}
             onChange={handleLeaveFormChange}
             style={{ ...formSelectStyle, borderColor: formErrors.leaveType ? "red" : "#ddd" }}
             required
@@ -962,11 +1100,10 @@ function ProfilePage() {
               {formErrors.leaveType}
             </span>
           )}
-
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <label style={formLabelStyle}>Start Date*</label>
             <DatePicker
-              value={leaveForm.startDate}
+              value={leaveFormData.startDate}
               onChange={(date) => handleDateChange("startDate", date)}
               renderInput={(params) => (
                 <TextField
@@ -987,10 +1124,9 @@ function ProfilePage() {
                 {formErrors.startDate}
               </span>
             )}
-
             <label style={formLabelStyle}>End Date*</label>
             <DatePicker
-              value={leaveForm.endDate}
+              value={leaveFormData.endDate}
               onChange={(date) => handleDateChange("endDate", date)}
               renderInput={(params) => (
                 <TextField
@@ -1012,34 +1148,31 @@ function ProfilePage() {
               </span>
             )}
           </LocalizationProvider>
-
           <label style={formLabelStyle}>Number of Days</label>
           <input
             type="number"
             name="numberOfDays"
-            value={leaveForm.numberOfDays}
+            value={leaveFormData.numberOfDays}
             style={formInputStyle}
             disabled
           />
-
           <label style={formLabelStyle}>Half Day</label>
           <input
             type="checkbox"
             name="halfDay"
-            checked={leaveForm.halfDay}
+            checked={leaveFormData.halfDay}
             onChange={(e) =>
-              setLeaveForm((prev) => ({
+              setLeaveFormData((prev) => ({
                 ...prev,
                 halfDay: e.target.checked,
               }))
             }
             style={formCheckboxStyle}
           />
-
           <label style={formLabelStyle}>Reason*</label>
           <textarea
             name="reason"
-            value={leaveForm.reason}
+            value={leaveFormData.reason}
             onChange={handleLeaveFormChange}
             placeholder="Reason for leave"
             style={{ ...formInputStyle, minHeight: "60px", borderColor: formErrors.reason ? "red" : "#ddd" }}
@@ -1050,7 +1183,6 @@ function ProfilePage() {
               {formErrors.reason}
             </span>
           )}
-
           <Box sx={{ display: "flex", justifyContent: "space-between" }}>
             <button type="button" onClick={handleLeaveClose} style={formButtonStyle}>
               Cancel
@@ -1064,7 +1196,6 @@ function ProfilePage() {
           </Box>
         </form>
       </Box>
-
       <Footer />
     </DashboardLayout>
   );
