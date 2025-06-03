@@ -89,9 +89,5 @@
   },
   "overrides": {
     "svgo": "3.0.2"
-  },
-  "main": "index.js",
-  "keywords": [],
-  "type": "commonjs",
-  "homepage": "https://github.com/creativetimofficial/material-dashboard-react#readme"
+  }
 }
