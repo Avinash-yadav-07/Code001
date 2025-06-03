@@ -30,7 +30,6 @@ import {
   setDoc,
   query,
   where,
-  Timestamp,
 } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
