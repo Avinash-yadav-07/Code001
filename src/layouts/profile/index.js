@@ -3,46 +3,28 @@
 * Modern Profile Page with Firebase Integration
 =========================================================
 *
-* Modified from Material Dashboard 2 React - v2.2.0
-* Copyright 2023 Creative Tim (https://www.creative-tim.com)
-* Enhanced for modern UI, Firebase role management, and streamlined user details
-* Adapted to match student profile layout with Card 1 centered in first row, Card 2 and Card 3 side by side in second row
-* Reduced gap between rows, no employee name in Card 3, adjustable Card 1 position
-* Form CSS updated to match ManageAccount styling
-* Added Leave Application Status section with leave metrics for 2025
+* Adapted from ManageLeave.js
+* Displays user profile and leave applications with consistent UI
+* Styled to match ManageLeave with larger cards and modern design
+* Includes edit profile and leave application functionality
 */
 
-// @mui material components
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import TextField from "@mui/material/TextField";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
-import Fab from "@mui/material/Fab";
-import EditIcon from "@mui/icons-material/Edit";
-import Tooltip from "@mui/material/Tooltip";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
+// React and MUI imports
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  Box,
+  Typography,
+} from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-
-// Material Dashboard components
-import MDBox from "components/MDBox";
-import MDTypography from "components/MDTypography";
-import MDAvatar from "components/MDAvatar";
-
-// Material Dashboard example components
-import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
-import DashboardNavbar from "examples/Navbars/DashboardNavbar";
-import Footer from "examples/Footer";
+import TextField from "@mui/material/TextField";
+import CheckIcon from "@mui/icons-material/Check";
+import CloseIcon from "@mui/icons-material/Close";
 
 // Firebase Imports
 import { db, auth } from "../manage-employee/firebase";
@@ -58,25 +40,27 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged, sendPasswordResetEmail } from "firebase/auth";
 
-// React hooks and Framer Motion
-import { useState, useEffect, useCallback } from "react";
+// Material Dashboard components
+import MDBox from "components/MDBox";
+import MDTypography from "components/MDTypography";
+import MDButton from "components/MDButton";
+import DashboardLayout from "examples/LayoutContainers/DashboardLayout";
+import DashboardNavbar from "examples/Navbars/DashboardNavbar";
+import Footer from "examples/Footer";
+
+// Context
+import { useMaterialUIController } from "context";
+
+// Animation
 import { motion } from "framer-motion";
+
 // Animation variants
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-const chipVariants = {
-  hidden: { opacity: 0, scale: 0.8 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.4, ease: "easeOut" },
-  },
-};
-
-// Form styles from ManageAccount
+// Form styles from ManageLeave
 const formContainerStyle = {
   backgroundColor: "#fff",
   borderRadius: "15px",
@@ -94,41 +78,6 @@ const formContainerStyle = {
   transform: "translate(-50%, -50%)",
   zIndex: 1200,
   transition: "transform 0.2s",
-};
-
-const formInputStyle = {
-  display: "block",
-  width: "100%",
-  padding: "6px",
-  boxSizing: "border-box",
-  border: "1px solid #ddd",
-  borderRadius: "3px",
-  fontSize: "12px",
-  marginBottom: "10px",
-};
-
-const formSelectStyle = {
-  ...formInputStyle,
-  padding: "8px",
-  borderRadius: "5px",
-  height: "32px",
-};
-
-const formCheckboxStyle = {
-  display: "inline",
-  width: "auto",
-  marginRight: "5px",
-};
-
-const formLabelStyle = {
-  fontSize: "14px",
-  display: "block",
-  width: "100%",
-  marginTop: "6px",
-  marginBottom: "4px",
-  textAlign: "left",
-  color: "#555",
-  fontWeight: "bold",
 };
 
 const formButtonStyle = {
@@ -150,7 +99,45 @@ const formHeadingStyle = {
   margin: "10px 0",
 };
 
+const formInputStyle = {
+  display: "block",
+  width: "100%",
+  padding: "6px",
+  boxSizing: "border-box",
+  border: "1px solid #ddd",
+  borderRadius: "5px",
+  fontSize: "12px",
+  marginBottom: "10px",
+};
+
+const formSelectStyle = {
+  ...formInputStyle,
+  padding: "8px",
+  borderRadius: "5px",
+  height: "32px",
+};
+
+const formCheckboxStyle = {
+  display: "inline-block",
+  width: "auto",
+  marginRight: "5px",
+};
+
+const formLabelStyle = {
+  fontSize: "14px",
+  display: "block",
+  width: "100%",
+  marginTop: "6px",
+  marginBottom: "4px",
+  textAlign: "left",
+  color: "#555555",
+  fontWeight: "bold",
+};
+
 function ProfilePage() {
+  const [controller] = useMaterialUIController();
+  const { darkMode, miniSidenav } = controller;
+
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -170,11 +157,13 @@ function ProfilePage() {
     status: "",
   });
   const [leaveFormData, setLeaveFormData] = useState({
-    employeeId: "",
-    name: "",
+    email: "",
+    department: "",
     leaveType: "",
     startDate: null,
     endDate: null,
+    employeeId: "",
+    name: "",
     numberOfDays: 0,
     reason: "",
     halfDay: false,
@@ -184,45 +173,26 @@ function ProfilePage() {
   const [otpSent, setOtpSent] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
-  const [employees, setEmployees] = useState([]);
   const [formErrors, setFormErrors] = useState({});
-  const [leaves, setLeaves] = useState([]); // New state for leave applications
+  const [leaves, setLeaves] = useState([]);
   const [leaveMetrics, setLeaveMetrics] = useState({
     totalLeaves: 0,
     approvedLeaves: 0,
     rejectedLeaves: 0,
   });
 
-  // Function to filter and clean roles
+  // Filter and clean roles
   const filterRoles = (roles) => {
     if (!Array.isArray(roles)) return [];
     const roleSet = new Set();
     roles.forEach((role) => {
-      let cleanedRole = role.replace(/:read|:full access/gi, "").trim();
+      let cleanedRole = role.replace(/:read/gi, "").trim();
       roleSet.add(cleanedRole);
     });
     return Array.from(roleSet);
   };
 
-  // Fetch employees for dropdown
-  useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const q = query(collection(db, "employees"));
-        const querySnapshot = await getDocs(q);
-        const employeesData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setEmployees(employeesData);
-      } catch (err) {
-        console.error("Error fetching employees:", err);
-      }
-    };
-    fetchEmployees();
-  }, []);
-
-  // Fetch leave applications for the current user
+  // Fetch leave applications
   useEffect(() => {
     if (!userData.employeeId) return;
 
@@ -263,19 +233,19 @@ function ProfilePage() {
       }
     );
 
-    return () => unsubscribe;
+    return () => unsubscribe();
   }, [userData.employeeId]);
 
-  // Calculate number of days between dates
+  // Calculate days between dates
   const calculateDays = (startDate, endDate) => {
     if (!startDate || !endDate || isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return 0;
     const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   // Handle leave form changes
-  const handleLeaveFormChange = (e) => {
-    const { name, value } = e.target;
+  const handleLeaveFormChange = (event) => {
+    const { name, value } = event.target;
     setLeaveFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -302,16 +272,17 @@ function ProfilePage() {
   // Validate leave form
   const validateLeaveForm = () => {
     const errors = {};
-    if (!leaveFormData.leaveType) errors.leaveType = "Leave Type is required";
-    if (!leaveFormData.startDate) errors.startDate = "Start Date is required";
-    if (!leaveFormData.endDate) errors.endDate = "End Date is required";
+    if (!leaveFormData.leaveType) errors.leaveType = "Leave type is required";
+    if (!leaveFormData.startDate) errors.startDate = "Start date is required";
+    if (!leaveFormData.endDate) errors.endDate = "End date is required";
     if (!leaveFormData.reason.trim()) errors.reason = "Reason is required";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Handle submit leave application
-  const handleSubmitLeaveApplication = async () => {
+  // Submit leave application
+  const handleSubmitLeaveApplication = async (event) => {
+    event.preventDefault();
     if (!validateLeaveForm()) return;
     try {
       const leaveData = {
@@ -326,11 +297,13 @@ function ProfilePage() {
       setLeaveOpen(false);
       setError("");
       setLeaveFormData({
-        employeeId: "",
-        name: "",
+        email: "",
+        department: "",
         leaveType: "",
         startDate: null,
         endDate: null,
+        employeeId: "",
+        name: "",
         numberOfDays: 0,
         reason: "",
         halfDay: false,
@@ -340,14 +313,15 @@ function ProfilePage() {
       setFormErrors({});
     } catch (err) {
       console.error("Error submitting leave application:", err);
-      setError("Failed to submit leave application");
+      setError("Failed to submit leave application: " + err.message);
     }
   };
 
-  // Fetch and listen to user data from Firestore using email
+  // Fetch user data
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user && user.email) {
+        console.log("Current user email:", user.email);
         try {
           setLoading(true);
           const employeesRef = collection(db, "employees");
@@ -359,6 +333,7 @@ function ProfilePage() {
               if (!querySnapshot.empty) {
                 const docSnap = querySnapshot.docs[0];
                 const data = docSnap.data();
+                console.log("Fetched employee data:", data);
                 const rolesArray = Array.isArray(data.roles)
                   ? data.roles
                   : data.roles
@@ -383,9 +358,21 @@ function ProfilePage() {
                 });
                 setError("");
               } else {
+                console.warn("No employee document found for email:", user.email);
                 setError(
-                  "Profile data not found for this email. Please contact the administrator."
+                  "No profile data found for this email. Please ensure your account is set up or contact the administrator."
                 );
+                setUserData({
+                  name: "",
+                  email: user.email,
+                  employeeId: "",
+                  designation: "",
+                  department: "",
+                  joiningDate: "",
+                  roles: [],
+                  status: "",
+                  emailVerified: user.emailVerified || false,
+                });
               }
               setLoading(false);
             },
@@ -403,6 +390,7 @@ function ProfilePage() {
           setLoading(false);
         }
       } else {
+        console.warn("No user logged in");
         setError("Please log in to view your profile.");
         setLoading(false);
       }
@@ -415,40 +403,8 @@ function ProfilePage() {
     return () => unsubscribeAuth();
   }, []);
 
-  // Handle edit dialog open
-  const handleEditOpen = useCallback(() => {
-    setEditOpen(true);
-  }, []);
-
-  // Handle leave dialog open
-  const handleLeaveOpen = useCallback(() => {
-    setLeaveFormData((prev) => ({
-      ...prev,
-      employeeId: userData.employeeId,
-      name: userData.name,
-    }));
-    setLeaveOpen(true);
-  }, [userData]);
-
-  // Handle leave dialog close
-  const handleLeaveClose = useCallback(() => {
-    setLeaveOpen(false);
-    setLeaveFormData({
-      employeeId: "",
-      name: "",
-      leaveType: "",
-      startDate: null,
-      endDate: null,
-      numberOfDays: 0,
-      reason: "",
-      halfDay: false,
-      status: "Pending",
-      appliedDate: null,
-    });
-    setFormErrors({});
-  }, []);
-
-  // Handle edit dialog close
+  // Handle edit dialog open/close
+  const handleEditOpen = useCallback(() => setEditOpen(true), []);
   const handleEditClose = useCallback(() => {
     setEditOpen(false);
     setFormData({
@@ -459,9 +415,38 @@ function ProfilePage() {
     setFormErrors({});
   }, [userData]);
 
-  // Handle form input changes
-  const handleFormChange = useCallback((e) => {
-    const { name, value } = e.target;
+  // Handle leave dialog open/close
+  const handleLeaveOpen = useCallback(() => {
+    setLeaveFormData((prev) => ({
+      ...prev,
+      employeeId: userData.employeeId,
+      name: userData.name,
+      email: userData.email,
+    }));
+    setLeaveOpen(true);
+  }, [userData]);
+  const handleLeaveClose = useCallback(() => {
+    setLeaveOpen(false);
+    setLeaveFormData({
+      email: "",
+      department: "",
+      leaveType: "",
+      startDate: null,
+      endDate: null,
+      employeeId: "",
+      name: "",
+      numberOfDays: 0,
+      reason: "",
+      halfDay: false,
+      status: "Pending",
+      appliedDate: null,
+    });
+    setFormErrors({});
+  }, []);
+
+  // Handle form changes
+  const handleFormChange = useCallback((event) => {
+    const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }, []);
 
@@ -475,36 +460,40 @@ function ProfilePage() {
     return Object.keys(errors).length === 0;
   };
 
-  // Handle form submission
-  const handleFormSubmit = useCallback(async () => {
-    if (!validateEditForm()) return;
-    const user = auth.currentUser;
-    if (user && user.email) {
-      try {
-        const employeesRef = collection(db, "employees");
-        const q = query(employeesRef, where("email", "==", user.email));
-        const querySnapshot = await getDocs(q);
-        if (!querySnapshot.empty) {
-          const docRef = querySnapshot.docs[0].ref;
-          await updateDoc(docRef, {
-            designation: formData.designation,
-            department: formData.department,
-            status: formData.status,
-          });
-          setEditOpen(false);
-          setError(null);
-          setFormErrors({});
-        } else {
-          setError("No employee document found for this email.");
+  // Submit edit form
+  const handleFormSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      if (!validateEditForm()) return;
+      const user = auth.currentUser;
+      if (user && user.email) {
+        try {
+          const employeesRef = collection(db, "employees");
+          const q = query(employeesRef, where("email", "==", user.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            const docRef = querySnapshot.docs[0].ref;
+            await updateDoc(docRef, {
+              designation: formData.designation,
+              department: formData.department,
+              status: formData.status,
+            });
+            setEditOpen(false);
+            setError(null);
+            setFormErrors({});
+          } else {
+            setError("No user registered with this email.");
+          }
+        } catch (err) {
+          console.error("Error updating Firestore document:", err);
+          setError("Failed to update profile: " + err.message);
         }
-      } catch (err) {
-        console.error("Error updating Firestore document:", err);
-        setError("Failed to update profile: " + err.message);
+      } else {
+        setError("No user logged in");
       }
-    } else {
-      setError("No user logged in");
-    }
-  }, [formData]);
+    },
+    [formData]
+  );
 
   // Send password reset email
   const handleSendPasswordReset = useCallback(async () => {
@@ -513,691 +502,705 @@ function ProfilePage() {
       try {
         await sendPasswordResetEmail(auth, user.email);
         setOtpSent(true);
-        setError("");
+        setError('');
       } catch (err) {
         console.error("Password reset email error:", err);
-        setError("Failed to send reset email: " + err.message);
+        setError("Failed to send password reset email: " + err.message);
       }
     } else {
       setError("No user logged in");
     }
   }, []);
 
-  // Format date for display
+  // Format date
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString();
+    return isNaN(date.getTime()) ? "N/A" : date.toLocaleDateString();
   };
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <DashboardNavbar />
-        <MDBox
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          minHeight="80vh"
-        >
-          <MDTypography variant="h6" color="text">
-            Loading...
-          </MDTypography>
-        </MDBox>
-        <Footer />
-      </DashboardLayout>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <MDTypography variant="h6" color={darkMode ? "text" : "textPrimary"}>Loading...</MDTypography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ padding: 3 }}>
+        <MDTypography variant="h6" color="error">{error}</MDTypography>
+      </Box>
     );
   }
 
   return (
-    <DashboardLayout>
-      <DashboardNavbar />
-      <MDBox mb={4} />
-      <motion.div initial="hidden" animate="visible" variants={cardVariants}>
-        {/* Header Section */}
-        <MDBox
-          sx={{
-            background: ({ palette: { gradients } }) =>
-              `linear-gradient(135deg, ${gradients.info?.main || '#0288d1'}, ${gradients.info?.state || '#26c6da'})`,
-            borderRadius: "16px",
-            minHeight: "10rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            position: "relative",
-            overflow: "hidden",
-            boxShadow: ({ boxShadows: { md } }) => md,
-          }}
-        >
-          <MDTypography
-            variant="h3"
-            color="white"
-            fontWeight="bold"
-            sx={{ textShadow: "0 2px 4px rgba(0,0,0,0.3)" }}
-          >
-            {userData.name || "My Profile"}
-          </MDTypography>
-        </MDBox>
-
-        <MDBox mx={{ xs: 2, md: "12px" }} mt={-4}>
-          <Grid container spacing={2} direction="column">
-            {/* Row 1: Card 1 (Centered, Half-Covered) */}
+    <Box sx={{ backgroundColor: darkMode ? "#212121" : "#f3f3f3", minHeight: "100vh" }}>
+      <DashboardNavbar
+        absolute
+        light={!darkMode}
+        sx={{
+          backgroundColor: darkMode ? "rgba(33, 33, 33, 0.9)" : "rgba(255, 255, 255, 0.9)",
+          backdropFilter: "blur(10px)",
+          zIndex: 1100,
+          padding: "0 16px",
+          minHeight: "60px",
+          top: "8px",
+          left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          width: { xs: "100%", md: miniSidenav ? "calc(100% - 80px)" : "calc(100% - 250px)" },
+          borderRadius: "12px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        }}
+      />
+      <MDBox
+        p={3}
+        sx={{
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          marginTop: { xs: "140px", md: "100px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
+          minHeight: "calc(100vh - 80px)",
+          paddingTop: { xs: "32px", md: "24px" },
+        }}
+      >
+        <motion.div initial="hidden" animate="visible" variants={cardVariants}>
+          <Grid container spacing={3}>
             <Grid item xs={12}>
-              <MDBox display="flex" justifyContent="center" mb={-10}>
-                <Card
-                  sx={{
-                    p: 3,
-                    boxShadow: ({ boxShadows: { xl } }) => xl,
-                    borderRadius: "20px",
-                    background: ({ palette: { background } }) =>
-                      background.card || "white",
-                    position: "relative",
-                    zIndex: 1,
-                    width: { xs: "100%", md: "50%" },
-                    ml: { md: "0%" },
-                  }}
+              <Card>
+                <MDBox
+                  mx={2}
+                  mt={-3}
+                  py={3}
+                  px={2}
+                  variant="gradient"
+                  bgColor={darkMode ? "dark" : "info"}
+                  borderRadius="lg"
+                  coloredShadow={darkMode ? "dark" : "info"}
                 >
-                  <MDBox
-                    display="flex"
-                    flexDirection="column"
-                    alignItems="center"
-                  >
-                    <MDAvatar
-                      alt="profile-image"
-                      size="xl"
-                      shadow="md"
-                      sx={{
-                        border: "3px solid white",
-                        bgcolor: "grey.200",
-                        mb: 2,
-                      }}
-                    />
-                    <MDTypography variant="h5" fontWeight="medium" mb={1}>
-                      {userData.name || "Unknown User"}
-                    </MDTypography>
-                    <MDTypography variant="body2" color="text" mb={1}>
-                      Employee ID: {userData.employeeId || "N/A"}
-                    </MDTypography>
-                    <MDTypography variant="body2" color="text" mb={1}>
-                      Designation: {userData.designation || "N/A"}
-                    </MDTypography>
-                    <MDTypography variant="body2" color="text">
-                      Department: {userData.department || "N/A"}
-                    </MDTypography>
-                  </MDBox>
-                  <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={handleLeaveOpen}
-                      sx={{
-                        borderRadius: "8px",
-                        textTransform: "none",
-                        px: 3,
-                        py: 1,
-                        fontWeight: "medium",
-                        fontSize: "0.875rem",
-                        boxShadow: ({ boxShadows: { md } }) => md,
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: ({ boxShadows: { lg } }) => lg,
-                          transform: "translateY(-2px)",
-                          bgcolor: ({ palette: { primary } }) => primary.dark,
-                        },
-                      }}
-                    >
-                      Apply for Leave
-                    </Button>
-                  </Box>
-                  <Tooltip title="Edit Profile">
-                    <Fab
-                      color="primary"
-                      size="medium"
-                      onClick={handleEditOpen}
-                      sx={{
-                        position: "absolute",
-                        top: 16,
-                        right: 16,
-                        boxShadow: ({ boxShadows: { md } }) => md,
-                        "&:hover": {
-                          transform: "scale(1.1)",
-                          transition: "transform 0.2s",
-                        },
-                      }}
-                    >
-                      <EditIcon />
-                    </Fab>
-                  </Tooltip>
-                </Card>
-              </MDBox>
-            </Grid>
-
-            {/* Row 2: Card 2 and Card 3 (Side by Side) */}
-            <Grid item xs={12}>
-              <Grid container spacing={3}>
-                {/* Card 2: General Information */}
-                <Grid item xs={12} md={6}>
+                  <MDTypography variant="h6" color="white">
+                    Profile Details
+                  </MDTypography>
+                </MDBox>
+                <MDBox px={2} pb={2}>
+                  {/* User Info */}
                   <Card
                     sx={{
-                      p: 3,
-                      boxShadow: ({ boxShadows: { xl } }) => xl,
-                      borderRadius: "20px",
-                      background: ({ palette: { background } }) =>
-                        background.card || "white",
-                      zIndex: 1,
+                      background: darkMode
+                        ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                        : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      padding: "20px",
+                      marginBottom: "16px",
+                      transition: "0.3s ease-in-out",
+                      "&:hover": {
+                        boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "scale(1.02)",
+                      },
                     }}
                   >
-                    <MDTypography variant="h6" fontWeight="medium" mb={2}>
-                      General Information
-                    </MDTypography>
-                    <MDBox>
-                      <MDBox
-                        display="flex"
-                        justifyContent="space-between"
-                        mb={2}
-                      >
-                        <MDTypography
-                          variant="body2"
-                          color="text"
-                          fontWeight="medium"
-                        >
-                          Employee ID:
-                        </MDTypography>
-                        <MDTypography variant="body2" color="text">
-                          {userData.employeeId || "N/A"}
-                        </MDTypography>
-                      </MDBox>
-                      <MDBox
-                        display="flex"
-                        justifyContent="space-between"
-                        mb={2}
-                      >
-                        <MDTypography
-                          variant="body2"
-                          color="text"
-                          fontWeight="medium"
-                        >
-                          Email:
-                        </MDTypography>
-                        <MDTypography variant="body2" color="text">
-                          {userData.email || "N/A"}
-                        </MDTypography>
-                      </MDBox>
-                      <MDBox
-                        display="flex"
-                        justifyContent="space-between"
-                        mb={2}
-                      >
-                        <MDTypography
-                          variant="body2"
-                          color="text"
-                          fontWeight="medium"
-                        >
-                          Joining Date:
-                        </MDTypography>
-                        <MDTypography variant="body2" color="text">
-                          {userData.joiningDate || "N/A"}
-                        </MDTypography>
-                      </MDBox>
-                      <MDBox
-                        display="flex"
-                        justifyContent="space-between"
-                        mb={2}
-                      >
-                        <MDTypography
-                          variant="body2"
-                          color="text"
-                          fontWeight="medium"
-                        >
-                          Designation:
-                        </MDTypography>
-                        <MDTypography variant="body2" color="text">
-                          {userData.designation || "N/A"}
-                        </MDTypography>
-                      </MDBox>
-                      <MDBox
-                        display="flex"
-                        justifyContent="space-between"
-                        mb={2}
-                      >
-                        <MDTypography
-                          variant="body2"
-                          color="text"
-                          fontWeight="medium"
-                        >
-                          Department:
-                        </MDTypography>
-                        <MDTypography variant="body2" color="text">
-                          {userData.department || "N/A"}
-                        </MDTypography>
-                      </MDBox>
-                      <MDBox display="flex" justifyContent="space-between">
-                        <MDTypography
-                          variant="body2"
-                          color="text"
-                          fontWeight="medium"
-                        >
-                          Status:
-                        </MDTypography>
-                        <MDTypography variant="body2" color="text">
-                          {userData.status || "N/A"}
-                        </MDTypography>
-                      </MDBox>
-                    </MDBox>
-                  </Card>
-                </Grid>
-
-                {/* Card 3: Other Information */}
-                <Grid item xs={12} md={6}>
-                  <Card
-                    sx={{
-                      p: 3,
-                      boxShadow: ({ boxShadows: { xl } }) => xl,
-                      borderRadius: "20px",
-                      background: ({ palette: { background } }) =>
-                        background.card || "white",
-                      zIndex: 1,
-                    }}
-                  >
-                    <MDTypography variant="h6" fontWeight="medium" mb={2}>
-                      Other Information
-                    </MDTypography>
-                    <MDBox>
-                      <MDTypography
-                        variant="body2"
-                        color="text"
-                        fontWeight="medium"
-                        mb={1}
-                      >
-                        Roles:
-                      </MDTypography>
-                      <Stack direction="row" spacing={1} flexWrap="wrap" mb={2}>
-                        {filterRoles(userData.roles).length > 0 ? (
-                          filterRoles(userData.roles).map((role, index) => (
-                            <motion.div key={index} variants={chipVariants}>
-                              <Chip
-                                label={role}
-                                color="primary"
-                                variant="filled"
-                                sx={{
-                                  m: 0.5,
-                                  borderRadius: "10px",
-                                  fontSize: "0.8rem",
-                                  fontWeight: "medium",
-                                  padding: "4px 8px",
-                                  transition: "all 0.2s ease",
-                                  "&:hover": {
-                                    bgcolor: ({ palette: { primary } }) =>
-                                      primary.dark,
-                                    transform: "scale(1.05)",
-                                  },
-                                }}
-                              />
-                            </motion.div>
-                          ))
-                        ) : (
-                          <MDTypography
-                            variant="body2"
-                            color="text"
-                            sx={{ fontWeight: "regular" }}
-                          >
-                            No roles assigned
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Employee ID: </span>
+                            <span style={{ fontWeight: "bold" }}>{userData.employeeId || "N/A"}</span>
                           </MDTypography>
-                        )}
-                      </Stack>
-                      <Box>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Name: </span>
+                            <span style={{ fontWeight: "bold" }}>{userData.name || "N/A"}</span>
+                          </MDTypography>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Email: </span>
+                            <span style={{ fontWeight: "bold" }}>{userData.email || "N/A"}</span>
+                          </MDTypography>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Designation: </span>
+                            <span style={{ fontWeight: "bold" }}>{userData.designation || "N/A"}</span>
+                          </MDTypography>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Department: </span>
+                            <span style={{ fontWeight: "bold" }}>{userData.department || "N/A"}</span>
+                          </MDTypography>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Status: </span>
+                            <span style={{ fontWeight: "bold" }}>{userData.status || "Active"}</span>
+                          </MDTypography>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+
+                  {/* Admin Actions */}
+                  <Card
+                    sx={{
+                      background: darkMode
+                        ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                        : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      padding: "20px",
+                      marginBottom: "16px",
+                      transition: "0.3s ease-in-out",
+                      "&:hover": {
+                        boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "scale(1.02)",
+                      },
+                    }}
+                  >
+                    <CardContent>
+                      <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} sx={{ mb: 2 }}>
+                        Admin Actions
+                      </MDTypography>
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "flex-start" }}>
+                        <MDButton
+                          variant="gradient"
+                          color="success"
+                          onClick={handleEditOpen}
+                          sx={{
+                            minWidth: { xs: "100px", sm: "100px" },
+                            padding: "8px 16px",
+                            fontSize: "14px",
+                          }}
+                        >
+                          <CheckIcon fontSize="medium" /> Edit Profile
+                        </MDButton>
+                        <MDButton
+                          variant="gradient"
+                          color="info"
+                          onClick={handleLeaveOpen}
+                          sx={{
+                            minWidth: { xs: "100px", sm: "100px" },
+                            padding: "8px 16px",
+                            fontSize: "14px",
+                          }}
+                        >
+                          <CheckIcon fontSize="medium" /> Apply for Leave
+                        </MDButton>
                         {!otpSent ? (
-                          <Button
-                            variant="contained"
-                            sx={{
-                              padding: "10px 20px",
-                              borderRadius: "10px",
-                              background: "#00CAFF",
-                              color: "#e8e8e8",
-                              fontWeight: "medium",
-                              fontSize: "0.875rem",
-                              boxShadow: "4px 8px 19px -3px rgba(0,0,0,0.27)",
-                              transition: "all 250ms",
-                              "&:hover": {
-                                backgroundColor: "red",
-                                boxShadow: "4px 8px 19px -3px rgba(0,0,0,0.27)",
-                                transform: "translateY(-2px)",
-                              },
-                            }}
+                          <MDButton
+                            variant="gradient"
+                            color="warning"
                             onClick={handleSendPasswordReset}
+                            sx={{
+                              minWidth: { xs: "100px", sm: "100px" },
+                              padding: "8px 16px",
+                              fontSize: "14px",
+                            }}
                           >
-                            Reset Password
-                          </Button>
+                            <CloseIcon fontSize="medium" /> Reset Password
+                          </MDButton>
                         ) : (
-                          <MDTypography
-                            variant="body2"
-                            color="success"
-                            sx={{ mt: 1, fontWeight: "medium" }}
-                          >
+                          <MDTypography variant="body2" color="success" sx={{ fontWeight: "500" }}>
                             Password reset email sent! Check your inbox.
                           </MDTypography>
                         )}
                       </Box>
-                      {error && (
-                        <MDTypography
-                          variant="body2"
-                          color="error"
-                          mt={2}
-                          sx={{ fontWeight: "medium" }}
-                        >
-                          {error}
-                        </MDTypography>
-                      )}
-                    </MDBox>
+                    </CardContent>
                   </Card>
-                </Grid>
-              </Grid>
-            </Grid>
 
-            {/* Row 3: Leave Application Status */}
-            <Grid item xs={12}>
-              <Card
-                sx={{
-                  p: 3,
-                  boxShadow: ({ boxShadows: { xl } }) => xl,
-                  borderRadius: "20px",
-                  background: ({ palette: { background } }) =>
-                    background.card || "white",
-                  zIndex: 1,
-                  mt: 3,
-                }}
-              >
-                <MDTypography variant="h6" fontWeight="medium" mb={2}>
-                  Leave Application Status (2025)
-                </MDTypography>
-                <MDBox mb={2}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
-                      <MDTypography variant="body2" color="text" sx={{ mb: 1 }}>
-                        <span>Total Leaves Applied: </span>
-                        <span style={{ fontWeight: "bold" }}>{leaveMetrics.totalLeaves}</span>
+                  {/* Roles & Security */}
+                  <Card
+                    sx={{
+                      background: darkMode
+                        ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                        : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      padding: "20px",
+                      marginBottom: "16px",
+                      transition: "0.3s ease-in-out",
+                      "&:hover": {
+                        boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
+                        transform: "scale(1.02)",
+                      },
+                    }}
+                  >
+                    <CardContent>
+                      <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} sx={{ mb: 2 }}>
+                        Roles & Security
                       </MDTypography>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <MDTypography variant="body2" color="text" sx={{ mb: 1 }}>
-                        <span>Approved Leaves: </span>
-                        <span style={{ fontWeight: "bold" }}>{leaveMetrics.approvedLeaves}</span>
-                      </MDTypography>
-                    </Grid>
-                    <Grid item xs={12} sm={4}>
-                      <MDTypography variant="body2" color="text" sx={{ mb: 1 }}>
-                        <span>Rejected Leaves: </span>
-                        <span style={{ fontWeight: "bold" }}>{leaveMetrics.rejectedLeaves}</span>
-                      </MDTypography>
-                    </Grid>
-                  </Grid>
-                </MDBox>
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 650 }} aria-label="leave status table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Leave Type</TableCell>
-                        <TableCell>Start Date</TableCell>
-                        <TableCell>End Date</TableCell>
-                        <TableCell>Days</TableCell>
-                        <TableCell>Reason</TableCell>
-                        <TableCell>Applied Date</TableCell>
-                        <TableCell>Status</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {leaves.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={7} align="center">
-                            No leave applications found.
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        leaves.map((leave) => (
-                          <TableRow key={leave.id}>
-                            <TableCell>{leave.leaveType}</TableCell>
-                            <TableCell>{formatDate(leave.startDate)}</TableCell>
-                            <TableCell>{formatDate(leave.endDate)}</TableCell>
-                            <TableCell>
-                              {leave.numberOfDays} {leave.halfDay ? "(Half Day)" : ""}
-                            </TableCell>
-                            <TableCell>{leave.reason}</TableCell>
-                            <TableCell>{formatDate(leave.appliedDate)}</TableCell>
-                            <TableCell>
-                              <Chip
-                                label={leave.status}
-                                color={
+                      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                        {filterRoles(userData.roles).length > 0 ? (
+                          filterRoles(userData.roles).map((role, index) => (
+                            <MDTypography
+                              key={index}
+                              variant="body2"
+                              sx={{
+                                backgroundColor: "#2196f3",
+                                color: "white",
+                                padding: "4px 8px",
+                                borderRadius: "12px",
+                                fontSize: "12px",
+                                fontWeight: "500",
+                              }}
+                            >
+                              {role}
+                            </MDTypography>
+                          ))
+                        ) : (
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                            No roles assigned
+                          </MDTypography>
+                        )}
+                      </Box>
+                    </CardContent>
+                  </Card>
+
+                  {/* Leave Metrics */}
+                  <Card
+                    sx={{
+                      background: darkMode
+                        ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                        : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                      borderRadius: "12px",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                      padding: "20px",
+                      marginBottom: "16px",
+                    }}
+                  >
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Total Leaves: </span>
+                            <span style={{ fontWeight: "bold" }}>{leaveMetrics.totalLeaves}</span>
+                          </MDTypography>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Approved Leaves: </span>
+                            <span style={{ fontWeight: "bold" }}>{leaveMetrics.approvedLeaves}</span>
+                          </MDTypography>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Rejected Leaves: </span>
+                            <span style={{ fontWeight: "bold" }}>{leaveMetrics.rejectedLeaves}</span>
+                          </MDTypography>
+                        </Grid>
+                        <Grid item xs={12} sm={6} md={3}>
+                          <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                            <span>Pending Leaves: </span>
+                            <span style={{ fontWeight: "bold" }}>
+                              {leaveMetrics.totalLeaves - leaveMetrics.approvedLeaves - leaveMetrics.rejectedLeaves}
+                            </span>
+                          </MDTypography>
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+
+                  {/* Leave Application Status */}
+                  <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"} sx={{ mb: 2 }}>
+                    Leave Application Status (2025)
+                  </MDTypography>
+                  {leaves.length === 0 ? (
+                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"}>
+                      No leave applications available.
+                    </MDTypography>
+                  ) : (
+                    <Grid container spacing={3}>
+                      {leaves.map((leave) => (
+                        <Grid item xs={12} key={leave.id}>
+                          <Card
+                            sx={{
+                              background: darkMode
+                                ? "linear-gradient(135deg, #424242 0%, #212121 100%)"
+                                : "linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%)",
+                              borderRadius: "12px",
+                              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                              padding: "20px",
+                              transition: "0.3s ease-in-out",
+                              "&:hover": {
+                                boxShadow: "0 6px 12px rgba(0, 0, 0, 0.15)",
+                                transform: "scale(1.02)",
+                              },
+                              display: "flex",
+                              flexDirection: { xs: "column", sm: "row" },
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                width: { xs: "100%", sm: "120px" },
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backgroundColor:
                                   leave.status === "Approved"
-                                    ? "success"
+                                    ? "#4caf50"
                                     : leave.status === "Rejected"
-                                    ? "error"
-                                    : "warning"
-                                }
-                                size="small"
-                              />
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                                    ? "#F44336"
+                                    : "#FFC107",
+                                borderRadius: { xs: "8px 8px 0 0", sm: "8px 0 0 8px" },
+                                marginRight: { sm: "16px" },
+                                marginBottom: { xs: "16px", sm: 0 },
+                                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                              }}
+                            >
+                              <MDTypography
+                                variant="body2"
+                                color="white"
+                                sx={{ fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}
+                              >
+                                {leave.status}
+                              </MDTypography>
+                            </Box>
+                            <Box sx={{ flexGrow: 1, width: { xs: "100%", sm: "auto" } }}>
+                              <CardContent>
+                                <Grid container spacing={2}>
+                                  <Grid item xs={12} sm={6}>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Employee ID: </span>
+                                      <span style={{ fontWeight: "bold" }}>{leave.employeeId}</span>
+                                    </MDTypography>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Name: </span>
+                                      <span style={{ fontWeight: "bold" }}>{leave.name}</span>
+                                    </MDTypography>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Leave Type: </span>
+                                      <span style={{ fontWeight: "bold" }}>{leave.leaveType}</span>
+                                    </MDTypography>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Start Date: </span>
+                                      <span style={{ fontWeight: "bold" }}>{formatDate(leave.startDate)}</span>
+                                    </MDTypography>
+                                  </Grid>
+                                  <Grid item xs={12} sm={6}>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>End Date: </span>
+                                      <span style={{ fontWeight: "bold" }}>{formatDate(leave.endDate)}</span>
+                                    </MDTypography>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Days: </span>
+                                      <span style={{ fontWeight: "bold" }}>
+                                        {leave.numberOfDays} {leave.halfDay ? "(Half Day)" : ""}
+                                      </span>
+                                    </MDTypography>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Reason: </span>
+                                      <span style={{ fontWeight: "bold" }}>{leave.reason}</span>
+                                    </MDTypography>
+                                    <MDTypography variant="body2" color={darkMode ? "white" : "textSecondary"} sx={{ mb: 1 }}>
+                                      <span>Applied Date: </span>
+                                      <span style={{ fontWeight: "bold" }}>{formatDate(leave.appliedDate)}</span>
+                                    </MDTypography>
+                                  </Grid>
+                                </Grid>
+                              </CardContent>
+                            </Box>
+                          </Card>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  )}
+                </MDBox>
               </Card>
             </Grid>
           </Grid>
-        </MDBox>
-      </motion.div>
-
-      {/* Edit Profile Dialog */}
-      <Box sx={{ ...formContainerStyle, display: editOpen ? "block" : "none" }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleFormSubmit(); }}>
-          <MDTypography sx={formHeadingStyle}>Edit Profile</MDTypography>
-          <label style={formLabelStyle}>Designation*</label>
-          <input
-            type="text"
-            name="designation"
-            value={formData.designation}
-            onChange={handleFormChange}
-            placeholder="Enter Designation"
-            style={{ ...formInputStyle, borderColor: formErrors.designation ? "red" : "#ddd" }}
-            required
-          />
-          {formErrors.designation && (
-            <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-              {formErrors.designation}
-            </span>
-          )}
-          <label style={formLabelStyle}>Department*</label>
-          <input
-            type="text"
-            name="department"
-            value={formData.department}
-            onChange={handleFormChange}
-            placeholder="Enter Department"
-            style={{ ...formInputStyle, borderColor: formErrors.department ? "red" : "#ddd" }}
-            required
-          />
-          {formErrors.department && (
-            <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-              {formErrors.department}
-            </span>
-          )}
-          <label style={formLabelStyle}>Status*</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleFormChange}
-            style={{ ...formSelectStyle, borderColor: formErrors.status ? "red" : "#ddd" }}
-            required
-          >
-            <option value="" disabled>
-              Select Status
-            </option>
-            <option value="Active">Active</option>
-            <option value="On Leave">On Leave</option>
-          </select>
-          {formErrors.status && (
-            <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-              {formErrors.status}
-            </span>
-          )}
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <button type="button" onClick={handleEditClose} style={formButtonStyle}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{ ...formButtonStyle, backgroundColor: "#1976d2" }}
-            >
-              Save
-            </button>
-          </Box>
-        </form>
+        </motion.div>
+      </MDBox>
+      <Box
+        sx={{
+          marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
+          backgroundColor: darkMode ? "#212121" : "#f3f3f3",
+        }}
+      >
+        <Footer />
       </Box>
 
-      {/* Leave Application Dialog */}
-      <Box sx={{ ...formContainerStyle, display: leaveOpen ? "block" : "none" }}>
-        <form onSubmit={(e) => { e.preventDefault(); handleSubmitLeaveApplication(); }}>
-          <MDTypography sx={formHeadingStyle}>Apply for Leave</MDTypography>
-          <label style={formLabelStyle}>Employee ID</label>
-          <select
-            name="employeeId"
-            value={leaveFormData.employeeId}
-            onChange={handleLeaveFormChange}
-            style={formSelectStyle}
-            disabled
-          >
-            <option value={userData.employeeId}>{userData.employeeId}</option>
-          </select>
-          <label style={formLabelStyle}>Name</label>
-          <input
-            type="text"
-            name="name"
-            value={leaveFormData.name}
-            onChange={handleLeaveFormChange}
-            style={formInputStyle}
-            disabled
-          />
-          <label style={formLabelStyle}>Leave Type*</label>
-          <select
-            name="leaveType"
-            value={leaveFormData.leaveType}
-            onChange={handleLeaveFormChange}
-            style={{ ...formSelectStyle, borderColor: formErrors.leaveType ? "red" : "#ddd" }}
-            required
-          >
-            <option value="" disabled>
-              Select
-            </option>
-            <option value="Sick Leave">Sick Leave</option>
-            <option value="Vacation">Vacation</option>
-            <option value="Personal Leave">Personal Leave</option>
-            <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
-            <option value="Bereavement Leave">Bereavement Leave</option>
-          </select>
-          {formErrors.leaveType && (
-            <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-              {formErrors.leaveType}
-            </span>
-          )}
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <label style={formLabelStyle}>Start Date*</label>
-            <DatePicker
-              value={leaveFormData.startDate}
-              onChange={(date) => handleDateChange("startDate", date)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  sx={{
-                    "& .MuiInputBase-input": {
-                      ...formInputStyle,
-                      borderColor: formErrors.startDate ? "red" : "#ddd",
-                    },
-                    width: "100%",
-                  }}
-                  required
-                />
-              )}
+      {/* Edit Profile Modal */}
+      {editOpen && (
+        <Box sx={{ ...formContainerStyle, display: "block" }}>
+          <form onSubmit={handleFormSubmit}>
+            <Typography sx={formHeadingStyle}>Edit Profile</Typography>
+            <label style={formLabelStyle}>Designation</label>
+            <input
+              type="text"
+              name="designation"
+              value={formData.designation}
+              onChange={handleFormChange}
+              placeholder="Enter designation"
+              style={{
+                ...formInputStyle,
+                borderColor: formErrors.designation ? "#d32f2f" : "#ddd",
+              }}
+              required
             />
-            {formErrors.startDate && (
-              <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-                {formErrors.startDate}
+            {formErrors.designation && (
+              <span
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "10px",
+                }}
+              >
+                {formErrors.designation}
               </span>
             )}
-            <label style={formLabelStyle}>End Date*</label>
-            <DatePicker
-              value={leaveFormData.endDate}
-              onChange={(date) => handleDateChange("endDate", date)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  sx={{
-                    "& .MuiInputBase-input": {
-                      ...formInputStyle,
-                      borderColor: formErrors.endDate ? "red" : "#ddd",
-                    },
-                    width: "100%",
-                  }}
-                  required
-                />
-              )}
+            <label style={formLabelStyle}>Department</label>
+            <input
+              type="text"
+              name="department"
+              value={formData.department}
+              onChange={handleFormChange}
+              placeholder="Enter department"
+              style={{
+                ...formInputStyle,
+                borderColor: formErrors.department ? "#d32f2f" : "#ddd",
+              }}
+              required
             />
-            {formErrors.endDate && (
-              <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-                {formErrors.endDate}
+            {formErrors.department && (
+              <span
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "10px",
+                }}
+              >
+                {formErrors.department}
               </span>
             )}
-          </LocalizationProvider>
-          <label style={formLabelStyle}>Number of Days</label>
-          <input
-            type="number"
-            name="numberOfDays"
-            value={leaveFormData.numberOfDays}
-            style={formInputStyle}
-            disabled
-          />
-          <label style={formLabelStyle}>Half Day</label>
-          <input
-            type="checkbox"
-            name="halfDay"
-            checked={leaveFormData.halfDay}
-            onChange={(e) =>
-              setLeaveFormData((prev) => ({
-                ...prev,
-                halfDay: e.target.checked,
-              }))
-            }
-            style={formCheckboxStyle}
-          />
-          <label style={formLabelStyle}>Reason*</label>
-          <textarea
-            name="reason"
-            value={leaveFormData.reason}
-            onChange={handleLeaveFormChange}
-            placeholder="Reason for leave"
-            style={{ ...formInputStyle, minHeight: "60px", borderColor: formErrors.reason ? "red" : "#ddd" }}
-            required
-          />
-          {formErrors.reason && (
-            <span style={{ color: "red", fontSize: "12px", display: "block", marginBottom: "10px" }}>
-              {formErrors.reason}
-            </span>
-          )}
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <button type="button" onClick={handleLeaveClose} style={formButtonStyle}>
-              Cancel
-            </button>
-            <button
-              type="submit"
-              style={{ ...formButtonStyle, backgroundColor: "#1976d2" }}
+            <label style={formLabelStyle}>Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleFormChange}
+              style={{
+                ...formSelectStyle,
+                borderColor: formErrors.status ? "#d32f2f" : "#ddd",
+              }}
+              required
             >
-              Submit
-            </button>
-          </Box>
-        </form>
-      </Box>
-      <Footer />
-    </DashboardLayout>
+              <option value="" disabled>
+                Select status
+              </option>
+              <option value="Active">Active</option>
+              <option value="On Leave">On Leave</option>
+            </select>
+            {formErrors.status && (
+              <span
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "10px",
+                }}
+              >
+                {formErrors.status}
+              </span>
+            )}
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                style={formButtonStyle}
+                type="button"
+                onClick={handleEditClose}
+              >
+                Cancel
+              </button>
+              <button
+                style={{ ...formButtonStyle, backgroundColor: "#1976d2" }}
+                type="submit"
+              >
+                Save
+              </button>
+            </Box>
+          </form>
+        </Box>
+      )}
+
+      {/* Leave Application Modal */}
+      {leaveOpen && (
+        <Box sx={{ ...formContainerStyle, display: "block" }}>
+          <form onSubmit={handleSubmitLeaveApplication}>
+            <Typography sx={formHeadingStyle}>Apply for Leave</Typography>
+            <label style={formLabelStyle}>Employee ID</label>
+            <input
+              type="text"
+              name="employeeId"
+              value={leaveFormData.employeeId}
+              style={{ ...formInputStyle }}
+              disabled
+            />
+            <label style={formLabelStyle}>Name</label>
+            <input
+              type="text"
+              name="name"
+              value={leaveFormData.name}
+              style={{ ...formInputStyle }}
+              disabled
+            />
+            <label style={formLabelStyle}>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={leaveFormData.email}
+              style={{ ...formInputStyle }}
+              disabled
+            />
+            <label style={formLabelStyle}>Leave Type</label>
+            <select
+              name="leaveType"
+              value={leaveFormData.leaveType}
+              onChange={handleLeaveFormChange}
+              style={{
+                ...formSelectStyle,
+                borderColor: formErrors.leaveType ? "#d32f2f" : "#ddd",
+              }}
+              required
+            >
+              <option value="" disabled>Select Leave Type</option>
+              <option value="Sick Leave">Sick Leave</option>
+              <option value="Vacation">Vacation</option>
+              <option value="Personal Leave">Personal Leave</option>
+              <option value="Maternity/Paternity Leave">Maternity/Paternity Leave</option>
+              <option value="Bereavement Leave">Bereavement Leave</option>
+            </select>
+            {formErrors.leaveType && (
+              <span
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "10px",
+                }}
+              >
+                {formErrors.leaveType}
+              </span>
+            )}
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <label style={formLabelStyle}>Start Date</label>
+              <DatePicker
+                value={leaveFormData.startDate}
+                onChange={(date) => handleDateChange("startDate", date)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        ...formInputStyle,
+                        borderColor: formErrors.startDate ? "#d32f2f" : "#ddd",
+                      },
+                      width: "100%",
+                    }}
+                    required
+                  />
+                )}
+              />
+              {formErrors.startDate && (
+                <span
+                  style={{
+                    color: "#d32f2f",
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {formErrors.startDate}
+                </span>
+              )}
+              <label style={formLabelStyle}>End Date</label>
+              <DatePicker
+                value={leaveFormData.endDate}
+                onChange={(date) => handleDateChange("endDate", date)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    sx={{
+                      "& .MuiInputBase-root": {
+                        ...formInputStyle,
+                        borderColor: formErrors.endDate ? "#d32f2f" : "#ddd",
+                      },
+                      width: "100%",
+                    }}
+                    required
+                  />
+                )}
+              />
+              {formErrors.endDate && (
+                <span
+                  style={{
+                    color: "#d32f2f",
+                    fontSize: "12px",
+                    display: "block",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {formErrors.endDate}
+                </span>
+              )}
+            </LocalizationProvider>
+            <label style={formLabelStyle}>Number of Days</label>
+            <input
+              type="number"
+              name="numberOfDays"
+              value={leaveFormData.numberOfDays}
+              style={{ ...formInputStyle }}
+              disabled
+            />
+            <label style={formLabelStyle}>Half Day</label>
+            <input
+              type="checkbox"
+              name="halfDay"
+              checked={leaveFormData.halfDay}
+              onChange={(event) =>
+                setLeaveFormData((prevData) => ({
+                  ...prevData,
+                  halfDay: event.target.checked,
+                }))
+              }
+              style={{ ...formCheckboxStyle }}
+            />
+            <label style={formLabelStyle}>Reason</label>
+            <textarea
+              name="reason"
+              value={leaveFormData.reason}
+              onChange={handleLeaveFormChange}
+              placeholder="Enter reason"
+              style={{
+                ...formInputStyle,
+                minHeight: "80px",
+                borderColor: formErrors.reason ? "#d32f2f" : "#ddd",
+              }}
+              required
+            />
+            {formErrors.reason && (
+              <span
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  display: "block",
+                  marginBottom: "10px",
+                }}
+              >
+                {formErrors.reason}
+              </span>
+            )}
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <button
+                style={formButtonStyle}
+                type="button"
+                onClick={handleLeaveClose}
+              >
+                Cancel
+              </button>
+              <button
+                style={{ ...formButtonStyle, backgroundColor: "#1976d2" }}
+                type="submit"
+              >
+                Submit
+              </button>
+            </Box>
+          </form>
+        </Box>
+      )}
+    </Box>
   );
 }
 

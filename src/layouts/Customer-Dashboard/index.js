@@ -256,6 +256,7 @@ const CustomerDashboard = () => {
     let filteredCustomers = customers;
     let filteredMetrics = customerMetrics;
     let filteredSupportTickets = supportTickets;
+    let filteredFeatureUsage = featureUsage;
     let filteredUpgrades = upgrades;
     let filteredCancellations = cancellations;
 
@@ -272,6 +273,9 @@ const CustomerDashboard = () => {
       );
       filteredSupportTickets = supportTickets.filter(
         (t) => t.createdAt >= monthStart && t.createdAt <= monthEnd
+      );
+      filteredFeatureUsage = featureUsage.filter(
+        (f) => f.timestamp >= monthStart && f.timestamp <= monthEnd
       );
       filteredUpgrades = upgrades.filter(
         (u) => u.planUpgradeDate >= monthStart && u.planUpgradeDate <= monthEnd
@@ -294,6 +298,9 @@ const CustomerDashboard = () => {
       );
       filteredSupportTickets = supportTickets.filter(
         (t) => t.createdAt >= customStartDate && t.createdAt <= customEndDate
+      );
+      filteredFeatureUsage = featureUsage.filter(
+        (f) => f.timestamp >= customStartDate && f.timestamp <= customEndDate
       );
       filteredUpgrades = upgrades.filter(
         (u) =>
@@ -327,6 +334,11 @@ const CustomerDashboard = () => {
           t.projectIds?.some((pid) => selectedProjectIds.includes(pid))
         )
       : filteredSupportTickets;
+    filteredFeatureUsage = selectedProjectIds.length
+      ? filteredFeatureUsage.filter((f) =>
+          filteredCustomers.some((c) => c.customerId === f.customerId)
+        )
+      : filteredFeatureUsage;
     filteredUpgrades = selectedProjectIds.length
       ? filteredUpgrades.filter((u) =>
           u.projectIds?.some((pid) => selectedProjectIds.includes(pid))
@@ -374,16 +386,26 @@ const CustomerDashboard = () => {
       npsData.push(avgNps);
       csatData.push(avgCsat);
 
-      // Existing logic for other metrics
+      // Calculate product adoption rate
+      const monthFeatureUsage = filteredFeatureUsage.filter(
+        (f) => f.timestamp >= monthStart && f.timestamp <= monthEnd
+      );
+      const uniqueUsers = new Set(monthFeatureUsage.map((f) => f.customerId)).size;
       const monthCustomers = filteredCustomers.filter(
+        (c) => c.createdAt <= monthEnd
+      ).length || 1;
+      const adoptionRate = (uniqueUsers / monthCustomers) * 100;
+      productAdoptionData.push(adoptionRate);
+
+      // Existing logic for other metrics
+      const monthCustomersActive = filteredCustomers.filter(
         (c) => c.createdAt >= monthStart && c.createdAt <= monthEnd
       );
-      const count = monthCustomers.length || 1;
-      if (count === 1 && monthCustomers.length === 0) {
+      const count = monthCustomersActive.length || 1;
+      if (count === 1 && monthCustomersActive.length === 0) {
         crrData.push(0);
         churnData.push(0);
         conversionData.push(0);
-        productAdoptionData.push(0);
         return;
       }
 
@@ -418,8 +440,6 @@ const CustomerDashboard = () => {
         ? (upgradedCustomers / totalFreeCustomersInMonth) * 100
         : 0;
       conversionData.push(conversionRate);
-
-      productAdoptionData.push(0);
     });
 
     const churnReasonsCount = {
@@ -445,7 +465,7 @@ const CustomerDashboard = () => {
 
     const features = ["Core", "Advanced", "Integrations"];
     const productAdoptionByFeature = features.map((feature) => {
-      const featureUsers = featureUsage.filter(
+      const featureUsers = filteredFeatureUsage.filter(
         (f) => f.feature === feature
       ).length;
       const totalCustomers = filteredCustomers.length || 1;
@@ -553,6 +573,7 @@ const CustomerDashboard = () => {
           color: darkMode ? "#ffffff" : "#333333",
           maxRotation: 45,
           minRotation: 45,
+          font: { size: 10 },
         },
         grid: {
           color: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
@@ -560,7 +581,10 @@ const CustomerDashboard = () => {
         },
       },
       y: {
-        ticks: { color: darkMode ? "#ffffff" : "#333333" },
+        ticks: { 
+          color: darkMode ? "#ffffff" : "#333333",
+          font: { size: 10 },
+        },
         grid: { color: darkMode ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)" },
         beginAtZero: true,
       },
@@ -583,7 +607,7 @@ const CustomerDashboard = () => {
       y: {
         ...chartOptions.scales.y,
         suggestedMax:
-          Math.max(...productAdoptionByFeature.map((f) => f.rate)) * 1.1 || 100,
+          Math.max(...productAdoptionData, ...productAdoptionByFeature.map((f) => f.rate)) * 1.1 || 100,
       },
     },
   };
@@ -703,6 +727,20 @@ const CustomerDashboard = () => {
     ],
   };
 
+  const productAdoptionLineData = {
+    labels: months,
+    datasets: [
+      {
+        label: "Adoption Rate (%)",
+        data: productAdoptionData,
+        borderColor: "rgba(255, 206, 86, 1)",
+        backgroundColor: "rgba(255, 206, 86, 0.2)",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
   const productAdoptionBarData = {
     labels: productAdoptionByFeature.map((f) => f.feature),
     datasets: [
@@ -797,6 +835,7 @@ const CustomerDashboard = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
+          bgcolor: darkMode ? "background.default" : "#f5f7fa",
         }}
       >
         <MDTypography variant="h6" color={darkMode ? "white" : "textPrimary"}>
@@ -845,7 +884,12 @@ const CustomerDashboard = () => {
       sx={{
         backgroundColor: darkMode ? "background.default" : "#f5f7fa",
         minHeight: "100vh",
-        padding: { xs: 2, sm: 3, md: 4 },
+        padding: { xs: 1, sm: 2, md: 3 },
+        overflowX: "hidden",
+        boxSizing: "border-box",
+        "& *": {
+          boxSizing: "border-box",
+        },
       }}
     >
       <DashboardNavbar
@@ -858,8 +902,8 @@ const CustomerDashboard = () => {
             : "rgba(255, 255, 255, 0.95)",
           backdropFilter: "blur(10px)",
           zIndex: 1100,
-          padding: "0 16px",
-          minHeight: "64px",
+          padding: { xs: "0 8px", sm: "0 16px" },
+          minHeight: "56px",
           top: "8px",
           left: { xs: "0", md: miniSidenav ? "80px" : "250px" },
           width: {
@@ -873,22 +917,21 @@ const CustomerDashboard = () => {
       <MDBox
         sx={{
           marginLeft: { xs: "0", md: miniSidenav ? "80px" : "250px" },
-          marginTop: { xs: "90px", sm: "90px", md: "80px" },
+          marginTop: { xs: "80px", sm: "90px", md: "80px" },
           maxWidth: "100%",
           mx: "auto",
           px: { xs: 1, sm: 2, md: 3 },
+          overflowX: "hidden",
         }}
       >
-        {/* Title Section with Full-Screen Animation */}
+        {/* Title Section */}
         <MDBox
           sx={{
             mb: 3,
-            width: "100vw",
-            position: "relative",
-            left: { xs: "calc(-1 * var(--chakra-space-1))", sm: "-16px", md: "-24px" },
-            overflow: "hidden",
+            width: "100%",
             pt: { xs: 2, sm: 1, md: 0 },
             minHeight: "60px",
+            overflow: "hidden",
           }}
         >
           <motion.div
@@ -925,7 +968,8 @@ const CustomerDashboard = () => {
                       ? "0 2px 4px rgba(0,0,0,0.3)"
                       : "0 2px 4px rgba(0,0,0,0.1)",
                     display: "inline-block",
-                    pr: "100vw",
+                    pr: "100%",
+                    fontSize: { xs: "1.5rem", sm: "2rem", md: "2.5rem" },
                   }}
                 >
                   Customer Insights Dashboard
@@ -945,6 +989,7 @@ const CustomerDashboard = () => {
             gap: { xs: 1, sm: 1 },
             justifyContent: { xs: "flex-start", sm: "flex-end" },
             flexWrap: "wrap",
+            width: "100%",
           }}
         >
           <Paper
@@ -957,7 +1002,7 @@ const CustomerDashboard = () => {
               alignItems: "center",
               gap: 1,
               width: { xs: "100%", sm: "auto" },
-              maxWidth: { xs: "100%", sm: 320 },
+              maxWidth: "100%",
               overflow: "hidden",
               borderRadius: 8,
               boxShadow: darkMode
@@ -975,7 +1020,8 @@ const CustomerDashboard = () => {
             <FormControl
               sx={{
                 flex: 1,
-                minWidth: { xs: 150, sm: 120 },
+                minWidth: { xs: "100%", sm: 120 },
+                maxWidth: { xs: "100%", sm: 200 },
               }}
             >
               <InputLabel
@@ -1062,7 +1108,7 @@ const CustomerDashboard = () => {
                   px: { xs: 1, sm: 1.5 },
                   py: { xs: 0.3, sm: 0.4 },
                   width: { xs: "100%", sm: "auto" },
-                  maxWidth: { xs: 150, sm: 120 },
+                  maxWidth: { xs: "100%", sm: 120 },
                   "&:hover": {
                     background: darkMode
                       ? "linear-gradient(45deg, #1b5e20 30%, #4caf50 90%)"
@@ -1107,7 +1153,7 @@ const CustomerDashboard = () => {
               borderRadius: "16px 16px 0 0",
               py: 2,
               textAlign: "center",
-              fontSize: "1.2rem",
+              fontSize: { xs: "1rem", sm: "1.2rem" },
               letterSpacing: "0.02em",
             }}
           >
@@ -1141,11 +1187,12 @@ const CustomerDashboard = () => {
                   backgroundColor: darkMode ? "#424242" : "#f5f5f5",
                   borderRadius: "8px",
                   padding: "8px 12px",
+                  fontSize: { xs: "0.85rem", sm: "0.9rem" },
                 },
                 "& .MuiInputLabel-root": {
                   color: darkMode ? "#ffffff" : "#333333",
                   fontWeight: 500,
-                  fontSize: "0.9rem",
+                  fontSize: { xs: "0.85rem", sm: "0.9rem" },
                   transform: "translate(14px, -6px) scale(0.75)",
                   backgroundColor: darkMode ? "#2a2a2a" : "white",
                   padding: "0 4px",
@@ -1180,11 +1227,12 @@ const CustomerDashboard = () => {
                   backgroundColor: darkMode ? "#424242" : "#f5f5f5",
                   borderRadius: "8px",
                   padding: "8px 12px",
+                  fontSize: { xs: "0.85rem", sm: "0.9rem" },
                 },
                 "& .MuiInputLabel-root": {
                   color: darkMode ? "#ffffff" : "#333333",
                   fontWeight: 500,
-                  fontSize: "0.9rem",
+                  fontSize: { xs: "0.85rem", sm: "0.9rem" },
                   transform: "translate(14px, -6px) scale(0.75)",
                   backgroundColor: darkMode ? "#2a2a2a" : "white",
                   padding: "0 4px",
@@ -1237,6 +1285,7 @@ const CustomerDashboard = () => {
                     : "linear-gradient(45deg, #d32f2f 30%, #f44336 90%)",
                 },
                 transition: "all 0.2s ease",
+                fontSize: { xs: "0.75rem", sm: "0.85rem" },
               }}
             >
               Cancel
@@ -1259,6 +1308,7 @@ const CustomerDashboard = () => {
                     : "linear-gradient(45deg, #1565c0 30%, #2196f3 90%)",
                 },
                 transition: "all 0.2s ease",
+                fontSize: { xs: "0.75rem", sm: "0.85rem" },
               }}
             >
               Apply
@@ -1274,12 +1324,14 @@ const CustomerDashboard = () => {
                 backgroundColor: darkMode ? "#2a2a2a" : "#fff",
                 borderRadius: "8px",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                width: "100%",
+                overflow: "hidden",
               }}
             >
               <MDTypography
                 variant="subtitle2"
                 color={darkMode ? "#ffffff" : "textPrimary"}
-                sx={{ mb: 0.5, fontSize: "0.9rem" }}
+                sx={{ mb: 0.5, fontSize: { xs: "0.8rem", sm: "0.9rem" } }}
               >
                 Filter by Project IDs
               </MDTypography>
@@ -1288,14 +1340,15 @@ const CustomerDashboard = () => {
                   p: 1,
                   backgroundColor: darkMode ? "#333333" : "#fff",
                   borderRadius: "6px",
-                  maxHeight: "80px",
+                  maxHeight: { xs: "120px", sm: "80px" },
                   overflowX: "auto",
-                  overflowY: "hidden",
+                  overflowY: "auto",
                   whiteSpace: "nowrap",
                   boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                  width: "100%",
                 }}
               >
-                <Stack direction="row" spacing={1}>
+                <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap" }}>
                   {projects.map((project) => (
                     <Chip
                       key={project.projectId}
@@ -1314,6 +1367,7 @@ const CustomerDashboard = () => {
                       }
                       sx={{
                         m: 0.3,
+                        fontSize: { xs: "0.7rem", sm: "0.8rem" },
                         backgroundColor:
                           darkMode &&
                           !selectedProjectIds.includes(project.projectId)
@@ -1351,6 +1405,7 @@ const CustomerDashboard = () => {
                             sx={{
                               m: 0.3,
                               color: darkMode ? "#ffffff" : undefined,
+                              fontSize: { xs: "0.7rem", sm: "0.8rem" },
                             }}
                           />
                         ))}
@@ -1365,7 +1420,7 @@ const CustomerDashboard = () => {
                     <MDTypography
                       variant="body2"
                       color={darkMode ? "#ffffff" : "textPrimary"}
-                      sx={{ fontSize: "0.8rem", cursor: "pointer" }}
+                      sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" }, cursor: "pointer" }}
                     >
                       {selectedProjectIds.length} Project
                       {selectedProjectIds.length > 1 ? "s" : ""} Selected
@@ -1390,6 +1445,7 @@ const CustomerDashboard = () => {
                     ? "linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%)"
                     : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                  width: "100%",
                 }}
               >
                 <MDBox
@@ -1404,6 +1460,7 @@ const CustomerDashboard = () => {
                     variant="h6"
                     color={darkMode ? "white" : "textPrimary"}
                     fontWeight="medium"
+                    sx={{ fontSize: { xs: "1rem", sm: "1.1rem" } }}
                   >
                     Customer Satisfaction & Retention
                   </MDTypography>
@@ -1416,16 +1473,16 @@ const CustomerDashboard = () => {
                   </Tooltip>
                 </MDBox>
                 <Divider />
-                <MDBox p={3}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
+                <MDBox p={{ xs: 2, sm: 3 }}>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6}>
                       <motion.div variants={cardVariants}>
                         <Card
                           sx={{
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "300px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1433,6 +1490,7 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
                             NPS & CSAT Trends (Bar)
                           </MDTypography>
@@ -1446,14 +1504,14 @@ const CustomerDashboard = () => {
                         </Card>
                       </motion.div>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} sm={6}>
                       <motion.div variants={cardVariants}>
                         <Card
                           sx={{
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "300px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1461,6 +1519,7 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
                             NPS & CSAT Trends (Line)
                           </MDTypography>
@@ -1481,7 +1540,7 @@ const CustomerDashboard = () => {
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "250px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1489,6 +1548,7 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
                             Retention vs. Churn Rate
                           </MDTypography>
@@ -1502,26 +1562,31 @@ const CustomerDashboard = () => {
                                   x: {
                                     ticks: {
                                       color: darkMode ? "#ffffff" : "#333333",
+                                      font: { size: 10 },
                                     },
                                   },
                                   y: {
                                     ticks: {
                                       color: darkMode ? "#ffffff" : "#333333",
+                                      font: { size: 10 },
                                     },
                                     title: {
                                       display: true,
                                       text: "Retention Rate (%)",
                                       color: darkMode ? "#ffffff" : "#333333",
+                                      font: { size: 12 },
                                     },
                                   },
                                   y1: {
                                     ticks: {
                                       color: darkMode ? "#ffffff" : "#333333",
+                                      font: { size: 10 },
                                     },
                                     title: {
                                       display: true,
                                       text: "Churn Rate (%)",
                                       color: darkMode ? "#ffffff" : "#333333",
+                                      font: { size: 12 },
                                     },
                                     position: "right",
                                   },
@@ -1539,7 +1604,7 @@ const CustomerDashboard = () => {
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "250px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1547,6 +1612,7 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
                             Conversion Rate
                           </MDTypography>
@@ -1567,7 +1633,7 @@ const CustomerDashboard = () => {
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "250px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1575,8 +1641,38 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
-                            Product Adoption Rates
+                            Product Adoption Rate (Monthly)
+                          </MDTypography>
+                          <Box sx={{ height: "calc(100% - 40px)" }}>
+                            <Chart
+                              type="line"
+                              data={productAdoptionLineData}
+                              options={productAdoptionChartOptions}
+                            />
+                          </Box>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <motion.div variants={cardVariants}>
+                        <Card
+                          sx={{
+                            borderRadius: "12px",
+                            p: 2,
+                            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+                            height: { xs: "250px", sm: "300px" },
+                            overflow: "hidden",
+                          }}
+                        >
+                          <MDTypography
+                            variant="h6"
+                            color={darkMode ? "white" : "textPrimary"}
+                            mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+                          >
+                            Product Adoption by Feature
                           </MDTypography>
                           <Box sx={{ height: "calc(100% - 40px)" }}>
                             <Chart
@@ -1588,7 +1684,7 @@ const CustomerDashboard = () => {
                         </Card>
                       </motion.div>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} sm={6} md={4}>
                       <MDBox
                         sx={{
                           backgroundColor: darkMode ? "#424242" : "#e3f2fd",
@@ -1602,6 +1698,7 @@ const CustomerDashboard = () => {
                           color={darkMode ? "white" : "textPrimary"}
                           fontWeight="medium"
                           mb={1}
+                          sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                         >
                           Account Summary
                         </MDTypography>
@@ -1609,6 +1706,7 @@ const CustomerDashboard = () => {
                           variant="body1"
                           color={darkMode ? "white" : "textPrimary"}
                           fontWeight="bold"
+                          sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}
                         >
                           Free Accounts: {totalFreeCustomers}
                         </MDTypography>
@@ -1616,6 +1714,7 @@ const CustomerDashboard = () => {
                           variant="body1"
                           color={darkMode ? "white" : "textPrimary"}
                           fontWeight="bold"
+                          sx={{ fontSize: { xs: "0.85rem", sm: "0.9rem" } }}
                         >
                           Premium Accounts: {totalPremiumCustomers}
                         </MDTypography>
@@ -1639,9 +1738,10 @@ const CustomerDashboard = () => {
                   borderRadius: "16px",
                   overflow: "hidden",
                   background: darkMode
-                    ? "linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%)"
+                    ? "linear-gradient(135deg, #2a2a2a 0%, #1e1e1e)"
                     : "linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                  width: "100%",
                 }}
               >
                 <MDBox
@@ -1656,28 +1756,29 @@ const CustomerDashboard = () => {
                     variant="h6"
                     color={darkMode ? "white" : "textPrimary"}
                     fontWeight="medium"
+                    sx={{ fontSize: { xs: "1rem", sm: "1.1rem" } }}
                   >
                     Support Performance
                   </MDTypography>
                   <Tooltip title="Refresh Data">
                     <IconButton onClick={fetchData}>
                       <RefreshIcon
-                        sx={{ color: darkMode ? "#fff" : "#1976d2" }}
+                        sx={{ color: darkMode ? "#ffffff" : "#1976d2" }}
                       />
                     </IconButton>
                   </Tooltip>
                 </MDBox>
                 <Divider />
-                <MDBox p={3}>
+                <MDBox p={{ xs: 2, sm: 3 }}>
                   <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} sm={6}>
                       <motion.div variants={cardVariants}>
                         <Card
                           sx={{
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "300px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1685,6 +1786,7 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
                             Issues by Project
                           </MDTypography>
@@ -1698,14 +1800,14 @@ const CustomerDashboard = () => {
                         </Card>
                       </motion.div>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid item xs={12} sm={6}>
                       <motion.div variants={cardVariants}>
                         <Card
                           sx={{
                             borderRadius: "12px",
                             p: 2,
                             boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                            height: "300px",
+                            height: { xs: "250px", sm: "300px" },
                             overflow: "hidden",
                           }}
                         >
@@ -1713,6 +1815,7 @@ const CustomerDashboard = () => {
                             variant="h6"
                             color={darkMode ? "white" : "textPrimary"}
                             mb={2}
+                            sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
                           >
                             Resolution Status
                           </MDTypography>
@@ -1753,6 +1856,7 @@ const CustomerDashboard = () => {
                     ? "linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%)"
                     : "linear-gradient(135deg, #ffffff, #f8fafc 100%)",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                  width: "100%",
                 }}
               >
                 <MDBox
@@ -1767,6 +1871,7 @@ const CustomerDashboard = () => {
                     variant="h6"
                     color={darkMode ? "white" : "textPrimary"}
                     fontWeight="medium"
+                    sx={{ fontSize: { xs: "1rem", sm: "1.1rem" } }}
                   >
                     Churn Analysis
                   </MDTypography>
